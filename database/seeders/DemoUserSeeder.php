@@ -13,11 +13,17 @@ use App\Models\User;
 use App\Services\Wallet\WalletService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DemoUserSeeder extends Seeder
 {
     public function run(WalletService $wallet): void
     {
+        // Never hardcode a known demo password in committed source: generate one per
+        // run (or pin it via DEMO_PASSWORD in .env for repeatable local logins) and
+        // print it once so it never needs to live in the repo or the README.
+        $password = env('DEMO_PASSWORD') ?: Str::password(14);
+
         $gh = Country::where('iso2', 'GH')->first();
         $cm = Country::where('iso2', 'CM')->first();
         $ng = Country::where('iso2', 'NG')->first();
@@ -25,19 +31,19 @@ class DemoUserSeeder extends Seeder
 
         // ---- Staff ----
         User::updateOrCreate(['email' => 'superadmin@paybridge.test'], [
-            'name' => 'Super Admin', 'password' => Hash::make('password'), 'role' => 'super_admin',
+            'name' => 'Super Admin', 'password' => Hash::make($password), 'role' => 'super_admin',
             'phone' => '+237600000000', 'country_id' => $cm?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
         ]);
         User::updateOrCreate(['email' => 'admin@paybridge.test'], [
-            'name' => 'Amina Admin', 'password' => Hash::make('password'), 'role' => 'admin',
+            'name' => 'Amina Admin', 'password' => Hash::make($password), 'role' => 'admin',
             'phone' => '+237600000001', 'country_id' => $cm?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
         ]);
 
         // ---- Demo user with history ----
         $user = User::updateOrCreate(['email' => 'kofi@example.com'], [
-            'name' => 'Kofi Mensah', 'password' => Hash::make('password'), 'role' => 'user',
+            'name' => 'Kofi Mensah', 'password' => Hash::make($password), 'role' => 'user',
             'phone' => '+233200000000', 'country_id' => $gh?->id, 'city' => 'Accra', 'address' => '12 Independence Ave',
             'kyc_level' => 2, 'kyc_status' => 'approved', 'email_verified_at' => now(), 'phone_verified_at' => now(),
         ]);
@@ -73,7 +79,7 @@ class DemoUserSeeder extends Seeder
 
         // ---- Verified agent ----
         $agentUser = User::updateOrCreate(['email' => 'agent@example.com'], [
-            'name' => 'Li Wei', 'password' => Hash::make('password'), 'role' => 'agent',
+            'name' => 'Li Wei', 'password' => Hash::make($password), 'role' => 'agent',
             'phone' => '+8613800000000', 'country_id' => $cn?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
         ]);
@@ -105,7 +111,7 @@ class DemoUserSeeder extends Seeder
         ];
         foreach ($moreAgents as $a) {
             $u = User::updateOrCreate(['email' => $a['email']], [
-                'name' => $a['name'], 'password' => Hash::make('password'), 'role' => 'agent',
+                'name' => $a['name'], 'password' => Hash::make($password), 'role' => 'agent',
                 'country_id' => $cn?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
                 'email_verified_at' => now(), 'phone_verified_at' => now(),
             ]);
@@ -121,5 +127,10 @@ class DemoUserSeeder extends Seeder
             $ag->shippingRates()->updateOrCreate(['method' => 'air', 'destination_country_id' => $cm?->id], ['price_per_kg' => $a['kg'], 'currency' => 'USD', 'estimated_days_min' => 6, 'estimated_days_max' => 11, 'is_active' => true]);
             $ag->shippingRates()->updateOrCreate(['method' => 'sea', 'destination_country_id' => $ng?->id], ['price_per_cbm' => 300, 'currency' => 'USD', 'estimated_days_min' => 30, 'estimated_days_max' => 45, 'is_active' => true]);
         }
+
+        $this->command?->newLine();
+        $this->command?->warn("Demo accounts password: {$password}");
+        $this->command?->line('  (superadmin@paybridge.test, admin@paybridge.test, kofi@example.com, agent@example.com)');
+        $this->command?->line('  Set DEMO_PASSWORD in .env to pin this across reseeds.');
     }
 }

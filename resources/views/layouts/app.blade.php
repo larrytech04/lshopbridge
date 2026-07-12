@@ -69,8 +69,6 @@
             </form>
 
             <div class="ml-auto flex items-center gap-1.5 sm:gap-2.5">
-                <a href="{{ route('home') }}" target="_blank" rel="noopener" class="hidden items-center gap-1.5 rounded-full border border-app surface px-3 py-1.5 text-xs font-semibold text-muted hover:text-strong lg:inline-flex"><x-icon name="globe" class="h-3.5 w-3.5 text-brand-400" /> {{ __('Visit website') }} <x-icon name="arrow-right" class="h-3 w-3 -rotate-45" /></a>
-
                 {{-- Search (round, YouTube-style) --}}
                 <a href="{{ route('shop.index') }}" aria-label="{{ __('Search') }}" class="grid h-9 w-9 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong lg:hidden">
                     <x-icon name="search" class="h-4.5 w-4.5" />

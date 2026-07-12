@@ -99,8 +99,9 @@ php artisan serve
 
 Open http://localhost:8000.
 
-Demo accounts for each role (user, agent, admin, super admin) are created by the seeders —
-see `database/seeders/DemoUserSeeder.php` after running `migrate:fresh --seed`.
+The seeders create a demo account for each role (user, agent, admin, super admin). No
+password is stored in the repo — `migrate:fresh --seed` generates a random one and prints
+it to the console (or set `DEMO_PASSWORD` in `.env` to pin it).
 
 ---
 
