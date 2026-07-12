@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌉 LshopBridge
+# LshopBridge
 
 ### The financial bridge between Africa and China — wallet funding, digital shop, and a verified agent marketplace in one platform.
 
@@ -181,7 +181,5 @@ derivative product without prior written permission from the author.
 ---
 
 <div align="center">
-
-Built with ❤️ by **Larry Tech**
 
 </div>
