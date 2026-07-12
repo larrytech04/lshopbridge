@@ -59,8 +59,8 @@ It also includes a **China buying academy**, a **digital gift card and eSIM shop
 > Replace these images with your real project screenshots.
 
 <p align="center">
-  <img src="assets/readme/home.png" width="48%" alt="LshopBridge Home"/>
-  <img src="assets/readme/dashboard.png" width="48%" alt="LshopBridge Dashboard"/>
+  <img src="assets/LshopBridge Home.png" width="48%" alt="LshopBridge Home"/>
+  <img src="assets/lshopbridge-demo.png" width="48%" alt="LshopBridge Dashboard"/>
 </p>
 
 <p align="center">
