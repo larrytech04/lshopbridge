@@ -99,13 +99,8 @@ php artisan serve
 
 Open http://localhost:8000.
 
-### Demo accounts (password: `password`)
-| Role | Email |
-|------|-------|
-| Super admin | `superadmin@paybridge.test` |
-| Admin | `admin@paybridge.test` |
-| User (funded, verified) | `kofi@example.com` |
-| Agent (verified) | `agent@example.com` |
+Demo accounts for each role (user, agent, admin, super admin) are created by the seeders —
+see `database/seeders/DemoUserSeeder.php` after running `migrate:fresh --seed`.
 
 ---
 
