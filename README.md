@@ -1,86 +1,234 @@
-<div align="center">
+<p align="center">
+  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=260&color=gradient&customColorList=12,20,22,24,30&text=LshopBridge&fontSize=62&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=The%20Financial%20Bridge%20Between%20Africa%20and%20China&descAlignY=60"/>
+</p>
+
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=700&size=24&duration=2800&pause=800&color=C1121F&center=true&vCenter=true&width=950&lines=Fund+Alipay+with+MTN+MoMo.;Fund+WeChat+Pay+Automatically.;Deposit+with+Mobile+Money%2C+Card+or+Crypto.;Digital+Shop+for+Gift+Cards+and+eSIMs.;Verified+Shipping+Agent+Marketplace.;Built+with+Laravel+13." />
+</p>
+
+<p align="center">
+  <a href="https://laravel.com">
+    <img src="https://img.shields.io/badge/Laravel-13-FF2D20?style=for-the-badge&logo=laravel&logoColor=white"/>
+  </a>
+  <a href="https://www.php.net">
+    <img src="https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php&logoColor=white"/>
+  </a>
+  <a href="https://tailwindcss.com">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white"/>
+  </a>
+  <a href="https://alpinejs.dev">
+    <img src="https://img.shields.io/badge/Alpine.js-8BC0D0?style=for-the-badge&logo=alpinedotjs&logoColor=black"/>
+  </a>
+  <img src="https://img.shields.io/badge/License-All_Rights_Reserved-informational?style=for-the-badge"/>
+</p>
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=rect&height=2&color=gradient&customColorList=12,20,22,24,30"/>
+</p>
 
 # LshopBridge
 
-### The financial bridge between Africa and China — wallet funding, digital shop, and a verified agent marketplace in one platform.
+**LshopBridge** is a premium Laravel fintech platform built to connect Africa and China through wallet funding, digital commerce, and verified logistics.
 
-[![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Alpine.js](https://img.shields.io/badge/Alpine.js-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=black)](https://alpinejs.dev)
-[![License](https://img.shields.io/badge/License-All_Rights_Reserved-informational?style=for-the-badge)](#-license)
+The platform allows users in Cameroon, Nigeria, Ghana, and other African countries to deposit using **MTN MoMo, Orange Money, bank transfer, card, or crypto**, then fund **Alipay, WeChat Pay, and other China wallets** through a secure automated flow.
 
-</div>
+It also includes a **China buying academy**, a **digital gift card and eSIM shop**, and a **verified shipping agent marketplace**.
 
----
-
-A premium, glassmorphic Laravel fintech platform that lets users in Cameroon, Nigeria,
-Ghana and other African countries deposit with **MTN MoMo, Orange Money, bank transfer,
-card or crypto** and **fund Alipay / WeChat Pay and other China wallets automatically** —
-plus a China buying academy, a digital gift‑card/eSIM shop, and a verified shipping‑agent
-marketplace.
-
-> Built with **Laravel 13 · PHP 8.3 · SQLite · Tailwind CSS v4 · Alpine.js**.
-> Production‑structured, secure and scalable, with **sandbox/mock** payment + funding
-> providers that are ready to swap for live APIs. Fully internationalized UI across
-> 5 languages and growing.
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=600&size=18&duration=2500&pause=1000&color=7A0019&center=true&vCenter=true&width=750&lines=One+wallet.;One+marketplace.;One+verified+agent+network.;One+bridge+between+Africa+and+China." />
+</p>
 
 ---
 
-## 📚 Table of contents
+## Animated Preview
 
-- [What's inside](#-whats-inside)
-- [Money flow](#money-flow-fully-automated-with-safe-manual-fallback)
-- [Highlights](#highlights)
-- [Setup](#-setup)
-- [Sandbox vs Live](#-sandbox-vs-live)
-- [Architecture](#-architecture)
-- [Security](#-security)
-- [Disclaimer](#️-disclaimer)
+> Replace this GIF with your real screen recording.
+
+<p align="center">
+  <img src="assets/readme/lshopbridge-demo.gif" width="90%" alt="LshopBridge Animated Demo"/>
+</p>
+
+<p align="center">
+  <sub>Suggested GIFs: home page animation, user dashboard, funding request, admin panel, and agent marketplace.</sub>
+</p>
 
 ---
 
-## ✨ What's inside
+## Screenshots
 
-### Roles
-- **User** — wallet, deposits, automated funding, saved China wallets, KYC, disputes, reviews, learning.
-- **Agent** — business verification, shipping rates, leads/orders, reviews, reputation points.
-- **Admin / Super Admin** — full control panel (everything is DB‑driven, nothing hard‑coded).
+> Replace these images with your real project screenshots.
 
-### Money flow (fully automated, with safe manual fallback)
+<p align="center">
+  <img src="assets/LshopBridge Home.png" width="48%" alt="LshopBridge Home"/>
+  <img src="assets/lshopbridge-demo.png" width="48%" alt="LshopBridge Dashboard"/>
+</p>
+
+<p align="center">
+  <img src="assets/readme/admin.png" width="48%" alt="LshopBridge Admin Panel"/>
+  <img src="assets/readme/marketplace.png" width="48%" alt="LshopBridge Agent Marketplace"/>
+</p>
+
+---
+
+## What is inside
+
+| Module            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| Wallet Funding    | Deposit locally and fund China wallets                        |
+| Digital Shop      | Sell gift cards, eSIMs, and digital services                  |
+| Agent Marketplace | Connect users with verified shipping agents                   |
+| China Academy     | Teach users how to buy and import from China                  |
+| Admin Panel       | Manage users, agents, fees, rates, providers, and settings    |
+| Risk Engine       | Detect suspicious transactions and move them to manual review |
+
+---
+
+## Main Features
+
+* Automatic payment collection
+* Alipay and WeChat Pay funding flow
+* MTN MoMo, Orange Money, Flutterwave, bank transfer, card, and crypto support
+* Saved China wallet beneficiaries
+* QR code upload for wallet profiles
+* KYC levels 0 to 3
+* Admin-controlled transaction limits
+* Double-entry wallet ledger
+* Secure private file storage
+* Webhook verification and logging
+* Risk and fraud detection
+* Dispute management
+* Verified shipping agent marketplace
+* Digital gift card and eSIM shop
+* China buying academy
+* Multi-language-ready interface
+* Glassmorphic responsive UI
+
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=600&size=18&duration=2600&pause=900&color=C1121F&center=true&vCenter=true&width=850&lines=Wallet+Funding.;Digital+Shop.;Verified+Agents.;China+Academy.;Admin+Control.;Secure+Automation." />
+</p>
+
+---
+
+## Money Flow
+
+```text
+User enters amount
+        |
+System calculates rate and fee
+        |
+User selects payment method
+        |
+Payment provider charges user
+        |
+Webhook confirms payment
+        |
+Wallet is credited
+        |
+Funding request is submitted
+        |
+China wallet is funded
+        |
+Transaction is completed
 ```
-enter amount → quote (rate + fee) → choose method → provider charge
-        → provider webhook (signature‑verified, idempotent)
-        → wallet credited / funding auto‑submitted to China wallet
-        → funding_successful   (or → manual_review on risk/failure)
-```
 
-### Highlights
-- **Automatic payment collection** via a clean provider layer: `MtnMomo`, `OrangeMoney`,
-  `Flutterwave`, `Crypto`, `Card` — one `PaymentProvider` contract, resolved by `PaymentManager`.
-- **Secure webhook pipeline** (`WebhookProcessor`): logs every event, verifies HMAC
-  signatures, dedupes by `(provider, event_id)`, then settles exactly once.
-- **Automatic Alipay funding engine** (`FundingService` + `AlipayFundingProvider`) with the
-  full status machine: `payment_pending → payment_successful → funding_processing →
-  funding_successful` (+ `funding_failed`, `refunded`, `manual_review`).
-- **Risk & fraud engine** (`RiskEngine`) — name mismatch, velocity, large tx, blocked
-  country, failed attempts, unverified account → flags + manual review.
-- **KYC levels 0–3** with admin‑editable per‑level daily / monthly / per‑transaction limits.
-- **Saved beneficiary (China wallet) profiles** — Alipay / WeChat / other, with QR upload,
-  default account and approval workflow.
-- **Double‑entry wallet ledger** (`WalletService`) — every balance change is atomic,
-  row‑locked and recorded.
-- **Secure file handling** — KYC IDs, selfies, proofs, receipts and QR codes live on a
-  **private disk** and are streamed only through `SecureFileController` (owner/admin only).
-- **Admin audit log** + webhook log + risk queue.
-- **Glassmorphic UI** — aurora gradients, frosted glass cards, floating shapes, animated
-  counters, smooth transitions; fully responsive, mobile‑first.
+If a transaction is risky, failed, or needs extra checks, the system moves it to **manual review**.
 
 ---
 
-## 🚀 Setup
+## User Roles
 
-Scaffolded with **Laravel Herd** (PHP 8.3). Any PHP 8.3+ / Composer / Node environment works.
+### User
+
+Users can create an account, complete KYC, deposit funds, save China wallet details, fund Alipay or WeChat Pay, buy digital products, open disputes, review agents, and learn from the China academy.
+
+### Agent
+
+Agents can verify their business, create a logistics profile, publish shipping rates, receive leads, manage orders, collect reviews, and build reputation points.
+
+### Admin
+
+Admins can manage users, approve KYC, approve agents, configure fees, update exchange rates, view webhook logs, handle disputes, monitor risky transactions, and control platform settings.
+
+### Super Admin
+
+Super admins have full access to all platform modules and can override permission gates.
+
+---
+
+## Architecture
+
+```text
+app/
+  Enums/                     Status enums and UI badge helpers
+  Http/Controllers/          Public, User, Agent, Admin, Webhooks
+  Http/Middleware/           Role, account status, KYC checks
+  Models/                    Eloquent models and relationships
+  Notifications/             Deposit, funding, KYC, agent events
+  Policies/                  Authorization and ownership checks
+  Services/
+    Wallet/                  Double-entry ledger and balance updates
+    Deposit/                 Manual and automated deposits
+    Funding/                 Funding engine, rates, fees, providers
+    Payments/                Payment manager, providers, webhooks
+    Risk/                    Risk engine and review flags
+    Kyc/                     Verification levels and limits
+    Settings/                Cached database-backed settings
+    Audit/                   Admin activity logging
+
+config/                      Platform, payment, and funding config
+database/                    Migrations and seeders
+resources/views/             Public, auth, app, admin, dashboard views
+routes/                      Web routes and webhook routes
+```
+
+---
+
+## Provider Layer
+
+LshopBridge uses a clean provider structure so live APIs can be added without rebuilding the platform.
+
+```text
+PaymentProvider Contract
+        |
+PaymentManager
+        |
+MtnMomoProvider
+OrangeMoneyProvider
+FlutterwaveProvider
+CryptoProvider
+CardProvider
+```
+
+Each provider handles charge creation, webhook verification, transaction status updates, response mapping, and failure handling.
+
+---
+
+## Funding Engine
+
+```text
+payment_pending
+        |
+payment_successful
+        |
+funding_processing
+        |
+funding_successful
+```
+
+Other possible statuses:
+
+* funding_failed
+* refunded
+* manual_review
+* cancelled
+
+Live Alipay or WeChat funding must be handled through a licensed cross-border payout partner or PSP.
+
+---
+
+## Setup
+
+Scaffolded with **Laravel Herd**, but any PHP 8.3+ environment works.
 
 ```bash
 composer install
@@ -89,93 +237,129 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# SQLite — zero config (database/database.sqlite is auto-created)
 php artisan migrate:fresh --seed
 php artisan storage:link
 
-npm run build          # or: npm run dev
+npm run build
 php artisan serve
 ```
 
-Open http://localhost:8000.
+Open:
 
-The seeders create a demo account for each role (user, agent, admin, super admin). No
-password is stored in the repo — `migrate:fresh --seed` generates a random one and prints
-it to the console (or set `DEMO_PASSWORD` in `.env` to pin it).
-
----
-
-## 🧪 Sandbox vs Live
-
-Everything runs in **sandbox** by default (`PROVIDER_MODE=sandbox`) — no real money, no
-external calls. In sandbox a charge returns a **signed webhook payload** that is replayed
-through the *real* `WebhookController` pipeline (`SandboxSimulator`), so you see the full
-automation end‑to‑end offline. Phone OTP codes are shown on screen (sandbox only).
-
-### Going live
-1. Put real credentials in `.env` (never commit them):
-   `MTN_MOMO_*`, `ORANGE_MONEY_*`, `FLUTTERWAVE_*`, `CRYPTO_GATEWAY_*`, `CARD_GATEWAY_*`,
-   `ALIPAY_FUNDING_*`.
-2. Flip each provider to **live** in **Admin → Providers** (or set `PROVIDER_MODE=live`).
-3. Implement the `// TODO[live]` sections (clearly marked) in:
-   - `app/Services/Payments/Providers/*` (real charge calls + webhook parsing)
-   - `app/Services/Funding/Providers/AlipayFundingProvider.php` (payout partner API)
-4. Point each provider's dashboard webhook to:
-   `https://your-domain/webhooks/payments/{provider}`
-
-> **Note on Alipay:** there is no public "send to any Alipay account" API. Live funding must
-> go through a licensed cross‑border payout partner / PSP — wired in `AlipayFundingProvider`.
-
----
-
-## 🗂 Architecture
-
-```
-app/
-  Enums/                     status enums (label() + color() for UI badges)
-  Http/Controllers/          Public / User / Agent / Admin / Webhooks
-  Http/Middleware/           role, active-account, kyc-level gates
-  Models/                    Eloquent models (+ relationships)
-  Notifications/             deposit/funding/kyc/agent/beneficiary events
-  Policies/                  ownership policies
-  Services/
-    Wallet/      WalletService (double-entry ledger)
-    Deposit/     DepositService (manual + automated)
-    Funding/     FundingService (auto-funding engine), FeeCalculator, RateService,
-                 FundingManager, Providers/AlipayFundingProvider
-    Payments/    PaymentManager, WebhookProcessor, SandboxSimulator,
-                 Contracts/, DTO/, Providers/ (MoMo, Orange, Flutterwave, Crypto, Card)
-    Risk/        RiskEngine
-    Kyc/         LimitService
-    Settings/    SettingsService (cached, DB-backed)
-    Audit/       AuditLogger
-config/   platform.php · payments.php · funding.php
-database/ migrations (25) · seeders (8)
-resources/views/  components · layouts (public/auth/app/admin) · public · dashboard · agent · admin
-routes/   web.php · webhooks.php (stateless, CSRF-exempt, signature-verified)
+```text
+http://localhost:8000
 ```
 
-## 🔐 Security
-CSRF protection, login throttling, rate‑limited OTP, 2FA‑ready user fields, private document
-storage, signature‑verified + idempotent webhooks, audit + risk logging, KYC‑based limits,
-and role/policy authorization (super admin passes all gates).
+---
 
-## ⚠️ Disclaimer
-This is a production‑*structured* foundation with **mock/sandbox** payment & funding
-integrations. Before processing real money you must complete the live API integrations,
-obtain the required payment/PSP licences and partner agreements, and have the legal pages
-(Terms, Privacy, Refund) reviewed.
+## Sandbox vs Live
+
+LshopBridge runs in sandbox mode by default.
+
+```env
+PROVIDER_MODE=sandbox
+```
+
+Sandbox mode includes mock payments, mock funding, signed webhook simulation, real wallet settlement, real funding lifecycle, and no real external money movement.
+
+### Going Live
+
+Add real provider credentials to `.env`.
+
+```env
+MTN_MOMO_*
+ORANGE_MONEY_*
+FLUTTERWAVE_*
+CRYPTO_GATEWAY_*
+CARD_GATEWAY_*
+ALIPAY_FUNDING_*
+```
+
+Set providers to live.
+
+```env
+PROVIDER_MODE=live
+```
+
+Complete the live API sections in:
+
+```text
+app/Services/Payments/Providers/*
+app/Services/Funding/Providers/AlipayFundingProvider.php
+```
+
+Point provider dashboards to:
+
+```text
+https://your-domain.com/webhooks/payments/{provider}
+```
 
 ---
 
-## 📄 License
+## Security
 
-**All rights reserved.** This repository is public for portfolio and evaluation purposes
-only. No part of this codebase may be copied, modified, distributed, or used to build a
-derivative product without prior written permission from the author.
+LshopBridge includes security features expected from a financial platform.
+
+* CSRF protection
+* Login throttling
+* Rate-limited OTP
+* Role-based access control
+* Policy-based authorization
+* Private document storage
+* Secure file streaming
+* Signature-verified webhooks
+* Idempotent webhook handling
+* Double-entry wallet ledger
+* Row-locked wallet updates
+* Audit logging
+* Risk queue
+* KYC-based limits
+* Manual review support
 
 ---
 
-<div align="center">
+## Roadmap
 
-</div>
+| Feature                 | Status  |
+| ----------------------- | ------- |
+| Wallet System           | Done    |
+| Deposit System          | Done    |
+| Funding Engine          | Done    |
+| Agent Marketplace       | Done    |
+| Digital Shop            | Done    |
+| KYC System              | Done    |
+| Admin Panel             | Done    |
+| Sandbox Providers       | Done    |
+| Live Alipay Partner API | Planned |
+| Live WeChat Partner API | Planned |
+| Mobile App              | Planned |
+| Merchant API            | Planned |
+| AI Fraud Detection      | Planned |
+
+---
+
+## Disclaimer
+
+This project is production-structured but currently uses sandbox and mock providers.
+
+Before processing real money, you must complete live API integrations, obtain the required licenses, work with licensed PSPs or payout partners, complete compliance checks, and review Terms, Privacy Policy, and Refund Policy with legal counsel.
+
+---
+
+## License
+
+**All Rights Reserved.**
+
+This repository is public for portfolio and evaluation purposes only.
+
+No part of this codebase may be copied, modified, distributed, sold, or used to create a derivative product without prior written permission from the author.
+
+---
+
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=700&size=20&duration=3000&pause=1000&color=C1121F&center=true&vCenter=true&width=800&lines=LshopBridge.;The+financial+bridge+between+Africa+and+China.;Built+with+Laravel%2C+Tailwind+CSS+and+secure+fintech+architecture." />
+</p>
+
+<p align="center">
+  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=150&section=footer&color=gradient&customColorList=12,20,22,24,30"/>
+</p>
