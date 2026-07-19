@@ -18,7 +18,7 @@
     <div class="mt-4 flex items-start gap-4">
         <span class="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-brand-600 text-xl font-bold text-white">
             @if ($agent->logo_path)<img src="{{ Storage::url($agent->logo_path) }}" class="h-full w-full object-cover" alt="">@else{{ strtoupper(substr($agent->business_name, 0, 2)) }}@endif
-            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 bg-emerald-500" style="border-color: var(--bg);"></span>
+            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 {{ $agent->isOnline() ? 'bg-emerald-500' : 'bg-slate-400' }}" style="border-color: var(--bg);" title="{{ $agent->isOnline() ? __('Online now') : __('Offline') }}"></span>
         </span>
         <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -124,7 +124,7 @@
 
     <div class="mt-10 mb-4 rounded-2xl border border-app card-solid p-6 text-center">
         <h3 class="font-bold text-strong">{{ __('Ready to work with :name?', ['name' => $agent->business_name]) }}</h3>
-        <p class="mt-1 text-sm text-muted">{{ __('Start a conversation from your dashboard — share your order and get a quote.') }}</p>
+        <p class="mt-1 text-sm text-muted">{{ __('Start a conversation from your dashboard, share your order and get a quote.') }}</p>
         <a href="{{ $contactUrl }}" class="btn btn-primary mt-4 px-6 py-2.5">{{ __('Contact') }} {{ $agent->business_name }}</a>
     </div>
 </section>

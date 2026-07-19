@@ -26,11 +26,16 @@
                 <div class="sm:col-span-2"><label class="label">Redeem instructions</label><textarea name="redeem_instructions" rows="2" class="field">{{ old('redeem_instructions', $product->redeem_instructions) }}</textarea></div>
             </div>
 
-            <div class="flex flex-wrap gap-5">
+            <div class="flex flex-wrap items-center gap-5">
                 <label class="flex items-center gap-2 text-sm text-body"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $product->is_active ?? true)) class="rounded"> Active</label>
                 <label class="flex items-center gap-2 text-sm text-body"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $product->is_featured ?? false)) class="rounded"> Featured</label>
                 <label class="flex items-center gap-2 text-sm text-body"><input type="checkbox" name="is_best_deal" value="1" @checked(old('is_best_deal', $product->is_best_deal ?? false)) class="rounded"> Best deal</label>
+                <div class="flex items-center gap-2">
+                    <label class="label mb-0 whitespace-nowrap" for="sort">Popularity rank</label>
+                    <input id="sort" name="sort" type="number" value="{{ old('sort', $product->sort ?? 0) }}" class="field !w-24">
+                </div>
             </div>
+            <p class="-mt-2 text-xs text-faint">{{ __('Lower number = shows first in "Popular right now" on the user dashboard (among Featured products).') }}</p>
 
             {{-- Variants --}}
             <div class="border-t border-app pt-4">

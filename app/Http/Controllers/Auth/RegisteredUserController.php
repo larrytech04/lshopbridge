@@ -17,7 +17,10 @@ class RegisteredUserController extends Controller
 {
     public function create(): View
     {
-        return view('auth.register', ['countries' => Country::active()->get()]);
+        return view('auth.register', [
+            'countries' => Country::active()->get(),
+            'ref' => request()->query('ref'),
+        ]);
     }
 
     public function store(RegisterRequest $request, Turnstile $turnstile)
@@ -25,6 +28,8 @@ class RegisteredUserController extends Controller
         if (! $turnstile->verify($request)) {
             return back()->withInput()->with('error', 'Please complete the bot-protection challenge.');
         }
+
+        $referrer = $request->filled('ref') ? User::where('referral_code', $request->string('ref'))->value('id') : null;
 
         $user = User::create([
             'name' => $request->name,
@@ -34,6 +39,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => UserRole::User->value,
             'kyc_level' => 0,
+            'referred_by' => $referrer,
         ]);
 
         $user->primaryWallet();

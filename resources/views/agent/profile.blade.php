@@ -13,7 +13,7 @@
             <div><label class="label">{{ __('WeChat') }}</label><input name="wechat" value="{{ old('wechat', $agent->wechat) }}" class="field"></div>
             <div><label class="label">{{ __('Warehouse country') }}</label>
                 <select name="warehouse_country_id" class="field">
-                    <option value="">—</option>
+                    <option value="">, </option>
                     @foreach ($countries as $c)<option value="{{ $c->id }}" @selected($agent->warehouse_country_id == $c->id)>{{ $c->name }}</option>@endforeach
                 </select>
             </div>

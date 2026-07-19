@@ -32,7 +32,7 @@
                         <div>
                             <label class="label">{{ $label }}</label>
                             <input name="fields[{{ $field }}]" class="field" autocomplete="off"
-                                   placeholder="{{ !empty($has[$field]) ? '•••••••• (set — leave blank to keep)' : 'Not set' }}">
+                                   placeholder="{{ !empty($has[$field]) ? '•••••••• (set, leave blank to keep)' : 'Not set' }}">
                         </div>
                     @endforeach
                 </div>
@@ -72,7 +72,7 @@
                 <div class="mt-3 grid gap-3 sm:grid-cols-3">
                     <div><label class="label">Provider</label><input name="sms_provider" value="{{ setting('sms_provider') }}" class="field" placeholder="twilio"></div>
                     <div><label class="label">API key</label><input name="sms_api_key" class="field" autocomplete="off" placeholder="{{ setting('sms_api_key') ? '•••• set' : 'Not set' }}"></div>
-                    <div><label class="label">Sender ID</label><input name="sms_sender" value="{{ setting('sms_sender') }}" class="field" placeholder="PAYBRIDGE"></div>
+                    <div><label class="label">Sender ID</label><input name="sms_sender" value="{{ setting('sms_sender') }}" class="field" placeholder="LSHOPBRIDGE"></div>
                 </div>
             </div>
 

@@ -25,7 +25,7 @@
         ] as [$label, $count, $url, $icon])
             <a href="{{ $url }}" class="glass glass-hover rounded-2xl p-4">
                 <div class="flex items-center justify-between">
-                    <x-icon :name="$icon" class="h-5 w-5 text-brand-200" />
+                    <x-icon :name="$icon" class="h-5 w-5 text-slate-400" />
                     @if ($count > 0)<span class="grid h-6 min-w-6 place-items-center rounded-full bg-rose-500/90 px-1.5 text-xs font-bold text-strong">{{ $count }}</span>@endif
                 </div>
                 <p class="mt-3 text-sm text-muted">{{ $label }}</p>

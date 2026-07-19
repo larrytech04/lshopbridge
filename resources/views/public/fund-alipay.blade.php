@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        {{-- Funding calculator — the rich glass card (moved from the homepage hero) --}}
+        {{-- Funding calculator, the rich glass card (moved from the homepage hero) --}}
         <div class="glass-strong relative overflow-hidden rounded-3xl p-6 shadow-2xl ring-1 ring-app sm:rounded-[2rem] sm:p-8"
              x-data="feeCalculator({ amount: 100000, rate: {{ $rate }}, feePercent: {{ (float) setting('display_fee_percent', 2.5) }}, feeFixed: 0, baseCurrency: '{{ config('platform.base_currency') }}', targetCurrency: '{{ config('platform.target_currency') }}' })">
             <div class="flex items-center justify-between">

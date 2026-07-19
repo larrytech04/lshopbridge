@@ -29,7 +29,7 @@ class PaymentSeeder extends Seeder
         $methods = [
             ['code' => 'mtn_momo', 'name' => 'MTN Mobile Money', 'type' => 'momo', 'provider_code' => 'mtn_momo', 'is_automated' => true, 'requires_proof' => false, 'min_amount' => 500, 'sort' => 1, 'description' => 'Instant top-up via MTN MoMo.'],
             ['code' => 'orange_money', 'name' => 'Orange Money', 'type' => 'momo', 'provider_code' => 'orange_money', 'is_automated' => true, 'requires_proof' => false, 'min_amount' => 500, 'sort' => 2, 'description' => 'Instant top-up via Orange Money.'],
-            ['code' => 'flutterwave', 'name' => 'Card (Flutterwave)', 'type' => 'card', 'provider_code' => 'flutterwave', 'is_automated' => true, 'requires_proof' => false, 'min_amount' => 1000, 'sort' => 3, 'description' => 'Pay with debit/credit card.'],
+            ['code' => 'flutterwave', 'name' => 'Card', 'type' => 'card', 'provider_code' => 'flutterwave', 'is_automated' => true, 'requires_proof' => false, 'min_amount' => 1000, 'sort' => 3, 'description' => 'Pay with debit/credit card.'],
             ['code' => 'crypto', 'name' => 'Crypto (USDT)', 'type' => 'crypto', 'provider_code' => 'crypto', 'is_automated' => true, 'requires_proof' => false, 'min_amount' => 1000, 'sort' => 4, 'description' => 'Pay with USDT and other crypto.'],
             ['code' => 'bank_transfer', 'name' => 'Bank transfer', 'type' => 'bank', 'provider_code' => null, 'is_automated' => false, 'requires_proof' => true, 'min_amount' => 1000, 'sort' => 5, 'description' => 'Transfer to our bank account and upload proof.', 'instructions' => "Transfer to the bank account shown, using your name as reference, then upload the receipt."],
         ];

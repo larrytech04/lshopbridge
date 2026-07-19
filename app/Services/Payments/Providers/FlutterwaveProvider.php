@@ -8,7 +8,7 @@ use App\Services\Payments\DTO\WebhookResult;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Flutterwave — card + mobile money collections (Standard / Charges API).
+ * Flutterwave, card + mobile money collections (Standard / Charges API).
  * Docs: https://developer.flutterwave.com/
  *
  * Flutterwave signs webhooks by sending your "secret hash" verbatim in the

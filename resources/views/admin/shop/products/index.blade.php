@@ -22,7 +22,7 @@
                 @forelse ($products as $p)
                     <tr class="border-t border-app">
                         <td class="px-5 py-3"><p class="font-medium text-strong">{{ $p->name }}</p><p class="text-xs text-faint">{{ $p->brand }} · {{ $p->sales_count }} sold</p></td>
-                        <td class="px-5 py-3 text-body">{{ $p->category->name ?? '—' }}</td>
+                        <td class="px-5 py-3 text-body">{{ $p->category->name ?? '-' }}</td>
                         <td class="px-5 py-3 text-body">{{ ucfirst($p->type) }}</td>
                         <td class="px-5 py-3 text-body">{{ $p->variants_count }}</td>
                         <td class="px-5 py-3">

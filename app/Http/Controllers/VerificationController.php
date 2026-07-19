@@ -30,10 +30,15 @@ class VerificationController extends Controller
             'country_id' => ['required', 'exists:countries,id'],
             'city' => ['required', 'string', 'max:120'],
             'address' => ['required', 'string', 'max:255'],
+            'occupation' => ['required', 'string', 'max:120'],
+            'source_of_funds' => ['required', 'in:salary,business,savings,investments,gifts,other'],
+            'is_pep' => ['required', 'accepted'],
             'id_front' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'id_back' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'selfie' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
             'proof_of_address' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+        ], [
+            'is_pep.accepted' => 'Please confirm the PEP declaration to continue.',
         ]);
 
         $user = $request->user();
@@ -46,6 +51,10 @@ class VerificationController extends Controller
             'country_id' => $data['country_id'],
             'city' => $data['city'],
             'address' => $data['address'],
+            'occupation' => $data['occupation'],
+            'source_of_funds' => $data['source_of_funds'],
+            // The checkbox means "I confirm I am NOT a PEP", accepted means false.
+            'is_pep' => false,
             'status' => 'pending',
             'target_level' => 2,
         ]);

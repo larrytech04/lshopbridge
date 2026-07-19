@@ -1,5 +1,5 @@
 @extends('layouts.public')
-@section('title', setting('site_name', config('platform.name')).' — Fund Alipay & China wallets from Africa')
+@section('title', setting('site_name', config('platform.name')).', Fund Alipay & China wallets from Africa')
 
 @section('content')
 @php
@@ -10,9 +10,26 @@
     $defaultAmount = max(1, round(50000 * $dispRate));
 @endphp
 
+{{-- Wraps BOTH leopard-bg sections (hero + services carousel) so the floating glass
+     bubbles can roam across the whole leopard-skin area, not just the hero box. --}}
+<div class="relative overflow-hidden">
+    {{-- Floating glass bubbles: drift on their own, "glass" (blur/brighten) whatever they
+         pass over via backdrop-filter, and nudge away from the cursor when it gets close. --}}
+    <div class="bubble-float-1 pointer-events-none absolute left-[6%] top-10 z-20 hidden sm:block" aria-hidden="true">
+        <div x-data="pushBubble()" @mousemove.window="push($event)" :style="`transform: translate(${dx}px, ${dy}px)`"
+             class="glass-bubble h-[90px] w-[90px] overflow-hidden rounded-full transition-transform duration-500 ease-out">
+            <img src="{{ asset('assets/'.rawurlencode('hero glassy.jpeg')) }}" alt="" class="h-full w-full object-cover" loading="lazy">
+        </div>
+    </div>
+
 {{-- HERO --}}
 <section data-hero class="leopard relative mx-auto max-w-none px-4 pt-6 sm:px-6 lg:pt-10">
-    <div class="animate-fade-up mx-auto flex max-w-3xl flex-col items-center text-center">
+    {{-- Mobile/tablet: same graphic used as a faint background layer instead of a foreground card --}}
+    <div class="pointer-events-none absolute inset-x-0 top-20 z-0 flex justify-end overflow-hidden opacity-20 sm:top-24 lg:hidden" aria-hidden="true">
+        <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt="" class="h-56 w-auto sm:h-72" loading="lazy">
+    </div>
+
+    <div class="animate-fade-up relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
         @php
             // Built from fragments so the line breaks differ by viewport (both 3 lines):
             //   desktop → "Your All-in-One Hub for" / "China Funding &" / "Digital Shop"
@@ -30,7 +47,7 @@
             @mouseleave="mx = '-200px'; my = '-200px'"
             :style="`--mx:${mx}; --my:${my}`">{!! $heroHtml !!}<span class="hero-spot-red" aria-hidden="true">{!! $heroHtml !!}</span></h1>
         <p class="mx-auto mt-4 max-w-xl text-base text-body sm:mt-5 sm:text-lg">
-            {{ $hero ? __($hero->subtitle) : __('Top up with MoMo, bank, card or crypto and we deliver to any China wallet automatically — plus shop gift cards, eSIMs, VPN & more, delivered in minutes.') }}
+            {{ $hero ? __($hero->subtitle) : __('Top up with MoMo, bank, card or crypto and we deliver to any China wallet automatically, plus shop gift cards, eSIMs, VPN & more, delivered in minutes.') }}
         </p>
         <div class="mt-8 flex flex-nowrap items-center justify-center gap-2 sm:gap-3">
             <a href="{{ $hero->cta_url ?? route('register') }}"
@@ -44,14 +61,27 @@
         </div>
     </div>
 
+    {{-- Decorative "pinpoint" graphic, bottom-right accent (desktop+), no card. The target
+         pops up and each label reveals in a stagger on hover; positions are % of the image
+         itself so they track correctly at any size. --}}
+    <div class="group absolute bottom-0 right-0 hidden lg:block lg:w-[420px] xl:w-[480px]">
+        <div class="relative transition-transform duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-105">
+            <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt=""
+                 class="h-auto w-full" loading="lazy">
+            <span class="delay-100 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-orange-600 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
+            <span class="delay-200 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-teal-600 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 67%; left: 68%; right: 11%;">{{ __('Digital shop') }}</span>
+            <span class="delay-300 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-slate-700 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
+            <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-sky-600 opacity-0 transition-all delay-500 duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 87.5%; left: 68%; right: 11%;">{{ __('Secure & fast') }}</span>
+        </div>
+    </div>
 </section>
 
-{{-- SERVICES CAROUSEL — sits on the leopard bg (no box), reacts on entry with a delay --}}
+{{-- SERVICES CAROUSEL, sits on the leopard bg (no box), reacts on entry with a delay --}}
 @php
     $svc = collect([
         ['Trading-Currency-Exchange--Streamline-Ultimate.png', __('Fund Alipay, WeChat Pay and more'), __('Send to any China wallet, delivered automatically.'), route('public.fund'), 'E-Wallet-Transaction--Streamline-Brooklyn.png'],
         ['Earth-Search--Streamline-Ultimate.png', __('210+ countries covered'), __('Travel eSIMs and local top-ups in over 210 destinations.'), route('shop.category', 'esims'), 'Currencies-World--Streamline-Brooklyn.png'],
-        ['Gift-Rectangle-With-Bow--Streamline-Ultimate.png', __('Gift cards'), __('Amazon, Apple, Steam & more — delivered instantly.'), route('shop.category', 'gift-cards'), 'Gift-Cards-1--Streamline-Brooklyn.png'],
+        ['Gift-Rectangle-With-Bow--Streamline-Ultimate.png', __('Gift cards'), __('Amazon, Apple, Steam & more, delivered instantly.'), route('shop.category', 'gift-cards'), 'Gift-Cards-1--Streamline-Brooklyn.png'],
         ['Vpn-Shield--Streamline-Ultimate.png', __('Secure VPN'), __('Fast, private VPN for all your devices.'), route('shop.category', 'gc-digital-apps'), 'Security-3--Streamline-Brooklyn.png'],
         ['Products-Shopping-Bags--Streamline-Ultimate.png', __('Digital Marketplace'), __('Gift cards, data, gaming & streaming.'), route('shop.index'), 'Market-1--Streamline-Brooklyn.png'],
         ['Leave-Review-1--Streamline-Brooklyn.png', __('Trusted reviews'), __('Real ratings & reviews from verified buyers.'), route('agents.index'), 'Testimonial-2--Streamline-Brooklyn.png'],
@@ -83,7 +113,7 @@
         </template>
     </div>
 
-    {{-- Mobile: one service at a time — full pill with the writing inside, crossfading --}}
+    {{-- Mobile: one service at a time, full pill with the writing inside, crossfading --}}
     <div class="relative mx-auto h-24 max-w-sm sm:hidden" :class="shown ? 'carousel-soft' : 'opacity-0'">
         <template x-for="(s, i) in services" :key="'m'+i">
             <a :href="s.url" :title="s.title" x-show="i === active"
@@ -104,8 +134,9 @@
         </template>
     </div>
 </section>
+</div>
 
-{{-- ALL-IN-ONE HUB — the two pillars: China funding + digital goods --}}
+{{-- ALL-IN-ONE HUB, the two pillars: China funding + digital goods --}}
 <section class="mx-auto mt-16 max-w-none px-4 sm:mt-24 sm:px-6" x-data="{ shown: false }" x-intersect.once="shown = true">
     <div class="mb-10 text-center sm:mb-14">
         <h2 class="text-2xl font-black leading-[1.12] tracking-tight text-strong sm:text-4xl lg:text-5xl"
@@ -127,7 +158,7 @@
             <span class="grid h-12 w-12 place-items-center text-strong sm:h-14 sm:w-14"><x-img-icon name="Cashless-Payment-Cad-Top-Up-Wallet-Add--Streamline-Ultimate.png" class="h-9 w-9 sm:h-10 sm:w-10" /></span>
             <p class="mt-4 text-[11px] font-bold uppercase tracking-wider text-brand-500">{{ __('Fund') }}</p>
             <h3 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Fund China wallets') }}</h3>
-            <p class="mt-2 text-sm text-muted">{{ __('Move money into any China wallet in minutes — pay locally, we deliver in CNY.') }}</p>
+            <p class="mt-2 text-sm text-muted">{{ __('Move money into any China wallet in minutes, pay locally, we deliver in CNY.') }}</p>
             <ul class="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 text-sm text-body sm:grid-cols-2">
                 @foreach (['Live exchange rates', 'Instant auto-funding', 'Alipay, WeChat Pay and more', 'Transparent fees', 'Funds delivered in minutes', 'Track every order live'] as $f)
                     <li class="flex items-start gap-2.5"><span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center text-strong"><x-icon name="check" class="h-3.5 w-3.5" /></span> {{ __($f) }}</li>
@@ -142,7 +173,7 @@
             <span class="grid h-12 w-12 place-items-center text-strong sm:h-14 sm:w-14"><x-img-icon name="Products-Shopping-Bags--Streamline-Ultimate.png" class="h-9 w-9 sm:h-10 sm:w-10" /></span>
             <p class="mt-4 text-[11px] font-bold uppercase tracking-wider text-brand-500">{{ __('Shop') }}</p>
             <h3 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Shop digital goods') }}</h3>
-            <p class="mt-2 text-sm text-muted">{{ __('Gift cards, eSIMs, top-ups, apps & games — delivered to your account instantly.') }}</p>
+            <p class="mt-2 text-sm text-muted">{{ __('Gift cards, eSIMs, top-ups, apps & games, delivered to your account instantly.') }}</p>
             <div class="mt-4 grid grid-cols-2 gap-2">
                 @foreach ([['Gift Cards','Gift-Rectangle-With-Bow--Streamline-Ultimate.png','gift-cards'],['eSIMs','Sim-Card-2--Streamline-Ultimate.png','esims'],['Digital Apps','Vpn-Shield--Streamline-Ultimate.png','gc-digital-apps'],['Games','Vr-360-Remote-Controller--Streamline-Ultimate.png','gc-games']] as [$lbl, $ic, $cat])
                     <a href="{{ route('shop.category', $cat) }}" class="group/cat flex items-center gap-2.5 rounded-xl surface px-3 py-2.5 text-sm font-medium text-body ring-1 ring-app transition hover:-translate-y-0.5 hover:ring-brand-400/40">
@@ -209,49 +240,9 @@
 @endif
 
 {{-- TRAVEL eSIMs --}}
-@php
-    $esimPlans = $esimProducts->flatMap(fn ($p) => $p->variants->where('is_active', true)->map(fn ($v) => ['p' => $p, 'v' => $v]))->take(8);
-@endphp
-@if ($esimPlans->count())
-<section class="mx-auto mt-16 max-w-none px-4 sm:px-6" x-data="{ scroll(d) { $refs.esimRow.scrollBy({ left: d * $refs.esimRow.clientWidth * 0.8, behavior: 'smooth' }) } }">
-    <div class="flex items-end justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-strong sm:text-3xl">{{ cms('cms_home_esim_title', __('Global travel eSIMs')) }}</h2>
-            <p class="mt-1 max-w-2xl text-sm text-muted sm:text-base">{{ cms('cms_home_esim_subtitle', __('Get a data eSIM for 190+ countries — installed in minutes, no physical SIM. Choose a plan below.')) }}</p>
-        </div>
-        <div class="flex shrink-0 items-center gap-2">
-            <button type="button" @click="scroll(-1)" aria-label="{{ __('Previous') }}" class="grid h-9 w-9 place-items-center rounded-full border border-app surface text-muted transition hover:text-strong"><x-icon name="chevron-right" class="h-4 w-4 rotate-180" /></button>
-            <button type="button" @click="scroll(1)" aria-label="{{ __('Next') }}" class="grid h-9 w-9 place-items-center rounded-full border border-app surface text-muted transition hover:text-strong"><x-icon name="chevron-right" class="h-4 w-4" /></button>
-            <a href="{{ route('shop.category', 'esims') }}" class="ml-1 text-sm font-semibold text-brand-500 hover:text-brand-600">{{ __('See all') }} →</a>
-        </div>
-    </div>
-    <div x-ref="esimRow" class="no-scrollbar mt-6 flex snap-x gap-4 overflow-x-auto pb-2">
-        @foreach ($esimPlans as $plan)
-            @php $p = $plan['p']; $v = $plan['v']; @endphp
-            <div class="flex w-60 shrink-0 snap-start flex-col rounded-2xl surface border border-app p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:w-64">
-                <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="inline-flex items-center gap-1.5 rounded-full surface-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-body ring-1 ring-app"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span> {{ $p->region ?: 'eSIM' }}</span>
-                    <span class="inline-flex items-center gap-1.5 rounded-full surface-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-body ring-1 ring-app"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> {{ __('Data') }}</span>
-                </div>
-                <h3 class="mt-3 text-lg font-extrabold text-strong">{{ $v->name }}</h3>
-                <div class="my-3 border-t border-app"></div>
-                <ul class="space-y-2.5 text-sm text-body">
-                    <li class="flex items-center gap-2.5"><x-icon name="signal" class="h-4 w-4 shrink-0 text-muted" /> {{ $v->data_amount ?: $v->name }} {{ __('of data') }}</li>
-                    @if ($v->validity_days)<li class="flex items-center gap-2.5"><x-icon name="clock" class="h-4 w-4 shrink-0 text-muted" /> {{ $v->validity_days }} {{ __('day validity') }}</li>@endif
-                    <li class="flex items-center gap-2.5"><x-icon name="globe" class="h-4 w-4 shrink-0 text-muted" /> {{ $p->region ?: __('Global') }} {{ __('coverage') }}</li>
-                    <li class="flex items-center gap-2.5"><x-icon name="check" class="h-4 w-4 shrink-0 text-muted" /> {{ __('Instant eSIM delivery') }}</li>
-                </ul>
-                <div class="mt-auto flex items-end justify-between pt-4">
-                    <a href="{{ route('shop.show', $p) }}" class="text-sm font-semibold text-brand-600 hover:text-brand-700">{{ __('See more') }}</a>
-                    <span class="text-xl font-extrabold text-strong">{{ disp($v->price) }}</span>
-                </div>
-            </div>
-        @endforeach
-    </div>
-</section>
-@endif
+@include('partials.esim-carousel', ['esimProducts' => $esimProducts])
 
-{{-- FEATURES — expanding accordion (hover a panel to reveal its details) --}}
+{{-- FEATURES, expanding accordion (hover a panel to reveal its details) --}}
 @php
     $features = [
         ['shield', 'Bank-grade security', 'KYC tiers, encrypted documents, audit logs and automatic fraud screening on every transaction.', 'network', 'Security-Shield-Rate-Stars--Streamline-Freehand.png'],
@@ -325,7 +316,7 @@
     </div>
 </section>
 
-{{-- REVIEWS — flipping Trustpilot/Google summary + auto-scrolling testimonials --}}
+{{-- REVIEWS, flipping Trustpilot/Google summary + auto-scrolling testimonials --}}
 @php
     $gword = '<span class="g-wordmark"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span>';
     $avatarPalette = [['#ffe4e6','#e11d48'],['#e0f2fe','#0284c7'],['#d1fae5','#059669'],['#ede9fe','#7c3aed'],['#fef3c7','#b45309'],['#e0e7ff','#4f46e5'],['#ccfbf1','#0d9488'],['#fae8ff','#c026d3']];
@@ -335,7 +326,7 @@
         ['Paynes J.', 'Apr 3, 2026', 'trustpilot', 4.5, true, 'Great service: fast delivery. Highly recommend it!'],
         ['Thomas Kane', 'Jan 22, 2026', 'google', 5, false, 'Perfect transaction using BTC for Tracfone refill cards.'],
         ['Dmitry S.', 'Nov 9, 2025', 'google', 4.8, true, 'Fantastic service, funded my Alipay in minutes.'],
-        ['Aïcha Diallo', 'Sep 14, 2025', 'trustpilot', 5, true, 'Topped up WeChat Pay with MoMo — super easy and quick.'],
+        ['Aïcha Diallo', 'Sep 14, 2025', 'trustpilot', 5, true, 'Topped up WeChat Pay with MoMo, super easy and quick.'],
         ['Kwame Mensah', 'Jul 28, 2025', 'google', 4.5, false, 'Best rates I found for sending money to China. Recommended.'],
         ['Linh Tran', 'May 5, 2025', 'trustpilot', 4.7, true, 'Bought an eSIM for my trip and it worked instantly.'],
         ['Samuel O.', 'Mar 19, 2025', 'google', 4, true, 'Gift card delivered in seconds. Will definitely use again.'],
@@ -343,14 +334,14 @@
         ['Jean-Paul N.', 'Dec 12, 2024', 'google', 4.5, true, 'Funded my 1688 supplier without any stress. Great job.'],
         ['Grace Achieng', 'Oct 30, 2024', 'trustpilot', 5, true, 'Customer support replied fast and helped me right away.'],
         ['Mohammed Al-Amin', 'Sep 8, 2024', 'google', 4.3, false, 'Smooth Alipay top-up and a great exchange rate.'],
-        ['Chen Wei', 'Aug 21, 2024', 'trustpilot', 4.5, true, 'Used USDT to buy a gift card — no issues at all.'],
+        ['Chen Wei', 'Aug 21, 2024', 'trustpilot', 4.5, true, 'Used USDT to buy a gift card, no issues at all.'],
         ['Ngozi Eze', 'Jul 4, 2024', 'google', 5, true, 'Everything worked exactly as promised. Five stars.'],
         ['David Mwangi', 'Jun 15, 2024', 'trustpilot', 4, false, 'Quick delivery and fair pricing. Solid platform.'],
         ['Sofia Rossi', 'May 1, 2024', 'google', 4.8, true, 'Easy to set up and fund Alipay as a foreigner.'],
         ['Ahmed Sani', 'Apr 10, 2024', 'trustpilot', 5, true, 'Funded WeChat Pay in under five minutes. Impressive.'],
         ['Blessing Okafor', 'Mar 2, 2024', 'google', 4.5, false, 'Honestly the easiest way I have found to pay in China.'],
         ['Yuki Tanaka', 'Feb 14, 2024', 'trustpilot', 4.7, true, 'Great rates and instant eSIM delivery. Thank you!'],
-        ['Pierre Dubois', 'Jan 20, 2024', 'google', 5, true, 'Trustworthy platform — I have used it many times now.'],
+        ['Pierre Dubois', 'Jan 20, 2024', 'google', 5, true, 'Trustworthy platform, I have used it many times now.'],
         ['Amara Okoye', 'Jan 5, 2024', 'trustpilot', 4.5, false, 'Smooth experience from start to finish. Highly recommend.'],
     ];
 @endphp
@@ -439,10 +430,10 @@
 </section>
 @endif
 
-{{-- INTEGRATIONS CATALOG — wallets & digital-product providers we integrate --}}
+{{-- INTEGRATIONS CATALOG, wallets & digital-product providers we integrate --}}
 @php
     // Centered receding rows: a large glossy front line of 8, with the rest falling back behind it.
-    $integRow4 = ['orange', 'airtel', 'mpesa', 'discord', 'binance']; // furthest back — the leftover few
+    $integRow4 = ['orange', 'airtel', 'mpesa', 'discord', 'binance']; // furthest back, the leftover few
     $integRow3 = ['flutterwave', 'telegram', 'playstation', 'xbox', 'pubg', 'freefire'];
     $integRow2 = ['netflix', 'googleplay', 'spotify', 'paypal', 'mtn', 'usdt', 'ebay', 'steam'];
     $integFront = ['alipay', 'wechatpay', 'unionpay', 'qq', 'amazon', 'visa', 'mastercard', 'apple']; // front line of 8
@@ -453,7 +444,7 @@
     </div>
     {{-- Wider floor breaks out of the text column so the rows spread across the scene --}}
     <div class="integ-floor relative mx-auto mt-12 flex max-w-[120rem] flex-col items-center px-4 sm:mt-16 sm:px-6">
-        {{-- Row 4 — furthest back, smallest & dimmest (the leftover few) --}}
+        {{-- Row 4, furthest back, smallest & dimmest (the leftover few) --}}
         <div class="flex flex-wrap justify-center gap-2 opacity-35 blur-[1.2px] sm:gap-5 lg:gap-10">
             @foreach ($integRow4 as $app)
                 <x-app-logo :name="$app" class="h-6 w-6 shrink-0 sm:h-9 sm:w-9" />
@@ -471,7 +462,7 @@
                 <x-app-logo :name="$app" class="h-8 w-8 shrink-0 sm:h-11 sm:w-11 lg:h-12 lg:w-12" />
             @endforeach
         </div>
-        {{-- Front line — 8 logos, largest, glossy with reflection (closest) --}}
+        {{-- Front line, 8 logos, largest, glossy with reflection (closest) --}}
         <div class="relative z-10 -mt-1 flex flex-wrap justify-center gap-1 sm:-mt-2 sm:gap-4 lg:gap-10">
             @foreach ($integFront as $app)
                 <x-app-logo :name="$app" class="integ-tile h-9 w-9 shrink-0 sm:h-12 sm:w-12 lg:h-16 lg:w-16" />

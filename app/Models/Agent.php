@@ -37,6 +37,11 @@ class Agent extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function isOnline(): bool
+    {
+        return $this->user?->isOnline() ?? false;
+    }
+
     public function warehouseCountry(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'warehouse_country_id');

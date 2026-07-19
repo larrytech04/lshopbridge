@@ -11,7 +11,7 @@
             <div><label class="label">Name</label><input name="name" value="{{ old('name', $method->name) }}" required class="field"></div>
             <div><label class="label">Type</label><select name="type" class="field">@foreach (['momo','bank','crypto','card'] as $t)<option value="{{ $t }}" @selected(($method->type ?? '')===$t)>{{ ucfirst($t) }}</option>@endforeach</select></div>
             <div><label class="label">Provider code (for automation)</label>
-                <select name="provider_code" class="field"><option value="">— None (manual) —</option>@foreach (array_keys(config('payments.providers')) as $code)<option value="{{ $code }}" @selected(($method->provider_code ?? '')===$code)>{{ $code }}</option>@endforeach</select>
+                <select name="provider_code" class="field"><option value="">None (manual), </option>@foreach (array_keys(config('payments.providers')) as $code)<option value="{{ $code }}" @selected(($method->provider_code ?? '')===$code)>{{ $code }}</option>@endforeach</select>
             </div>
             <div class="sm:col-span-2"><label class="label">Description</label><input name="description" value="{{ old('description', $method->description) }}" class="field"></div>
             <div class="sm:col-span-2"><label class="label">Manual instructions</label><textarea name="instructions" rows="2" class="field">{{ old('instructions', $method->instructions) }}</textarea></div>

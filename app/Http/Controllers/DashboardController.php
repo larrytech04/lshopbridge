@@ -37,7 +37,7 @@ class DashboardController extends Controller
             'transactions' => $wallet->transactions()->take(6)->get(),
             'beneficiaries' => $user->beneficiaryAccounts()->get(),
             'recentOrders' => $user->shopOrders()->with('items')->latest()->take(3)->get(),
-            'popular' => ShopProduct::active()->where('is_featured', true)->with('variants')->take(6)->get(),
+            'popular' => ShopProduct::active()->where('is_featured', true)->orderBy('sort')->with('variants')->take(6)->get(),
             'shopCategories' => ShopCategory::active()->whereNull('parent_id')->take(8)->get(),
             'level' => KycLevel::where('level', $user->kyc_level)->first(),
             'nextLevel' => KycLevel::where('level', $user->kyc_level + 1)->first(),

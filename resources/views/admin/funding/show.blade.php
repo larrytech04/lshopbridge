@@ -24,7 +24,7 @@
             <div><dt class="text-faint">Paid via</dt><dd class="text-body">{{ ucfirst(str_replace('_',' ',$funding->funding_source)) }}</dd></div>
             <div><dt class="text-faint">Charged</dt><dd class="text-body">{{ money($funding->total_charged, $funding->source_currency) }} (fee {{ money($funding->fee,$funding->source_currency) }})</dd></div>
             <div><dt class="text-faint">Rate</dt><dd class="text-body">{{ rtrim(rtrim(number_format($funding->exchange_rate,6),'0'),'.') }}</dd></div>
-            <div><dt class="text-faint">Provider ref</dt><dd class="font-mono text-xs text-body">{{ $funding->provider_reference ?? '—' }}</dd></div>
+            <div><dt class="text-faint">Provider ref</dt><dd class="font-mono text-xs text-body">{{ $funding->provider_reference ?? '-' }}</dd></div>
             <div><dt class="text-faint">Created</dt><dd class="text-body">{{ $funding->created_at->format('M j, Y H:i') }}</dd></div>
         </dl>
         @if ($funding->receipt_path)<a href="{{ route('files.show', ['kind'=>'funding-receipt','id'=>$funding->id]) }}" target="_blank" class="mt-3 inline-flex items-center gap-1 text-sm text-brand-300"><x-icon name="eye" class="h-4 w-4" /> Receipt</a>@endif

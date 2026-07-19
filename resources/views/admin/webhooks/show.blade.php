@@ -11,12 +11,12 @@
             <x-status-badge :status="$event->status" />
         </div>
         <dl class="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
-            <div><dt class="text-faint">Event type</dt><dd class="text-body">{{ $event->event_type ?? '—' }}</dd></div>
-            <div><dt class="text-faint">Reference</dt><dd class="font-mono text-xs text-body">{{ $event->reference ?? '—' }}</dd></div>
+            <div><dt class="text-faint">Event type</dt><dd class="text-body">{{ $event->event_type ?? '-' }}</dd></div>
+            <div><dt class="text-faint">Reference</dt><dd class="font-mono text-xs text-body">{{ $event->reference ?? '-' }}</dd></div>
             <div><dt class="text-faint">Signature valid</dt><dd>{{ $event->signature_valid ? 'Yes' : 'No' }}</dd></div>
             <div><dt class="text-faint">IP</dt><dd class="text-body">{{ $event->ip }}</dd></div>
-            <div><dt class="text-faint">Processed at</dt><dd class="text-body">{{ optional($event->processed_at)->format('M j, Y H:i') ?? '—' }}</dd></div>
-            <div><dt class="text-faint">Related</dt><dd class="text-body">{{ class_basename($event->related_type ?? '') ?: '—' }} #{{ $event->related_id }}</dd></div>
+            <div><dt class="text-faint">Processed at</dt><dd class="text-body">{{ optional($event->processed_at)->format('M j, Y H:i') ?? '-' }}</dd></div>
+            <div><dt class="text-faint">Related</dt><dd class="text-body">{{ class_basename($event->related_type ?? '') ?: '-' }} #{{ $event->related_id }}</dd></div>
         </dl>
         @if ($event->error)<div class="mt-3 rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm text-rose-200">{{ $event->error }}</div>@endif
     </x-glass-card>

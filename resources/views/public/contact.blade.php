@@ -5,7 +5,7 @@
 <section class="mx-auto max-w-2xl px-4 pt-20 sm:px-6">
     <div class="text-center">
         <h1 class="text-4xl font-extrabold text-strong sm:text-5xl">{{ __('Get in touch') }}</h1>
-        <p class="mt-4 text-lg text-body">{{ __('Questions, partnerships or support — we’re here to help.') }}</p>
+        <p class="mt-4 text-lg text-body">{{ __('Questions, partnerships or support, we’re here to help.') }}</p>
     </div>
 
     <div class="glass mt-10 rounded-3xl p-8">

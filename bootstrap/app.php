@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureKycLevel;
 use App\Http\Middleware\EnsureUserRole;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TouchLastSeen;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -33,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Apply the visitor's chosen UI language on every request.
         $middleware->appendToGroup('web', SetLocale::class);
+
+        // Lightweight presence heartbeat, used for agent online/offline status.
+        $middleware->appendToGroup('web', TouchLastSeen::class);
 
         // Provider webhooks are verified by signature, not CSRF tokens.
         $middleware->validateCsrfTokens(except: [

@@ -21,7 +21,7 @@
                         <tr class="hover:bg-white/[0.02]">
                             <td class="px-5 py-3 font-mono text-xs text-muted">{{ $d->reference }}</td>
                             <td class="px-5 py-3 text-body">{{ $d->user->name }}</td>
-                            <td class="px-5 py-3 text-body">{{ $d->paymentMethod->name ?? '—' }} @if($d->is_automated)<span class="pill bg-emerald-500/15 text-emerald-300">auto</span>@endif</td>
+                            <td class="px-5 py-3 text-body">{{ $d->paymentMethod->name ?? '-' }} @if($d->is_automated)<span class="pill bg-emerald-500/15 text-emerald-300">auto</span>@endif</td>
                             <td class="px-5 py-3 font-semibold text-strong">{{ money($d->net_amount, $d->currency) }}</td>
                             <td class="px-5 py-3"><x-status-badge :status="$d->status" /></td>
                             <td class="px-5 py-3 text-right"><a href="{{ route('admin.deposits.show', $d) }}" class="text-brand-300 hover:text-brand-200">Open →</a></td>

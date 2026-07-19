@@ -12,7 +12,7 @@
                 <div>
                     <h2 class="text-xl font-bold text-strong">{{ $user->name }}</h2>
                     <p class="text-sm text-muted">{{ $user->email }} · {{ $user->phone }}</p>
-                    <p class="text-xs text-faint">{{ $user->country->name ?? '—' }} · Joined {{ $user->created_at->format('M Y') }}</p>
+                    <p class="text-xs text-faint">{{ $user->country->name ?? '-' }} · Joined {{ $user->created_at->format('M Y') }}</p>
                 </div>
             </div>
             <div class="mt-4 flex flex-wrap gap-2">

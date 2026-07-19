@@ -8,6 +8,7 @@
 
 <form method="POST" action="{{ route('register') }}" class="space-y-4">
     @csrf
+    @if ($ref ?? null)<input type="hidden" name="ref" value="{{ $ref }}">@endif
     <div>
         <label class="label" for="name">{{ __('Full name') }}</label>
         <input id="name" name="name" value="{{ old('name') }}" required autofocus class="field" placeholder="{{ __('Jane Doe') }}">

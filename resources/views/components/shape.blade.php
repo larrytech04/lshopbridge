@@ -1,6 +1,6 @@
 @props(['name'])
 @php
-    // Large decorative geometric shapes for the feature panels — flat/cel-shaded
+    // Large decorative geometric shapes for the feature panels, flat/cel-shaded
     // (solid fills at varying opacity for depth, no gradients). Uses currentColor.
     $shapes = [
         'arrow'   => '<path d="M28 90 C 28 52, 52 32, 90 32" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-opacity="0.22"/><path d="M72 22 L98 30 L88 56 Z" fill="currentColor" fill-opacity="0.28"/>',

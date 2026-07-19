@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', setting('site_name', config('platform.name')).' — '.config('platform.tagline'))</title>
+    <title>@yield('title', setting('site_name', config('platform.name')).', '.config('platform.tagline'))</title>
     @include('partials.theme-head')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
@@ -23,5 +23,6 @@
 
     @include('partials.shell-footer')
     @include('partials.onboarding')
+    @include('partials.welcome-intro')
 </body>
 </html>

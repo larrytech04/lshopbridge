@@ -1,4 +1,4 @@
-@props(['href', 'icon' => 'home', 'img' => null, 'raw' => false, 'active' => false])
+@props(['href', 'icon' => 'home', 'img' => null, 'raw' => false, 'active' => false, 'trailing' => null])
 
 <a href="{{ $href }}" {{ $attributes->merge(['class' => 'nav-item '.($active ? 'nav-item-active' : '')]) }}>
     @if ($img && $raw)
@@ -8,5 +8,6 @@
     @else
         <x-icon :name="$icon" class="h-5 w-5 shrink-0" />
     @endif
-    <span>{{ $slot }}</span>
+    <span class="flex-1 truncate text-left">{{ $slot }}</span>
+    @isset($trailing){{ $trailing }}@endisset
 </a>

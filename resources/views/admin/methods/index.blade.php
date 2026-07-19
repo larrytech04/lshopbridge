@@ -12,7 +12,7 @@
                     <tr>
                         <td class="px-5 py-3 font-medium text-strong">{{ $m->name }} <span class="text-xs text-faint">{{ $m->code }}</span></td>
                         <td class="px-5 py-3 text-body">{{ ucfirst($m->type) }}</td>
-                        <td class="px-5 py-3 text-body">{{ $m->provider_code ?? '—' }}</td>
+                        <td class="px-5 py-3 text-body">{{ $m->provider_code ?? '-' }}</td>
                         <td class="px-5 py-3">@if($m->is_automated)<span class="pill bg-emerald-500/15 text-emerald-300">Automated</span>@else<span class="pill bg-amber-500/15 text-amber-300">Manual</span>@endif</td>
                         <td class="px-5 py-3">@if($m->is_active)<span class="pill bg-emerald-500/15 text-emerald-300">Yes</span>@else<span class="pill bg-slate-400/15 text-body">No</span>@endif</td>
                         <td class="px-5 py-3 text-right"><div class="flex justify-end gap-3"><a href="{{ route('admin.methods.edit', $m) }}" class="text-brand-300">Edit</a><form method="POST" action="{{ route('admin.methods.destroy', $m) }}" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="text-rose-300">Delete</button></form></div></td>

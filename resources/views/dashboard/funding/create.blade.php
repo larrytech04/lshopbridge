@@ -26,7 +26,7 @@
             <label class="label">{{ __('Recipient China wallet') }}</label>
             <select name="beneficiary_account_id" required class="field">
                 @foreach ($beneficiaries as $b)
-                    <option value="{{ $b->id }}" @selected(old('beneficiary_account_id') == $b->id)>{{ $b->app_type->label() }} — {{ $b->account_name }} ({{ $b->account_id }})</option>
+                    <option value="{{ $b->id }}" @selected(old('beneficiary_account_id') == $b->id)>{{ $b->app_type->label() }}, {{ $b->account_name }} ({{ $b->account_id }})</option>
                 @endforeach
             </select>
             <a href="{{ route('beneficiaries.index') }}" class="mt-2 inline-block text-xs text-brand-300 hover:text-brand-200">{{ __('+ Add another China wallet') }}</a>
@@ -75,7 +75,7 @@
                 </select>
             </div>
 
-            <p x-show="insufficient" x-cloak class="mt-3 text-sm text-rose-300">{{ __('Insufficient wallet balance — top up or pay directly.') }}</p>
+            <p x-show="insufficient" x-cloak class="mt-3 text-sm text-rose-300">{{ __('Insufficient wallet balance, top up or pay directly.') }}</p>
         </x-glass-card>
 
         <button class="btn btn-primary w-full py-3" :disabled="insufficient">

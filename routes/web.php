@@ -42,6 +42,7 @@ use App\Http\Controllers\LearningController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecureFileController;
+use App\Http\Controllers\SecurityController;
 
 // Agent
 use App\Http\Controllers\Agent\AgentDashboardController;
@@ -164,6 +165,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Command palette search (Ctrl/Cmd+K)
+    Route::get('/search', [\App\Http\Controllers\SearchController::class, 'search'])->name('search');
+
     // Wallet + transactions
     Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
@@ -181,7 +185,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/beneficiaries/{beneficiary}/default', [BeneficiaryController::class, 'makeDefault'])->name('beneficiaries.default');
     Route::delete('/beneficiaries/{beneficiary}', [BeneficiaryController::class, 'destroy'])->name('beneficiaries.destroy');
 
-    // Funding (China wallet) — requires verified phone (KYC level 1+)
+    // Funding (China wallet), requires verified phone (KYC level 1+)
     Route::get('/fund', [FundingController::class, 'index'])->name('funding.index');
     Route::get('/fund/new', [FundingController::class, 'create'])->middleware('kyc:1')->name('funding.create');
     Route::post('/fund/quote', [FundingController::class, 'quote'])->name('funding.quote');
@@ -205,6 +209,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/marketplace/{agent:slug}', [MarketplaceController::class, 'show'])->name('marketplace.show');
     Route::post('/marketplace/{agent:slug}/contact', [MarketplaceController::class, 'contact'])->name('marketplace.contact');
     Route::post('/marketplace/{agent:slug}/review', [MarketplaceController::class, 'review'])->name('marketplace.review');
+    Route::post('/marketplace/leads/{lead}/message', [MarketplaceController::class, 'sendMessage'])->name('marketplace.leads.message');
+    Route::get('/marketplace/leads/{lead}/poll', [MarketplaceController::class, 'pollMessages'])->name('marketplace.leads.poll');
+    Route::post('/marketplace/leads/{lead}/complete', [MarketplaceController::class, 'confirmComplete'])->name('marketplace.leads.complete');
 
     // Learning center (in dashboard)
     Route::get('/learn', [LearningController::class, 'index'])->name('learning.index');
@@ -219,6 +226,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::put('/profile/shortcuts', [ProfileController::class, 'updateShortcuts'])->name('profile.shortcuts');
+    Route::post('/profile/shortcuts/reset', [ProfileController::class, 'resetShortcuts'])->name('profile.shortcuts.reset');
+    Route::get('/referrals', [ProfileController::class, 'referrals'])->name('referrals.index');
+    Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
+    Route::put('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences');
+    Route::delete('/profile', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
+
+    // Security Center
+    Route::get('/security', [SecurityController::class, 'index'])->name('security.index');
+    Route::put('/security/pin', [SecurityController::class, 'updatePin'])->name('security.pin');
+    Route::post('/security/forgot-password', [SecurityController::class, 'forgotPassword'])->name('security.forgot-password');
 
     // Secure private file streaming (KYC docs, proofs, receipts)
     Route::get('/files/{kind}/{id}', [SecureFileController::class, 'show'])->name('files.show');
@@ -243,7 +261,10 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
     Route::post('/verification', [AgentVerificationController::class, 'store'])->name('verification.store');
     Route::resource('rates', ShippingRateController::class)->except(['show', 'create', 'edit']);
     Route::get('/leads', [AgentLeadController::class, 'index'])->name('leads.index');
+    Route::get('/leads/{lead}', [AgentLeadController::class, 'show'])->name('leads.show');
     Route::put('/leads/{lead}', [AgentLeadController::class, 'update'])->name('leads.update');
+    Route::post('/leads/{lead}/message', [AgentLeadController::class, 'sendMessage'])->name('leads.message');
+    Route::get('/leads/{lead}/poll', [AgentLeadController::class, 'pollMessages'])->name('leads.poll');
     Route::get('/reviews', [AgentReviewController::class, 'index'])->name('reviews.index');
 });
 
@@ -310,7 +331,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->name('ad
     Route::resource('banners', AdminBannerController::class)->except(['show', 'create', 'edit']);
     Route::resource('pages', AdminPageController::class)->except(['show']);
 
-    // Site content (CMS) — editable front-end text blocks
+    // Site content (CMS), editable front-end text blocks
     Route::get('content', [\App\Http\Controllers\Admin\ContentController::class, 'index'])->name('content.index');
     Route::put('content', [\App\Http\Controllers\Admin\ContentController::class, 'update'])->name('content.update');
 

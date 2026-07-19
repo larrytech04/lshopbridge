@@ -36,12 +36,15 @@ class DepositController extends Controller
         $data = $request->validate([
             'payment_method_id' => ['required', 'exists:payment_methods,id'],
             'amount' => ['required', 'numeric', 'min:1'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'tx_hash' => ['nullable', 'string', 'max:120'],
             'proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         $user = $request->user();
         $method = PaymentMethod::active()->findOrFail($data['payment_method_id']);
         $amount = (float) $data['amount'];
+        $phone = $data['phone'] ?? $user->phone;
 
         if ($method->max_amount && $amount > (float) $method->max_amount) {
             return back()->withErrors(['amount' => 'Amount exceeds the maximum for this method.'])->withInput();
@@ -54,9 +57,12 @@ class DepositController extends Controller
 
         // Automated collection: charge via provider, settle via webhook.
         if ($method->is_automated && $method->provider_code && $automationOn) {
+            // tx_hash only applies to crypto methods; harmless null for the rest.
+            // Stored in payer_details now so a future on-chain verifier/API can read it.
             $result = $this->deposits->createAutomated($user, $method, $amount, [
-                'phone' => $user->phone,
+                'phone' => $phone,
                 'email' => $user->email,
+                'tx_hash' => $data['tx_hash'] ?? null,
             ]);
 
             // Live hosted-checkout providers return a redirect URL.
@@ -72,14 +78,14 @@ class DepositController extends Controller
             return redirect()->route('deposit.show', $deposit)->with(
                 $deposit->status->value === 'confirmed' ? 'success' : 'info',
                 $deposit->status->value === 'confirmed'
-                    ? 'Payment confirmed automatically — your wallet has been credited.'
+                    ? 'Payment confirmed automatically, your wallet has been credited.'
                     : 'Payment initiated. We are awaiting provider confirmation.'
             );
         }
 
         // Manual flow: create under review; admin confirms (proof optional).
         $deposit = $this->deposits->createManual($user, $method, $amount, $request->file('proof'), [
-            'phone' => $request->input('phone', $user->phone),
+            'phone' => $phone,
         ]);
 
         return redirect()->route('deposit.show', $deposit)

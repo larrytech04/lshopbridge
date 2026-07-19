@@ -60,7 +60,7 @@ class SettingController extends Controller
             $settings->set($key, $value, $type, 'general');
         }
 
-        // SMTP password is a secret — store encrypted, and only update when a new
+        // SMTP password is a secret, store encrypted, and only update when a new
         // value is provided (blank means "keep the existing one").
         if (filled($request->input('mail_password'))) {
             $settings->set('mail_password', Crypt::encryptString($request->input('mail_password')), 'string', 'general');

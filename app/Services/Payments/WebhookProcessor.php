@@ -12,7 +12,7 @@ use App\Services\Shop\ShopService;
 /**
  * Hardened inbound webhook handler. Every event is:
  *   1. logged (webhook_events) before anything else,
- *   2. deduplicated via (provider_code, event_id) — idempotent,
+ *   2. deduplicated via (provider_code, event_id), idempotent,
  *   3. signature-verified against the provider secret,
  *   4. matched to a PaymentIntent by our reference,
  *   5. settled (credit wallet / advance funding) exactly once.
@@ -33,7 +33,7 @@ class WebhookProcessor
     {
         $payload = json_decode($rawBody, true) ?: [];
 
-        // Unknown provider — log and ignore.
+        // Unknown provider, log and ignore.
         if (! $this->payments->exists($providerCode)) {
             return WebhookEvent::create([
                 'provider_code' => $providerCode,
@@ -50,7 +50,7 @@ class WebhookProcessor
         $result = $provider->parseWebhook($payload);
         $eventId = $result->eventId ?: 'sha_'.substr(hash('sha256', $rawBody), 0, 32);
 
-        // (2) Idempotency — one row per (provider, event_id).
+        // (2) Idempotency, one row per (provider, event_id).
         $event = WebhookEvent::firstOrCreate(
             ['provider_code' => $providerCode, 'event_id' => $eventId],
             [

@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * IMPORTANT: There is no public "send money to any Alipay account" API. In
  * production this integrates with a licensed cross-border payout partner /
  * PSP that settles into Alipay/WeChat. This class is the single seam where that
- * partner API is wired — keep all partner specifics here.
+ * partner API is wired, keep all partner specifics here.
  *
  * Sandbox mode simulates an instant, successful payout so the end-to-end
  * automation (payment -> auto-funding) is fully demonstrable offline.
@@ -62,7 +62,7 @@ class AlipayFundingProvider implements FundingProvider
         return new FundingResult(
             status: 'succeeded',
             providerReference: 'ALI-'.strtoupper(Str::random(14)),
-            receipt: 'SANDBOX RECEIPT — '.money($request->target_amount, $request->target_currency).' delivered to '.$request->recipient_account,
+            receipt: 'SANDBOX RECEIPT: '.money($request->target_amount, $request->target_currency).' delivered to '.$request->recipient_account,
             message: 'Sandbox payout settled instantly.',
             raw: ['sandbox' => true],
         );

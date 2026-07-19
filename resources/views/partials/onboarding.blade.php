@@ -4,12 +4,12 @@
     $geoDefault = $geo && $obCountries->firstWhere('iso2', $geo) ? $geo : region()['iso'];
 @endphp
 
-<div x-data="onboarding(@js($geoDefault), @js((bool) $geo))" x-init="init()" data-onboard-url="{{ route('locale.onboard') }}">
+<div x-data="onboarding(@js($geoDefault), @js((bool) $geo))" x-on:open-onboarding.window="open = true" data-onboard-url="{{ route('locale.onboard') }}">
     <x-sheet max-width="sm:max-w-md" class="p-5 sm:p-7">
         <div class="text-center">
-            <span class="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-brand-600 text-white"><x-icon name="globe" class="h-5 w-5" /></span>
-            <h3 class="mt-2 text-base font-bold text-strong sm:text-lg">{{ __('Welcome to :app', ['app' => setting('site_name', config('platform.name'))]) }}</h3>
-            <p class="mt-0.5 text-xs text-muted sm:text-sm">{{ __('Set your country, language and theme — you can change these anytime.') }}</p>
+            <span class="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-white p-1.5 ring-1 ring-app"><img src="{{ site_favicon() }}" alt="" class="h-full w-full object-contain"></span>
+            <h3 class="mt-2 text-base font-bold text-strong sm:text-lg">{{ __('Region & language') }}</h3>
+            <p class="mt-0.5 text-xs text-muted sm:text-sm">{{ __('Set your country, language and theme, you can change these anytime.') }}</p>
         </div>
 
         <div class="mt-4 space-y-3 text-left">
@@ -33,11 +33,10 @@
                 </select>
             </div>
 
-            {{-- Theme --}}
+            {{-- Theme, smallest form: a tight row of icon-only buttons --}}
             <div>
                 <label class="mb-1 block text-xs font-medium text-muted">{{ __('Theme') }}</label>
                 @php
-                    // Match the header theme-toggle: assets for Light + Extra dark, glyphs for Dark/System.
                     $themeOpts = [
                         'light'  => ['Light-Mode-Dark-Light--Streamline-Ultimate.png', true, __('Light')],
                         'system' => ['monitor', false, __('System')],
@@ -45,13 +44,12 @@
                         'night'  => ['Halloween-Grim-Reaper--Streamline-Ultimate.png', true, __('Extra dark')],
                     ];
                 @endphp
-                <div class="grid grid-cols-2 gap-1 sm:grid-cols-4">
+                <div class="flex items-center gap-1.5">
                     @foreach ($themeOpts as $mode => [$icon, $isAsset, $label])
-                        <button type="button" @click="setTheme('{{ $mode }}')"
-                                class="flex flex-col items-center gap-0.5 rounded-lg border px-1 py-1.5 text-[10px] font-medium leading-tight transition"
+                        <button type="button" @click="setTheme('{{ $mode }}')" title="{{ $label }}" aria-label="{{ $label }}"
+                                class="grid h-7 w-7 shrink-0 place-items-center rounded-full border transition"
                                 :class="theme === '{{ $mode }}' ? 'border-brand-400 surface-2 text-strong' : 'border-app text-body hover:surface'">
                             @if ($isAsset)<x-img-icon :name="$icon" class="h-3.5 w-3.5" />@else<x-icon :name="$icon" class="h-3.5 w-3.5" />@endif
-                            <span class="whitespace-nowrap">{{ $label }}</span>
                         </button>
                     @endforeach
                 </div>

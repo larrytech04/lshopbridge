@@ -1,5 +1,5 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.public')
-@section('title', ($activeTop ? __($activeTop->name).' — ' : '').__('Digital Shop').' · '.config('platform.name'))
+@section('title', ($activeTop ? __($activeTop->name).', ' : '').__('Digital Shop').' · '.config('platform.name'))
 @section('page-title', __('Shop'))
 
 @section('content')
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        {{-- Sidebar (desktop) — categories up, selected category's subcategories open below --}}
+        {{-- Sidebar (desktop), categories up, selected category's subcategories open below --}}
         <aside class="hidden lg:block">
             <div class="glass sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl p-4 ring-1 ring-app">
                 <p class="px-2 text-[11px] font-bold uppercase tracking-wider text-faint">{{ __('Categories') }}</p>
@@ -84,7 +84,7 @@
                 <form method="GET" action="{{ url()->current() }}" class="relative flex-1">
                     @if ($sort !== 'popular')<input type="hidden" name="sort" value="{{ $sort }}">@endif
                     <x-icon name="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
-                    <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Search all products — brands, eSIMs, countries') }}" class="field !rounded-2xl !py-2.5" style="padding-left:2.75rem">
+                    <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="{{ __('Search all products, brands, eSIMs, countries') }}" class="field !rounded-2xl !py-2.5" style="padding-left:2.75rem">
                 </form>
                 <div class="inline-flex shrink-0 items-center gap-1 rounded-2xl p-1 text-xs font-semibold ring-1 ring-app" style="background: color-mix(in srgb, var(--text-strong) 5%, transparent);">
                     @foreach (['popular' => __('Popularity'), 'az' => 'A → Z', 'za' => 'Z → A'] as $key => $label)
@@ -107,4 +107,8 @@
         </div>
     </div>
 </div>
+
+@unless ($activeTop)
+    @include('partials.esim-carousel', ['esimProducts' => $esimProducts, 'transparent' => true])
+@endunless
 @endsection

@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Streams sensitive files from the PRIVATE disk. Documents are never exposed via
- * a public URL — access requires being the owner or an admin. This is the only
+ * a public URL, access requires being the owner or an admin. This is the only
  * path through which KYC IDs, selfies, proofs, receipts and QR codes are served.
  */
 class SecureFileController extends Controller

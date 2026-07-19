@@ -104,7 +104,7 @@ class FundingController extends Controller
     {
         return match ($funding->status->value) {
             'funding_successful' => 'Done! '.money($funding->target_amount, $funding->target_currency).' was delivered automatically.',
-            'funding_processing' => 'Payment received — your China wallet funding is being processed.',
+            'funding_processing' => 'Payment received, your China wallet funding is being processed.',
             'manual_review' => 'Payment received. This request needs a quick manual review and will be completed shortly.',
             default => 'Your funding request has been created.',
         };

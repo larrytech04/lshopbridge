@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  * wallet_transactions, so balances are always reconstructable + auditable.
  *
  * NOTE: amounts are stored as decimal(18,2). For very high volume you'd switch
- * to integer minor units — the service boundary makes that a localised change.
+ * to integer minor units, the service boundary makes that a localised change.
  */
 class WalletService
 {

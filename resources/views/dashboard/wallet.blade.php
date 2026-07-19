@@ -3,28 +3,41 @@
 
 @section('content')
 <div class="space-y-6">
+    <x-page-header :title="__('Wallet')" />
+
     <div class="grid gap-4 sm:grid-cols-3">
-        <div class="relative overflow-hidden rounded-3xl border border-app bg-slate-600/25 p-6 sm:col-span-1">
-            <p class="text-sm text-body">{{ __('Wallet') }}</p>
-            <p class="mt-2 text-3xl font-extrabold text-strong">{{ disp($wallet->balance) }}</p>
-            @if ($wallet->locked_balance > 0)<p class="mt-1 text-xs text-amber-300">{{ disp($wallet->locked_balance) }} on hold</p>@endif
+        <x-wallet-balance-card :wallet="$wallet" />
+        <div class="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm text-muted">{{ __('Total in') }}</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight text-strong">
+                        <span x-data="counter({{ (float) $inflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span> {{ display_currency()['code'] }}
+                    </p>
+                </div>
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-500 text-white"><x-icon name="deposit" class="h-5 w-5" /></span>
+            </div>
         </div>
-        <x-stat label="Total in" :value="$inflow * display_currency()['rate']" :decimals="display_currency()['decimals']" suffix=" {{ display_currency()['code'] }}" :counter="true" icon="deposit" />
-        <x-stat label="Total out" :value="$outflow * display_currency()['rate']" :decimals="display_currency()['decimals']" suffix=" {{ display_currency()['code'] }}" :counter="true" icon="fund" />
+        <div class="rounded-2xl border border-rose-500/25 bg-rose-500/10 p-5">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm text-muted">{{ __('Total out') }}</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight text-strong">
+                        <span x-data="counter({{ (float) $outflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span> {{ display_currency()['code'] }}
+                    </p>
+                </div>
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-rose-500 text-white"><x-icon name="fund" class="h-5 w-5" /></span>
+            </div>
+        </div>
     </div>
 
-    <div class="flex flex-wrap gap-3">
-        <a href="{{ route('deposit.index') }}" class="btn btn-primary"><x-icon name="deposit" class="h-4 w-4" /> {{ __('Add money') }}</a>
-        <a href="{{ route('funding.create') }}" class="btn btn-ghost"><x-icon name="fund" class="h-4 w-4" /> {{ __('Fund Alipay') }}</a>
-    </div>
-
-    <x-glass-card padding="p-0">
+    <div class="rounded-3xl border border-app">
         <div class="flex items-center justify-between p-5">
             <h3 class="font-semibold text-strong">{{ __('Transactions') }}</h3>
-            <a href="{{ route('transactions.index') }}" class="text-sm text-brand-300 hover:text-brand-200">{{ __('Full history') }}</a>
+            <a href="{{ route('transactions.index') }}" class="text-sm text-brand-500 hover:text-brand-600">{{ __('Full history') }}</a>
         </div>
         @include('dashboard.partials.txn-table', ['transactions' => $transactions])
         <div class="p-4">{{ $transactions->links() }}</div>
-    </x-glass-card>
+    </div>
 </div>
 @endsection

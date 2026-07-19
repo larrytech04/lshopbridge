@@ -13,7 +13,7 @@ if (! function_exists('setting')) {
 }
 
 if (! function_exists('site_logo')) {
-    /** URL of the site logo — admin-uploaded if set, else the bundled default. */
+    /** URL of the site logo, admin-uploaded if set, else the bundled default. */
     function site_logo(): string
     {
         $custom = setting('site_logo_path');
@@ -23,10 +23,12 @@ if (! function_exists('site_logo')) {
 }
 
 if (! function_exists('site_favicon')) {
-    /** URL of the favicon — admin-uploaded if set, else falls back to the logo. */
+    /** URL of the favicon, admin-uploaded if set, else the bundled default icon mark. */
     function site_favicon(): string
     {
-        return ($f = setting('site_favicon_path')) ? asset($f) : site_logo();
+        $custom = setting('site_favicon_path');
+
+        return $custom ? asset($custom) : asset('assets/'.rawurlencode('favicon shopbridge.png'));
     }
 }
 
@@ -87,7 +89,7 @@ if (! function_exists('display_currency')) {
 if (! function_exists('disp')) {
     /**
      * Convert a BASE-currency (XAF) amount to the visitor's display currency and
-     * format it. Display-only — the underlying ledger remains in the base currency.
+     * format it. Display-only, the underlying ledger remains in the base currency.
      */
     function disp(int|float|string|null $baseAmount): string
     {
@@ -110,7 +112,7 @@ if (! function_exists('geo_country')) {
     /**
      * Best-effort country ISO2 from the request. Uses Cloudflare's CF-IPCountry
      * header when present (set automatically behind Cloudflare). Returns null if
-     * unknown — the onboarding popup then falls back to a client-side IP lookup.
+     * unknown, the onboarding popup then falls back to a client-side IP lookup.
      */
     function geo_country(): ?string
     {
@@ -134,7 +136,7 @@ if (! function_exists('locales')) {
 
 if (! function_exists('supported_locales')) {
     /**
-     * Languages we ship a full catalog for — the only ones the picker offers.
+     * Languages we ship a full catalog for, the only ones the picker offers.
      * Returns code => native label, ordered as in config.
      */
     function supported_locales(): array
@@ -157,6 +159,39 @@ if (! function_exists('current_locale')) {
     function current_locale(): string
     {
         return app()->getLocale();
+    }
+}
+
+if (! function_exists('guide_category_meta')) {
+    /**
+     * Display metadata for a Learning Center guide category: icon, Tailwind
+     * color name, and label. Platform/app names (1688, Taobao, Alipay, …) are
+     * proper nouns and intentionally left untranslated; only the descriptive
+     * categories are wrapped in __().
+     *
+     * @return array{icon: string, color: string, label: string}
+     */
+    function guide_category_meta(string $category): array
+    {
+        return match ($category) {
+            '1688' => ['icon' => 'building', 'color' => 'amber', 'label' => '1688'],
+            'taobao' => ['icon' => 'bag', 'color' => 'orange', 'label' => 'Taobao'],
+            'tmall' => ['icon' => 'star', 'color' => 'rose', 'label' => 'Tmall'],
+            'pinduoduo' => ['icon' => 'users', 'color' => 'pink', 'label' => 'Pinduoduo'],
+            'jd' => ['icon' => 'gauge', 'color' => 'red', 'label' => 'JD.com'],
+            'xiaohongshu' => ['icon' => 'sparkles', 'color' => 'rose', 'label' => 'Xiaohongshu (RED)'],
+            'weidian' => ['icon' => 'mail', 'color' => 'emerald', 'label' => 'Weidian'],
+            'aliexpress' => ['icon' => 'globe', 'color' => 'sky', 'label' => 'AliExpress'],
+            'dhgate' => ['icon' => 'cart', 'color' => 'amber', 'label' => 'DHgate'],
+            'alipay' => ['icon' => 'wallet', 'color' => 'sky', 'label' => 'Alipay'],
+            'wechatpay' => ['icon' => 'phone', 'color' => 'emerald', 'label' => 'WeChat Pay'],
+            'shipping' => ['icon' => 'truck', 'color' => 'violet', 'label' => __('Shipping & warehouses')],
+            'customs' => ['icon' => 'doc', 'color' => 'slate', 'label' => __('Customs & delivery')],
+            'mistakes' => ['icon' => 'alert', 'color' => 'rose', 'label' => __('Mistakes to avoid')],
+            'orientation' => ['icon' => 'filter', 'color' => 'brand', 'label' => __('Getting started')],
+            'glossary' => ['icon' => 'languages', 'color' => 'sky', 'label' => __('Glossary')],
+            default => ['icon' => 'book', 'color' => 'slate', 'label' => ucfirst($category)],
+        };
     }
 }
 

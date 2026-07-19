@@ -194,7 +194,7 @@ class FundingService
         }
 
         if (! config('platform.automation.funding', true) || ! setting('funding_automation_enabled', true)) {
-            $this->setManualReview($funding, 'Funding automation is disabled — queued for manual processing.');
+            $this->setManualReview($funding, 'Funding automation is disabled, queued for manual processing.');
 
             return;
         }

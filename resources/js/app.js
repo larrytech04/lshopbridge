@@ -8,6 +8,7 @@ import intersect from '@alpinejs/intersect';
 import TomSelect from 'tom-select';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ShortcutManager } from './shortcuts';
 
 Alpine.plugin(collapse);
 Alpine.plugin(intersect);
@@ -128,6 +129,72 @@ function initAutoHideHeader() {
 }
 document.addEventListener('DOMContentLoaded', initAutoHideHeader);
 
+/* --------------------------------------------------- Page navigation skeleton */
+// Shows a full-page skeleton the instant an internal link/form navigates away,
+// across User/Admin/Agent areas, holding briefly (HOLD_MS) before the real
+// navigation so the transition reads as intentional without slowing pages down.
+//
+// We don't know the destination page's real markup yet (full page load, not an
+// SPA), so instead of one generic shape we match the URL against known route
+// patterns and pick the closest-shaped variant to show.
+const SKELETON_VARIANTS = [
+    { variant: 'grid', test: /\/shop(\/c\/[^/]+)?$|\/shipping-agents$|\/marketplace$|\/learn$|\/china-guide$|\/admin\/shop\/products$/ },
+    { variant: 'detail', test: /\/shop\/p\/|\/fund\/\d|\/deposit\/\d|\/shop\/orders\/\d|\/support\/\d|\/marketplace\/[^/]+$|\/china-guide\/[^/]+$|\/learn\/[^/]+$|\/admin\/(users|deposits|funding|agents|disputes|webhooks|kyc)\/\d/ },
+    { variant: 'form', test: /\/deposit$|\/fund\/new$|\/profile$|\/checkout$|\/verification$|\/register|\/login$|\/admin\/(settings|integrations|channels|providers)$/ },
+    { variant: 'list', test: /\/transactions$|\/notifications$|\/beneficiaries$|\/support$|\/shop\/orders$|\/admin\/(users|kyc|deposits|risk|funding|agents|audit|disputes|webhooks|reviews|beneficiaries)$|\/(leads|reviews)$/ },
+    { variant: 'dashboard', test: /\/dashboard$|\/admin\/?$|\/agent\/?$/ },
+];
+const DEFAULT_SKELETON_VARIANT = 'list';
+
+function pickSkeletonVariant(url) {
+    let path;
+    try { path = new URL(url, window.location.origin).pathname; } catch { return DEFAULT_SKELETON_VARIANT; }
+    const match = SKELETON_VARIANTS.find((v) => v.test.test(path));
+    return match ? match.variant : DEFAULT_SKELETON_VARIANT;
+}
+
+function initPageSkeleton() {
+    const el = document.getElementById('page-skeleton');
+    if (!el) return;
+    const variantEls = el.querySelectorAll('[data-skel-variant]');
+    // Short beat before the real navigation starts: long enough that the skeleton
+    // reads as a deliberate transition (not a flash), short enough that skeleton +
+    // actual page load stays around a second total.
+    const HOLD_MS = 500;
+
+    // Restoring from bfcache (browser back/forward) — make sure it's hidden.
+    window.addEventListener('pageshow', (e) => { if (e.persisted) el.classList.remove('is-active'); });
+
+    /** Shows the matching skeleton variant immediately, then performs the real
+     *  navigation after a short hold; the skeleton keeps covering the screen
+     *  until the destination page paints. */
+    const showThenGo = (url, go) => {
+        const variant = pickSkeletonVariant(url);
+        variantEls.forEach((v) => v.classList.toggle('hidden', v.dataset.skelVariant !== variant));
+        requestAnimationFrame(() => el.classList.add('is-active'));
+        setTimeout(go, HOLD_MS);
+    };
+
+    document.addEventListener('click', (e) => {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const a = e.target.closest('a[href]');
+        if (!a || a.hasAttribute('data-no-skeleton') || a.target === '_blank') return;
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+        if (a.origin && a.origin !== window.location.origin) return;
+        e.preventDefault();
+        showThenGo(href, () => { window.location.href = href; });
+    });
+
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (e.defaultPrevented || !(form instanceof HTMLFormElement) || form.hasAttribute('data-no-skeleton')) return;
+        e.preventDefault();
+        showThenGo(form.action || window.location.href, () => form.submit());
+    });
+}
+document.addEventListener('DOMContentLoaded', initPageSkeleton);
+
 /* --------------------------------------------------- Searchable selects */
 // Modern, type-to-filter country/language dropdowns (Tom Select), with flags.
 function flagHtml(iso) {
@@ -163,6 +230,17 @@ function initSelects(root = document) {
         // Translatable placeholder on the bottom search bar.
         if (ts.control_input && el.dataset.search) ts.control_input.placeholder = el.dataset.search;
         el._ts = ts;
+
+        // Header quick-selectors open the full onboarding popup instead of their
+        // own dropdown — capture-phase so this runs before Tom Select's own
+        // control click handling.
+        if (el.dataset.pbselectTrigger === 'onboarding') {
+            ts.wrapper.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent('open-onboarding'));
+            }, true);
+        }
     });
 }
 
@@ -414,8 +492,8 @@ Alpine.data('onboarding', (geoDefault = '', hasGeo = false) => ({
     open: false,
     theme: window.PBTheme ? window.PBTheme.get() : 'system',
     init() {
-        if (localStorage.getItem('pb-onboarded')) return;
-        setTimeout(() => { this.open = true; initSelects(this.$root); }, 600);
+        // Opens only when triggered externally (header country/language pill
+        // dispatches 'open-onboarding' — see the x-on listener in the Blade root).
         // If the server couldn't geolocate, try a client-side IP lookup and
         // preselect the country in the Tom Select control.
         if (!hasGeo) {
@@ -431,15 +509,264 @@ Alpine.data('onboarding', (geoDefault = '', hasGeo = false) => ({
         }
     },
     setTheme(t) { this.theme = t; if (window.PBTheme) window.PBTheme.set(t); },
-    skip() { localStorage.setItem('pb-onboarded', '1'); this.open = false; },
+    skip() { this.open = false; },
     finish() {
-        localStorage.setItem('pb-onboarded', '1');
         const country = this.$root.querySelector('#ob-country')?.value || geoDefault;
         const locale = this.$root.querySelector('#ob-locale')?.value || 'en';
         const base = this.$root.dataset.onboardUrl;
         window.location = `${base}?country=${encodeURIComponent(country)}&locale=${encodeURIComponent(locale)}`;
     },
 }));
+
+Alpine.data('welcomeIntro', (geoDefault = '', hasGeo = false) => ({
+    open: false,
+    init() {
+        if (localStorage.getItem('pb-welcomed')) return;
+        setTimeout(() => { this.open = true; initSelects(this.$root); }, 600);
+        // If the server couldn't geolocate, try a client-side IP lookup and
+        // preselect the country in the Tom Select control.
+        if (!hasGeo) {
+            fetch('https://ipapi.co/json/')
+                .then((r) => r.json())
+                .then((d) => {
+                    const sel = this.$root.querySelector('#wi-country');
+                    if (d && d.country_code && sel && sel.tomselect && sel.querySelector(`option[value="${d.country_code}"]`)) {
+                        sel.tomselect.setValue(d.country_code, true);
+                    }
+                })
+                .catch(() => {});
+        }
+    },
+    skip() { localStorage.setItem('pb-welcomed', '1'); this.open = false; },
+    finish() {
+        localStorage.setItem('pb-welcomed', '1');
+        const country = this.$root.querySelector('#wi-country')?.value || geoDefault;
+        const base = this.$root.dataset.onboardUrl;
+        window.location = `${base}?country=${encodeURIComponent(country)}`;
+    },
+}));
+
+// Floating hero bubbles drift on their own CSS animation; this layers an extra
+// push offset on top so they visibly nudge away from the cursor, then ease back.
+Alpine.data('pushBubble', () => ({
+    dx: 0,
+    dy: 0,
+    push(e) {
+        const rect = this.$el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const distX = cx - e.clientX;
+        const distY = cy - e.clientY;
+        const dist = Math.hypot(distX, distY);
+        const radius = 130;
+        if (dist < radius && dist > 0.01) {
+            const force = (radius - dist) / radius;
+            this.dx = (distX / dist) * force * 45;
+            this.dy = (distY / dist) * force * 45;
+        } else {
+            this.dx = 0;
+            this.dy = 0;
+        }
+    },
+}));
+
+/* ------------------------------------------------------ Keyboard shortcuts */
+const IS_MAC_HELP = /Mac|iPod|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
+// Minimal icon path map for the command palette / help modal, where the icon
+// name comes from server-supplied JSON (not a compile-time Blade component).
+// Paths mirror <x-icon> exactly for the subset of names search results use.
+const SHORTCUT_ICON_PATHS = {
+    wallet: '<path d="M17 8V6.5A1.5 1.5 0 0 0 15.5 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19h12a1.5 1.5 0 0 0 1.5-1.5V10a2 2 0 0 0-2-2H6.5"/><circle cx="16.5" cy="13.5" r="1.1" fill="currentColor" stroke="none"/>',
+    deposit: '<path d="M12 3v11"/><path d="m8 10 4 4 4-4"/><path d="M5 21h14a0 0 0 0 1 0 0"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+    fund: '<path d="M12 21V10"/><path d="m8 14 4-4 4 4"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/>',
+    chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 9l-5 5-3-3-4 4"/>',
+    receipt: '<path d="M5 3v18l2-1 2 1 2-1 2 1 2-1 2 1V3l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    shield: '<path d="M12 3 5 6v5.5c0 4.3 2.9 7.4 7 8.5 4.1-1.1 7-4.2 7-8.5V6l-7-3Z"/><path d="m9.2 12 1.9 1.9 3.7-3.8"/>',
+    users: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6"/><path d="M17.5 14a5 5 0 0 1 3 6"/>',
+    user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+    cog: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+    flag: '<path d="M5 21V4"/><path d="M5 4h11l-1.6 3.2L16 11H5"/>',
+    bell: '<path d="M18 8a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 14 18 8Z"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/>',
+    home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.7V20a1 1 0 0 0 1 1H9.5v-5.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V21h3a1 1 0 0 0 1-1V9.7"/>',
+    book: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6.5A1.5 1.5 0 0 1 5 18.5Z"/><path d="M5 17.5A1.5 1.5 0 0 1 6.5 16H19"/><path d="M9 7.5h6"/>',
+    truck: '<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H14v9.5H3Z"/><path d="M14 8.5h3.5L21 12v2.5h-7Z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 5.5L20 7"/>',
+    bag: '<path d="M6.5 8h11a1 1 0 0 1 1 1.1l-.85 10A2 2 0 0 1 14.66 21H9.34a2 2 0 0 1-1.99-1.9l-.85-10A1 1 0 0 1 6.5 8Z"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"/>',
+    cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.3a1 1 0 0 0 1 .8h8.2a1 1 0 0 0 1-.8L20 7.5H6.2"/>',
+    giftcard: '<rect x="2.5" y="6" width="19" height="13" rx="2.5"/><path d="M2.5 11h19"/><path d="M7 15.5h3"/><path d="M15.5 4.5c1.5 0 1.5 2 0 2s-3 0-3 0 0-2 1.5-2Zm-3 2s-1.5 0-3 0-1.5-2 0-2 3 2 3 2Z"/>',
+};
+
+function shortcutIconSvg(name) {
+    const inner = SHORTCUT_ICON_PATHS[name] || SHORTCUT_ICON_PATHS.bag;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">${inner}</svg>`;
+}
+
+Alpine.store('toast', {
+    items: [],
+    push(message) {
+        const id = Date.now() + Math.random();
+        this.items.push({ id, message });
+        setTimeout(() => { this.items = this.items.filter((t) => t.id !== id); }, 2600);
+    },
+});
+window.addEventListener('shortcut:fired', (e) => Alpine.store('toast').push(e.detail.label));
+
+Alpine.data('commandPalette', (tabs, mostUsed) => ({
+    open: false,
+    q: '',
+    loading: false,
+    groups: [],
+    selectedIndex: -1,
+    tabs,
+    mostUsed,
+
+    openPalette() {
+        this.open = true;
+        this.q = '';
+        this.groups = [];
+        this.selectedIndex = -1;
+        this.$nextTick(() => {
+            // Desktop types into the field above the dropdown; on mobile that field is
+            // hidden (offsetParent null), so focus the dropdown's own input instead.
+            const el = (this.$refs.input && this.$refs.input.offsetParent !== null) ? this.$refs.input : this.$refs.mobileInput;
+            el?.focus();
+        });
+    },
+    close() { this.open = false; },
+    iconSvg(name) { return shortcutIconSvg(name); },
+
+    async search() {
+        if (!this.q) { this.groups = []; return; }
+        this.loading = true;
+        try {
+            const res = await fetch(`/search?q=${encodeURIComponent(this.q)}`);
+            const data = await res.json();
+            this.groups = data.groups || [];
+        } finally {
+            this.loading = false;
+            this.selectedIndex = -1;
+        }
+    },
+
+    /** Flat index across whichever list is currently visible, so arrow keys can move through it. */
+    flatIndex(groupKey, i) {
+        const list = this.q === '' ? [{ key: 'most', items: this.mostUsed }] : this.groups;
+        let idx = 0;
+        for (const g of list) {
+            for (let j = 0; j < g.items.length; j++) {
+                if (g.key === groupKey && j === i) return idx;
+                idx++;
+            }
+        }
+        return -1;
+    },
+    flatList() {
+        const list = this.q === '' ? [{ key: 'most', items: this.mostUsed }] : this.groups;
+        return list.flatMap((g) => g.items);
+    },
+    onGlobalKey(e) {
+        if (!this.open) return;
+        const items = this.flatList();
+        if (e.key === 'ArrowDown') { e.preventDefault(); this.selectedIndex = Math.min(items.length - 1, this.selectedIndex + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); this.selectedIndex = Math.max(0, this.selectedIndex - 1); }
+        else if (e.key === 'Enter') { const it = items[this.selectedIndex]; if (it) window.location = it.url; }
+    },
+}));
+
+/* ----------------------------------------------------- Deposit wizard */
+// 3-step popup: currency + amount -> pick a payment method -> that method's
+// own details (charge phone if automated, destination + proof if manual).
+// A plain server-rendered form the whole way through — only the step shown
+// and which payment methods are offered change client-side.
+Alpine.data('depositWizard', (methods, channels, currencies, userPhone) => ({
+    open: false,
+    step: 1,
+    currency: (methods[0] && methods[0].currency) || (currencies[0] && currencies[0].code) || 'XAF',
+    amount: '',
+    methodId: null,
+    phone: userPhone || '',
+    txHash: '',
+    methods,
+    channels,
+    currencies,
+
+    get methodsForCurrency() { return this.methods.filter((m) => m.currency === this.currency); },
+    get current() { return this.methods.find((m) => m.id === this.methodId) || null; },
+    get channelsForCurrent() { return (this.current && this.channels[this.current.type]) || []; },
+
+    launch() { this.step = 1; this.amount = ''; this.methodId = null; this.open = true; },
+    close() { this.open = false; },
+    selectMethod(id) { this.methodId = id; this.step = 3; },
+}));
+
+/* ----------------------------------------------------- Agent lead chat */
+// Messages are sent via a plain form post (full reload, like the rest of the
+// app); this just polls in the background so replies from the other side
+// show up without the visitor having to refresh the page themselves.
+Alpine.data('leadChat', (leadId, pollUrl, initial) => ({
+    messages: initial.messages,
+    timer: null,
+
+    init() {
+        this.scrollToBottom();
+        this.timer = setInterval(() => this.poll(), 8000);
+        this.$watch('messages', () => this.$nextTick(() => this.scrollToBottom()));
+    },
+    destroy() { clearInterval(this.timer); },
+    async poll() {
+        try {
+            const res = await fetch(pollUrl, { headers: { Accept: 'application/json' } });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.messages.length !== this.messages.length) this.messages = data.messages;
+        } catch (e) { /* transient network error — try again next tick */ }
+    },
+    scrollToBottom() {
+        const el = this.$refs.thread;
+        if (el) el.scrollTop = el.scrollHeight;
+    },
+}));
+
+Alpine.data('shortcutsHelp', (groups) => ({
+    open: false,
+    q: '',
+    groups,
+    init() {
+        window.addEventListener('open-shortcuts-help', () => { this.open = true; this.q = ''; });
+        window.addEventListener('close-overlays', () => { this.open = false; });
+    },
+    close() { this.open = false; },
+    filtered() {
+        if (!this.q) return this.groups;
+        const needle = this.q.toLowerCase();
+        return this.groups
+            .map((g) => ({ ...g, items: g.items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.toLowerCase().includes(needle)) }))
+            .filter((g) => g.items.length > 0);
+    },
+    formatKey(key) {
+        if (key.includes(' ')) {
+            const [a, b] = key.split(' ');
+            return [a.toUpperCase(), 'then', b.toUpperCase()];
+        }
+        return key.split('+').map((part) => {
+            if (part === 'mod') return IS_MAC_HELP ? '⌘' : 'Ctrl';
+            if (part === 'alt') return IS_MAC_HELP ? '⌥' : 'Alt';
+            if (part === 'shift') return 'Shift';
+            if (part === 'esc') return 'Esc';
+            return part.length === 1 ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1);
+        });
+    },
+    copyKey(key) {
+        navigator.clipboard?.writeText(key);
+        Alpine.store('toast').push('Shortcut copied');
+    },
+}));
+
+document.addEventListener('DOMContentLoaded', () => {
+    ShortcutManager.load(window.__SHORTCUTS__ || []);
+    ShortcutManager.init();
+});
 
 window.Alpine = Alpine;
 Alpine.start();

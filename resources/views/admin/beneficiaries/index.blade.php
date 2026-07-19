@@ -19,7 +19,7 @@
                             <td class="px-5 py-3 text-strong">{{ $a->user->name }}</td>
                             <td class="px-5 py-3 text-body">{{ $a->app_type->label() }}</td>
                             <td class="px-5 py-3"><p class="text-body">{{ $a->account_name }}</p><p class="text-xs text-faint">{{ $a->account_id }}</p></td>
-                            <td class="px-5 py-3">@if($a->qr_path)<a href="{{ route('files.show', ['kind'=>'beneficiary-qr','id'=>$a->id]) }}" target="_blank" class="text-brand-300"><x-icon name="eye" class="h-4 w-4" /></a>@else—@endif</td>
+                            <td class="px-5 py-3">@if($a->qr_path)<a href="{{ route('files.show', ['kind'=>'beneficiary-qr','id'=>$a->id]) }}" target="_blank" class="text-brand-300"><x-icon name="eye" class="h-4 w-4" /></a>@else, @endif</td>
                             <td class="px-5 py-3">
                                 @if ($a->status->value === 'pending')
                                     <div class="flex gap-2">

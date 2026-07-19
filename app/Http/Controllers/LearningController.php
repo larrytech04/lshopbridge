@@ -8,6 +8,19 @@ use Illuminate\View\View;
 
 class LearningController extends Controller
 {
+    /** The academy's table of contents: section => ordered category keys. */
+    private function sections(): array
+    {
+        return [
+            'start' => ['orientation'],
+            'platforms' => ['1688', 'taobao', 'tmall', 'pinduoduo', 'jd', 'xiaohongshu', 'weidian', 'aliexpress', 'dhgate'],
+            'payments' => ['alipay', 'wechatpay'],
+            'logistics' => ['shipping', 'customs'],
+            'safety' => ['mistakes'],
+            'reference' => ['glossary'],
+        ];
+    }
+
     public function index(Request $request): View
     {
         $query = Guide::published();
@@ -15,9 +28,18 @@ class LearningController extends Controller
             $query->where('category', $category);
         }
 
+        $guides = $query->get();
+        $sections = $this->sections();
+
+        $grouped = collect($sections)->map(
+            fn ($categories) => $guides->whereIn('category', $categories)->sortBy(fn ($g) => array_search($g->category, $categories))
+        )->filter(fn ($g) => $g->isNotEmpty());
+
         return view('dashboard.learning.index', [
-            'guides' => $query->latest()->paginate(9)->withQueryString(),
+            'grouped' => $grouped,
+            'allCategories' => $guides->pluck('category')->unique()->values(),
             'category' => $category,
+            'totalGuides' => Guide::published()->count(),
         ]);
     }
 
@@ -26,9 +48,18 @@ class LearningController extends Controller
         abort_unless($guide->is_published, 404);
         $guide->increment('views');
 
+        // Sequential prev/next within the guide's own section, so reading feels like a book.
+        $ownSection = collect($this->sections())->first(fn ($cats) => in_array($guide->category, $cats));
+        $siblings = $ownSection
+            ? Guide::published()->whereIn('category', $ownSection)->get()->sortBy(fn ($g) => array_search($g->category, $ownSection))->values()
+            : collect();
+        $pos = $siblings->search(fn ($g) => $g->id === $guide->id);
+
         return view('dashboard.learning.show', [
             'guide' => $guide,
-            'related' => Guide::published()->where('id', '!=', $guide->id)->take(3)->get(),
+            'prev' => $pos !== false && $pos > 0 ? $siblings[$pos - 1] : null,
+            'next' => $pos !== false && $pos < $siblings->count() - 1 ? $siblings[$pos + 1] : null,
+            'related' => Guide::published()->where('id', '!=', $guide->id)->where('category', $guide->category)->take(3)->get(),
         ]);
     }
 }

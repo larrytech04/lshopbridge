@@ -22,8 +22,7 @@ use Illuminate\Support\Str;
 
 /**
  * Digital storefront engine: builds orders from the cart, takes payment (wallet
- * or a provider charge settled by webhook) and delivers the digital goods —
- * pulling from pre-loaded code inventory or auto-generating realistic secrets.
+ * or a provider charge settled by webhook) and delivers the digital goods, * pulling from pre-loaded code inventory or auto-generating realistic secrets.
  */
 class ShopService
 {
@@ -176,7 +175,7 @@ class ShopService
                 $order->items()->create([
                     'shop_product_id' => $v->shop_product_id,
                     'shop_variant_id' => $v->id,
-                    'name' => $v->product->name.' — '.$v->name,
+                    'name' => $v->product->name.', '.$v->name,
                     'type' => $v->product->type,
                     'unit_price' => $v->price,
                     'quantity' => $line['qty'],

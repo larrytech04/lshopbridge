@@ -1,6 +1,6 @@
 {{-- Shown whenever a visitor lands on the gift cards category or a gift-card product page. --}}
 @php $gcCountries = \App\Models\Country::active()->get(['name', 'iso2']); @endphp
-<div x-data="{ open: false }" x-init="if (! sessionStorage.getItem('gc_intro_dismissed') && localStorage.getItem('pb-onboarded')) { open = true }">
+<div x-data="{ open: false }" x-init="if (! sessionStorage.getItem('gc_intro_dismissed')) { open = true }">
     <x-sheet max-width="sm:max-w-xl" class="!p-0">
         {{-- Header banner (solid brand) --}}
         <div class="relative rounded-t-3xl bg-brand-900 px-6 py-6 sm:rounded-t-2xl sm:px-8 sm:py-7">
@@ -11,13 +11,13 @@
             <div class="flex items-center gap-5">
                 <div class="min-w-0 flex-1 pr-10">
                     <h3 class="text-xl font-extrabold leading-tight text-white sm:text-2xl">{{ __('Gift cards for everything you love') }}</h3>
-                    <p class="mt-2 text-sm text-white/80">{{ __('Amazon, Apple, Steam, Google Play, Netflix and more — delivered to your account in seconds.') }}</p>
+                    <p class="mt-2 text-sm text-white/80">{{ __('Amazon, Apple, Steam, Google Play, Netflix and more, delivered to your account in seconds.') }}</p>
                 </div>
                 <img src="{{ asset('assets/'.rawurlencode('gift card small guy1.png')) }}" alt="" class="h-24 w-auto shrink-0 sm:h-32" loading="lazy">
             </div>
         </div>
 
-        {{-- Body (on the card's normal surface — readable in both themes) --}}
+        {{-- Body (on the card's normal surface, readable in both themes) --}}
         <div class="px-6 py-6 sm:px-8 sm:py-7">
             <p class="text-sm text-body">{{ __('Shopping from your country? Switch your region below to see the gift cards available and priced for where you are.') }}</p>
 

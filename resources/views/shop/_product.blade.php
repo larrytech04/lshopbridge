@@ -5,7 +5,7 @@
     $active = $product->variants->where('is_active', true);
     $min = $active->min('price');
     $max = $active->max('price');
-    $priceRange = $min === null ? '—' : ($min == $max ? disp($min) : disp($min).' – '.disp($max));
+    $priceRange = $min === null ? '-' : ($min == $max ? disp($min) : disp($min).' – '.disp($max));
 @endphp
 <a href="{{ route('shop.show', $product) }}" class="glass glass-hover group relative flex flex-col rounded-2xl p-5">
     @if ($product->is_best_deal)

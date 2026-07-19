@@ -10,7 +10,7 @@
             <div>
                 <h2 class="text-xl font-bold text-strong">{{ $agent->business_name }}</h2>
                 <p class="text-sm text-muted">{{ $agent->user->name }} · {{ $agent->user->email }}</p>
-                <p class="text-xs text-faint">{{ $agent->warehouseCountry?->name }} · {{ $agent->warehouse_city }} · Reg #{{ $agent->registration_number ?? '—' }}</p>
+                <p class="text-xs text-faint">{{ $agent->warehouseCountry?->name }} · {{ $agent->warehouse_city }} · Reg #{{ $agent->registration_number ?? '-' }}</p>
             </div>
             <x-status-badge :status="$agent->status" />
         </div>

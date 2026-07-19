@@ -12,9 +12,9 @@
         </div>
         <dl class="mt-5 grid gap-4 sm:grid-cols-2 text-sm">
             <div><dt class="text-faint">User</dt><dd class="text-body">{{ $deposit->user->name }} ({{ $deposit->user->email }})</dd></div>
-            <div><dt class="text-faint">Method</dt><dd class="text-body">{{ $deposit->paymentMethod->name ?? '—' }}</dd></div>
+            <div><dt class="text-faint">Method</dt><dd class="text-body">{{ $deposit->paymentMethod->name ?? '-' }}</dd></div>
             <div><dt class="text-faint">Gross / Fee</dt><dd class="text-body">{{ money($deposit->amount,$deposit->currency) }} / {{ money($deposit->fee,$deposit->currency) }}</dd></div>
-            <div><dt class="text-faint">Provider ref</dt><dd class="font-mono text-xs text-body">{{ $deposit->provider_reference ?? '—' }}</dd></div>
+            <div><dt class="text-faint">Provider ref</dt><dd class="font-mono text-xs text-body">{{ $deposit->provider_reference ?? '-' }}</dd></div>
         </dl>
         @if ($deposit->proof_path)
             <a href="{{ route('files.show', ['kind'=>'deposit-proof','id'=>$deposit->id]) }}" target="_blank" class="mt-4 inline-flex items-center gap-1 text-sm text-brand-300"><x-icon name="eye" class="h-4 w-4" /> View proof of payment</a>

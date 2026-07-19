@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
+use App\Models\AgentLead;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -11,7 +12,7 @@ class MarketplaceController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Agent::approved()->with('warehouseCountry');
+        $query = Agent::approved()->with(['warehouseCountry', 'countries', 'shippingRates', 'user']);
 
         if ($search = $request->query('q')) {
             $query->where('business_name', 'like', "%{$search}%");
@@ -34,9 +35,17 @@ class MarketplaceController extends Controller
     {
         abort_unless($agent->status->value === 'approved', 404);
 
+        $lead = $agent->leads()
+            ->where('user_id', auth()->id())
+            ->where('status', '!=', 'closed')
+            ->latest()
+            ->with('messages.user')
+            ->first();
+
         return view('dashboard.marketplace.show', [
-            'agent' => $agent->load('warehouseCountry', 'countries', 'shippingRates.destinationCountry'),
+            'agent' => $agent->load('warehouseCountry', 'countries', 'shippingRates.destinationCountry', 'user'),
             'reviews' => $agent->reviews()->where('status', 'approved')->with('user')->latest()->take(15)->get(),
+            'lead' => $lead,
         ]);
     }
 
@@ -47,7 +56,7 @@ class MarketplaceController extends Controller
             'message' => ['required', 'string', 'max:1500'],
         ]);
 
-        $agent->leads()->create([
+        $lead = $agent->leads()->create([
             'reference' => reference('PB-LEAD'),
             'user_id' => $request->user()->id,
             'shipping_method' => $data['shipping_method'] ?? null,
@@ -55,7 +64,61 @@ class MarketplaceController extends Controller
             'status' => 'new',
         ]);
 
+        $lead->messages()->create([
+            'user_id' => $request->user()->id,
+            'is_agent' => false,
+            'message' => $data['message'],
+        ]);
+
         return back()->with('success', 'Your request was sent to '.$agent->business_name.'.');
+    }
+
+    public function sendMessage(Request $request, AgentLead $lead)
+    {
+        abort_unless($lead->user_id === $request->user()->id, 403);
+
+        $data = $request->validate([
+            'message' => ['required', 'string', 'max:1500'],
+        ]);
+
+        $lead->messages()->create([
+            'user_id' => $request->user()->id,
+            'is_agent' => false,
+            'message' => $data['message'],
+        ]);
+
+        if ($lead->status === 'new') {
+            $lead->update(['status' => 'contacted']);
+        }
+
+        return back();
+    }
+
+    public function pollMessages(Request $request, AgentLead $lead)
+    {
+        abort_unless($lead->user_id === $request->user()->id, 403);
+
+        return response()->json([
+            'messages' => $lead->messages()->with('user')->get()->map(fn ($m) => [
+                'is_agent' => $m->is_agent,
+                'name' => $m->user->name,
+                'message' => $m->message,
+                'time' => $m->created_at->diffForHumans(),
+            ]),
+            'status' => $lead->status,
+            'customer_confirmed' => (bool) $lead->customer_confirmed_at,
+        ]);
+    }
+
+    public function confirmComplete(Request $request, AgentLead $lead)
+    {
+        abort_unless($lead->user_id === $request->user()->id, 403);
+        abort_if($lead->status === 'closed', 422);
+
+        $lead->customer_confirmed_at = now();
+        $lead->markCompleted();
+
+        return back()->with('success', 'Thanks for confirming, delivery marked as completed.');
     }
 
     public function review(Request $request, Agent $agent)

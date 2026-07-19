@@ -8,8 +8,7 @@ use App\Services\Payments\DTO\WebhookResult;
 
 /**
  * Common surface every collection provider (MoMo, Orange, Flutterwave, crypto,
- * card) implements. Controllers/services never talk to a provider directly —
- * they go through PaymentManager which returns one of these.
+ * card) implements. Controllers/services never talk to a provider directly, * they go through PaymentManager which returns one of these.
  */
 interface PaymentProvider
 {

@@ -19,8 +19,8 @@
                 @forelse ($events as $e)
                     <tr class="hover:bg-white/[0.02]">
                         <td class="px-5 py-3 text-strong">{{ $e->provider_code }}</td>
-                        <td class="px-5 py-3 text-body">{{ $e->event_type ?? '—' }}</td>
-                        <td class="px-5 py-3 font-mono text-xs text-muted">{{ $e->reference ?? '—' }}</td>
+                        <td class="px-5 py-3 text-body">{{ $e->event_type ?? '-' }}</td>
+                        <td class="px-5 py-3 font-mono text-xs text-muted">{{ $e->reference ?? '-' }}</td>
                         <td class="px-5 py-3">@if($e->signature_valid)<span class="text-emerald-300">✓ valid</span>@else<span class="text-rose-300">✕</span>@endif</td>
                         <td class="px-5 py-3"><x-status-badge :status="$e->status" /></td>
                         <td class="px-5 py-3 text-muted">{{ $e->created_at->diffForHumans() }}</td>

@@ -23,7 +23,7 @@ return [
     |--------------------------------------------------------------------------
     | Each key is the `code` stored on payment_methods / payment_providers.
     | The PaymentManager resolves the driver class and hands it this config.
-    | Secrets ALWAYS come from env — never hard-code them here.
+    | Secrets ALWAYS come from env, never hard-code them here.
     */
     'providers' => [
 
@@ -82,8 +82,8 @@ return [
     |--------------------------------------------------------------------------
     | Accepted payment methods (display / logo wall)
     |--------------------------------------------------------------------------
-    | The full set of channels we accept across Africa — most powered by
-    | Flutterwave — shown on the home page, the payment-methods page and the
+    | The full set of channels we accept across Africa, most powered by
+    | Flutterwave, shown on the home page, the payment-methods page and the
     | footer. Each entry is [pay-icon key, display name]; keys map to the
     | <x-pay-icon> component. Display-only (operational channels live in the
     | payment_methods table).

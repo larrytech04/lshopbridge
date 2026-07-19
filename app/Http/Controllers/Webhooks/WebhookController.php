@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Public, stateless endpoint for payment provider webhooks.
- * Excluded from CSRF (see bootstrap/app.php) — authenticity is enforced by the
+ * Excluded from CSRF (see bootstrap/app.php), authenticity is enforced by the
  * provider signature inside WebhookProcessor, never by a session.
  */
 class WebhookController extends Controller

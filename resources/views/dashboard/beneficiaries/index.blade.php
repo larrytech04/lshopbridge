@@ -2,6 +2,8 @@
 @section('page-title', 'China wallets')
 
 @section('content')
+<x-page-header :title="__('China wallets')" />
+
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="lg:col-span-2 space-y-4">
         @forelse ($accounts as $account)
@@ -10,7 +12,7 @@
                     <div class="flex items-center gap-3">
                         <span class="grid h-11 w-11 place-items-center rounded-xl surface text-brand-200"><x-icon name="card" class="h-5 w-5" /></span>
                         <div>
-                            <p class="font-semibold text-strong">{{ $account->app_type->label() }} — {{ $account->account_name }}
+                            <p class="font-semibold text-strong">{{ $account->app_type->label() }}, {{ $account->account_name }}
                                 @if ($account->is_default)<span class="pill ml-1 bg-slate-500/20 text-brand-200 ring-1 ring-brand-400/30">{{ __('Default') }}</span>@endif
                             </p>
                             <p class="text-sm text-muted">{{ $account->account_id }}</p>

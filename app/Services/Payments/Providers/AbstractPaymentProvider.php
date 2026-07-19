@@ -78,7 +78,7 @@ abstract class AbstractPaymentProvider implements PaymentProvider
             status: 'processing',
             providerReference: $providerReference,
             redirectUrl: null,
-            message: 'Sandbox charge accepted — awaiting simulated webhook confirmation.',
+            message: 'Sandbox charge accepted, awaiting simulated webhook confirmation.',
             raw: ['sandbox' => true],
             sandboxWebhook: $payload,
         );

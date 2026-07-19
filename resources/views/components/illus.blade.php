@@ -2,7 +2,7 @@
 
 {{--
   Duotone SVG illustrations rendered in a soft circular glass badge.
-  Hand-built inline — no external assets. Two-tone: brand fill (back) + accent (front).
+  Hand-built inline, no external assets. Two-tone: brand fill (back) + accent (front).
 --}}
 @php
 $art = [

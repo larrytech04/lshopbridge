@@ -4,7 +4,7 @@
         <div class="lg:col-span-2">
             <img src="{{ site_logo() }}" alt="{{ setting('site_name', config('platform.name')) }}" class="h-10 w-auto" />
             <p class="mt-1 text-xs font-semibold text-faint">{{ __('Digital Marketplace') }} · Est. 2026</p>
-            <p class="mt-4 max-w-xs text-sm text-muted">{{ cms('cms_footer_tagline', __('Make payments, fund China wallets, and buy instant digital products — gift cards, eSIMs & VPN — delivered in minutes.')) }}</p>
+            <p class="mt-4 max-w-xs text-sm text-muted">{{ cms('cms_footer_tagline', __('Make payments, fund China wallets, and buy instant digital products, gift cards, eSIMs & VPN, delivered in minutes.')) }}</p>
             <div class="mt-5 flex gap-2">
                 @foreach (['globe','mail','phone','heart'] as $s)
                     <span class="grid h-9 w-9 place-items-center rounded-xl border border-app surface text-muted"><x-icon :name="$s" class="h-4 w-4" /></span>
@@ -51,11 +51,11 @@
 
     <div class="border-t border-app">
         <div class="mx-auto flex max-w-none flex-col items-center justify-between gap-4 px-4 py-6 text-xs text-faint sm:flex-row sm:px-6">
-            <span>© {{ date('Y') }} {{ setting('site_name', config('platform.name')) }}. {{ __('All rights reserved.') }}</span>
             <div class="flex items-center gap-4">
                 <x-theme-toggle variant="full" />
                 <span class="hidden sm:inline">v2.0.0</span>
             </div>
+            <span>© {{ date('Y') }} {{ setting('site_name', config('platform.name')) }}</span>
         </div>
     </div>
 </footer>

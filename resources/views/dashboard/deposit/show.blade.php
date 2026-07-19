@@ -15,7 +15,7 @@
         </div>
 
         <dl class="mt-6 grid gap-4 sm:grid-cols-2">
-            <div><dt class="text-xs text-faint">{{ __('Method') }}</dt><dd class="text-body">{{ $deposit->paymentMethod->name ?? '—' }}</dd></div>
+            <div><dt class="text-xs text-faint">{{ __('Method') }}</dt><dd class="text-body">{{ $deposit->paymentMethod->name ?? '-' }}</dd></div>
             <div><dt class="text-xs text-faint">{{ __('Gross amount') }}</dt><dd class="text-body">{{ money($deposit->amount, $deposit->currency) }}</dd></div>
             <div><dt class="text-xs text-faint">{{ __('Fee') }}</dt><dd class="text-body">{{ money($deposit->fee, $deposit->currency) }}</dd></div>
             <div><dt class="text-xs text-faint">{{ __('Credited') }}</dt><dd class="text-body">{{ money($deposit->net_amount, $deposit->currency) }}</dd></div>

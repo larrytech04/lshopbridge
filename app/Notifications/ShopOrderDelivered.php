@@ -18,7 +18,7 @@ class ShopOrderDelivered extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Your digital order is ready — '.$this->order->reference)
+            ->subject('Your digital order is ready, '.$this->order->reference)
             ->greeting("Hi {$notifiable->name},")
             ->line('Your digital products have been delivered:');
 
@@ -38,7 +38,7 @@ class ShopOrderDelivered extends Notification
         return [
             'type' => 'shop.delivered',
             'title' => 'Digital order delivered',
-            'message' => "Order {$this->order->reference} is ready — your codes are available.",
+            'message' => "Order {$this->order->reference} is ready, your codes are available.",
             'url' => route('shop.orders.show', $this->order),
             'icon' => 'bag',
         ];

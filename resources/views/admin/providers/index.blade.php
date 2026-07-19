@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-5">
     <div class="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-4 text-sm text-sky-100">
-        <x-icon name="lock" class="mr-1 inline h-4 w-4" /> API secrets live in your <code class="rounded surface-2 px-1">.env</code> file — never in the database. Toggle availability and sandbox/live mode here.
+        <x-icon name="lock" class="mr-1 inline h-4 w-4" /> API secrets live in your <code class="rounded surface-2 px-1">.env</code> file, never in the database. Toggle availability and sandbox/live mode here.
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">

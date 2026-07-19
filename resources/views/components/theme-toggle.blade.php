@@ -25,7 +25,8 @@
         @endforeach
     </div>
 @else
-    <div x-data="{ open: false }" class="relative">
+    <div x-data="{ open: false }" x-on:open-theme-menu.window="open = true" class="relative"
+         @mouseenter="open = true" @mouseleave="open = false">
         <button type="button" @click="open = !open" title="{{ __('Theme') }}"
                 {{ $attributes->merge(['class' => "grid $btnSize place-items-center ".($bare ? 'hover:surface-2' : 'border border-app surface')." text-body hover:text-strong transition"]) }}>
             <span class="theme-spin grid place-items-center">

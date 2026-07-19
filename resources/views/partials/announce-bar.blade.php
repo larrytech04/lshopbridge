@@ -1,5 +1,5 @@
 @php
-    // Slim, dismissible brand-red announcement bar — flips through the messages
+    // Slim, dismissible brand-red announcement bar, flips through the messages
     // every 6s. Dismissal is remembered client-side (localStorage).
     $annMsgs = [
         __('Built for African shoppers funding China accounts'),

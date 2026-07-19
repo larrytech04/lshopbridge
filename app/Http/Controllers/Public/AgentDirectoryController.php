@@ -12,7 +12,7 @@ class AgentDirectoryController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Agent::approved()->with(['warehouseCountry', 'countries', 'shippingRates']);
+        $query = Agent::approved()->with(['warehouseCountry', 'countries', 'shippingRates', 'user']);
 
         if ($search = $request->query('q')) {
             $query->where('business_name', 'like', "%{$search}%");
@@ -38,7 +38,7 @@ class AgentDirectoryController extends Controller
         abort_unless($agent->status->value === 'approved', 404);
 
         return view('public.agents.show', [
-            'agent' => $agent->load(['warehouseCountry', 'countries', 'shippingRates.destinationCountry']),
+            'agent' => $agent->load(['warehouseCountry', 'countries', 'shippingRates.destinationCountry', 'user']),
             'reviews' => $agent->reviews()->where('status', 'approved')->with('user')->latest()->take(10)->get(),
         ]);
     }

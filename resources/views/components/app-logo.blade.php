@@ -1,7 +1,7 @@
 @props(['name'])
 @php
     // App-tile brand logos (rounded squares) for the Integrations catalog.
-    // Simplified but recognisable marks; easy to extend — add a key here.
+    // Simplified but recognisable marks; easy to extend, add a key here.
     $s = 'viewBox="0 0 48 48" style="height:100%;width:100%;display:block" xmlns="http://www.w3.org/2000/svg"';
     $tiles = [
         // ── China wallets ───────────────────────────────────────────────

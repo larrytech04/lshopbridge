@@ -7,7 +7,7 @@ use App\Services\Payments\DTO\ChargeResult;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Orange Money — Web Payment / Mobile Money API.
+ * Orange Money, Web Payment / Mobile Money API.
  * Docs: https://developer.orange.com/apis/
  */
 class OrangeMoneyProvider extends AbstractPaymentProvider

@@ -15,7 +15,7 @@
                 <p class="mt-1 text-xs text-faint">{{ $hint }}</p>
             @endif
         </div>
-        <span class="grid h-11 w-11 place-items-center rounded-xl bg-slate-500/15 text-brand-400 ring-1 ring-app">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-slate-500/15 text-slate-500 ring-1 ring-app">
             <x-icon :name="$icon" class="h-5 w-5" />
         </span>
     </div>

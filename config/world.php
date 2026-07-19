@@ -5,7 +5,7 @@
 | World data: countries, currencies, languages
 |--------------------------------------------------------------------------
 | Single source of truth consumed by config/platform.php and the country
-| seeder. FX `rate` is units of that currency per 1 base (XAF) — display only.
+| seeder. FX `rate` is units of that currency per 1 base (XAF), display only.
 */
 
 // Languages offered in the header selector (native names).

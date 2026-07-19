@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 /**
- * MTN Mobile Money — Collections API (RequestToPay).
+ * MTN Mobile Money, Collections API (RequestToPay).
  * Docs: https://momodeveloper.mtn.com/
  */
 class MtnMomoProvider extends AbstractPaymentProvider

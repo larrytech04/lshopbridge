@@ -35,7 +35,7 @@ class KycReviewed extends Notification
             'type' => 'kyc.reviewed',
             'title' => $this->approved ? 'Identity verified' : 'Verification rejected',
             'message' => $this->approved
-                ? 'Your KYC was approved — higher limits unlocked.'
+                ? 'Your KYC was approved, higher limits unlocked.'
                 : 'Your KYC was rejected: '.($this->reason ?: 'please re-submit.'),
             'url' => route('verification.index'),
             'icon' => $this->approved ? 'check' : 'alert',

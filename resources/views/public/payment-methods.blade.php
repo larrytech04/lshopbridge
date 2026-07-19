@@ -4,7 +4,7 @@
 @section('content')
 <section class="mx-auto max-w-5xl px-4 pt-16 text-center sm:px-6">
     <h1 class="text-4xl font-extrabold text-strong sm:text-5xl">{{ cms('cms_pmpage_title', __('Accepted payment methods')) }}</h1>
-    <p class="mx-auto mt-4 max-w-2xl text-lg text-body">{{ cms('cms_pmpage_subtitle', __('Top up your wallet using the channels you already trust — mobile money, cards, bank transfer, USSD & crypto, accepted across Africa.')) }}</p>
+    <p class="mx-auto mt-4 max-w-2xl text-lg text-body">{{ cms('cms_pmpage_subtitle', __('Top up your wallet using the channels you already trust, mobile money, cards, bank transfer, USSD & crypto, accepted across Africa.')) }}</p>
     <div class="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-muted">
         <span class="inline-flex items-center gap-1.5"><x-icon name="check-circle" class="h-4 w-4 text-emerald-500" /> {{ __('Instant Delivery') }}</span>
         <span class="inline-flex items-center gap-1.5"><x-icon name="shield" class="h-4 w-4 text-brand-500" /> {{ __('Secure & encrypted') }}</span>

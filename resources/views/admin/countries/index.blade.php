@@ -5,7 +5,8 @@
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="lg:col-span-2">
         <x-glass-card padding="p-0">
-            <div class="overflow-x-auto"><table class="w-full text-left text-sm">
+            <div class="overflow-x-auto"><table class="w-ful
+            left text-sm">
                 <thead class="border-b border-app text-muted"><tr><th class="px-5 py-3">Country</th><th class="px-5 py-3">ISO</th><th class="px-5 py-3">Currency</th><th class="px-5 py-3">State</th><th class="px-5 py-3"></th></tr></thead>
                 <tbody class="divide-y divide-app">
                     @foreach ($countries as $c)

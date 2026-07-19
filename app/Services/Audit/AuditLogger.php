@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Writes immutable audit trail entries for sensitive actions (admin actions,
- * money movements, webhook processing, risk decisions). Never throws — auditing
+ * money movements, webhook processing, risk decisions). Never throws, auditing
  * must not break the primary operation.
  */
 class AuditLogger

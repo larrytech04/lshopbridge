@@ -68,6 +68,6 @@ class CheckoutController extends Controller
 
         $this->cart->clear();
 
-        return redirect()->route('shop.orders.show', $order)->with('success', 'Order complete — your digital products are ready!');
+        return redirect()->route('shop.orders.show', $order)->with('success', 'Order complete, your digital products are ready!');
     }
 }

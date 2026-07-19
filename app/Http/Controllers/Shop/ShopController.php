@@ -71,6 +71,9 @@ class ShopController extends Controller
             'subcategories' => $activeTop ? $activeTop->activeChildren()->orderBy('sort')->get() : collect(),
             'sort' => $sort,
             'filters' => $request->only('q'),
+            'esimProducts' => $activeTop ? collect() : ShopProduct::active()->where('type', 'esim')
+                ->whereHas('variants', fn ($q) => $q->where('is_active', true))
+                ->with('variants')->orderByDesc('is_featured')->orderByDesc('sales_count')->take(6)->get(),
         ]);
     }
 

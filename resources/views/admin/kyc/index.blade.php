@@ -18,7 +18,7 @@
                         <tr class="hover:bg-white/[0.02]">
                             <td class="px-5 py-3"><p class="text-strong">{{ $kyc->user->name }}</p><p class="text-xs text-faint">{{ $kyc->full_name }}</p></td>
                             <td class="px-5 py-3 text-body">{{ ucfirst(str_replace('_',' ',$kyc->document_type)) }}</td>
-                            <td class="px-5 py-3 text-body">{{ $kyc->country->name ?? '—' }}</td>
+                            <td class="px-5 py-3 text-body">{{ $kyc->country->name ?? '-' }}</td>
                             <td class="px-5 py-3 text-muted">{{ $kyc->created_at->diffForHumans() }}</td>
                             <td class="px-5 py-3 text-right"><a href="{{ route('admin.kyc.show', $kyc) }}" class="text-brand-300 hover:text-brand-200">Review →</a></td>
                         </tr>

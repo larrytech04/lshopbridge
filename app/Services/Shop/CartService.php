@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Session-backed shopping cart. Keyed by variant id => quantity. Lightweight by
- * design — the durable record is the ShopOrder created at checkout.
+ * design, the durable record is the ShopOrder created at checkout.
  */
 class CartService
 {

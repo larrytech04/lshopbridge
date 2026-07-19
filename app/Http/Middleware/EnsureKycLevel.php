@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureKycLevel
 {
     /**
-     * Usage: ->middleware('kyc:2') — requires kyc_level >= 2.
+     * Usage: ->middleware('kyc:2'), requires kyc_level >= 2.
      */
     public function handle(Request $request, Closure $next, int $level = 1): Response
     {

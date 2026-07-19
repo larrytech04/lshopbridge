@@ -11,12 +11,15 @@
                     <p class="text-xs text-faint">{{ $lead->created_at->diffForHumans() }} @if($lead->shipping_method)· {{ ucfirst($lead->shipping_method) }}@endif</p>
                     <p class="mt-2 text-sm text-body">{{ $lead->message }}</p>
                 </div>
-                <form method="POST" action="{{ route('agent.leads.update', $lead) }}" class="flex items-center gap-2">@csrf @method('PUT')
-                    <select name="status" class="field max-w-[160px]">
-                        @foreach (['new','contacted','in_progress','completed','closed'] as $s)<option value="{{ $s }}" @selected($lead->status === $s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
-                    </select>
-                    <button class="btn btn-ghost">{{ __('Update') }}</button>
-                </form>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('agent.leads.show', $lead) }}" class="btn btn-ghost">{{ __('Chat') }}</a>
+                    <form method="POST" action="{{ route('agent.leads.update', $lead) }}" class="flex items-center gap-2">@csrf @method('PUT')
+                        <select name="status" class="field max-w-[160px]">
+                            @foreach (['new','contacted','in_progress','completed','closed'] as $s)<option value="{{ $s }}" @selected($lead->status === $s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>@endforeach
+                        </select>
+                        <button class="btn btn-ghost">{{ __('Update') }}</button>
+                    </form>
+                </div>
             </div>
         </div>
     @empty

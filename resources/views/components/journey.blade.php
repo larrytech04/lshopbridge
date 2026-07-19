@@ -7,7 +7,7 @@
     $rows = max(1, (int) ceil($n / $perRow));
     $vw = 1200; $rowH = 300; $vh = $rows * $rowH;
     $colXTop = [200, 600, 1000];   // even rows
-    $colXBot = [350, 750, 1050];   // odd rows — offset so waves don't line up
+    $colXBot = [350, 750, 1050];   // odd rows, offset so waves don't line up
     $nodes = [];
     foreach ($steps as $i => $s) {
         $r = intdiv($i, $perRow);

@@ -15,7 +15,7 @@
     <a href="{{ $url }}" class="group flex min-w-0 items-start gap-3 md:w-64 md:shrink-0">
         <span class="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-brand-600 text-sm font-bold text-white">
             @if ($agent->logo_path)<img src="{{ Storage::url($agent->logo_path) }}" class="h-full w-full object-cover" alt="">@else{{ strtoupper(substr($agent->business_name, 0, 2)) }}@endif
-            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 bg-emerald-500" style="border-color: var(--bg);"></span>
+            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 {{ $agent->isOnline() ? 'bg-emerald-500' : 'bg-slate-400' }}" style="border-color: var(--bg);" title="{{ $agent->isOnline() ? __('Online now') : __('Offline') }}"></span>
         </span>
         <div class="min-w-0">
             <div class="flex items-center gap-1.5">

@@ -36,6 +36,6 @@ class ContactController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Thanks for reaching out — our team will respond shortly.');
+        return back()->with('success', 'Thanks for reaching out, our team will respond shortly.');
     }
 }

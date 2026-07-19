@@ -19,13 +19,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'phone_country', 'phone_verified_at',
-        'country_id', 'city', 'address', 'date_of_birth', 'kyc_level', 'kyc_status',
+        'country_id', 'city', 'address', 'date_of_birth', 'gender', 'kyc_level', 'kyc_status',
         'status', 'status_reason', 'points', 'referral_code', 'referred_by', 'avatar_path',
         'two_factor_enabled', 'two_factor_secret', 'locale', 'last_login_at', 'last_login_ip',
-        'preferences', 'google_id', 'avatar_url',
+        'preferences', 'google_id', 'avatar_url', 'shortcuts_enabled', 'shortcut_overrides',
+        'transaction_pin', 'transaction_pin_set_at', 'last_seen_at',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'transaction_pin'];
 
     protected function casts(): array
     {
@@ -33,15 +34,30 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+            'transaction_pin_set_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
+            'transaction_pin' => 'hashed',
             'role' => UserRole::class,
             'kyc_status' => KycStatus::class,
             'kyc_level' => 'integer',
             'points' => 'integer',
             'two_factor_enabled' => 'boolean',
             'preferences' => 'array',
+            'shortcuts_enabled' => 'boolean',
+            'shortcut_overrides' => 'array',
         ];
+    }
+
+    public function hasTransactionPin(): bool
+    {
+        return ! is_null($this->transaction_pin);
+    }
+
+    public function isOnline(): bool
+    {
+        return (bool) $this->last_seen_at?->gt(now()->subMinutes(5));
     }
 
     protected static function booted(): void
@@ -97,6 +113,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function shopOrders(): HasMany
     {
         return $this->hasMany(ShopOrder::class);
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referred_by');
     }
 
     public function agent(): HasOne

@@ -31,11 +31,20 @@ class KycController extends Controller
 
     public function approve(KycVerification $kyc, AuditLogger $audit)
     {
+        $user = $kyc->user;
+        $wasVerified = $user->kyc_level >= 2;
+
         $kyc->update(['status' => 'approved', 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
-        $kyc->user->update([
+        $user->update([
             'kyc_status' => 'approved',
-            'kyc_level' => max($kyc->user->kyc_level, $kyc->target_level),
+            'kyc_level' => max($user->kyc_level, $kyc->target_level),
         ]);
+
+        // Referral payout, once, the first time this user reaches full (L2) verification.
+        if (! $wasVerified && $user->kyc_level >= 2 && $user->referred_by) {
+            $user->increment('points', config('platform.referrals.referred_points'));
+            \App\Models\User::whereKey($user->referred_by)->increment('points', config('platform.referrals.referrer_points'));
+        }
 
         $audit->log('admin.kyc.approved', "Approved KYC for {$kyc->user->email}", $kyc);
         $kyc->user->notify(new KycReviewed($kyc, true));

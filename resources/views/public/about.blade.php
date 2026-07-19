@@ -4,7 +4,7 @@
 @php
     $brand = setting('site_name', config('platform.name'));
     $aboutHeading = __('Bridging Africa & China, one payment at a time.');
-    $lead = $page->excerpt ?: __('We make it simple, fast and safe for people across Africa to fund China wallets and buy digital products — no Chinese bank account, no middlemen, no surprises.');
+    $lead = $page->excerpt ?: __('We make it simple, fast and safe for people across Africa to fund China wallets and buy digital products, no Chinese bank account, no middlemen, no surprises.');
     $stats = [
         ['num' => 190, 'suffix' => '+', 'label' => __('Countries reachable')],
         ['text' => __('Instant'), 'label' => __('Wallet funding')],
@@ -12,8 +12,8 @@
         ['num' => 100, 'suffix' => '%', 'label' => __('Secure & encrypted')],
     ];
     $pillars = [
-        ['Yuan--Streamline-Plump.png', __('Fund China wallets'), __('Top up Alipay, WeChat Pay, UnionPay and QQ in minutes — paid with MoMo, bank, card or crypto.')],
-        ['Shop-Sign-Bag--Streamline-Ultimate.png', __('Digital shop'), __('Gift cards, eSIMs, mobile top-ups, bills, flights & stays — delivered to your account instantly.')],
+        ['Yuan--Streamline-Plump.png', __('Fund China wallets'), __('Top up Alipay, WeChat Pay, UnionPay and QQ in minutes, paid with MoMo, bank, card or crypto.')],
+        ['Shop-Sign-Bag--Streamline-Ultimate.png', __('Digital shop'), __('Gift cards, eSIMs, mobile top-ups, bills, flights & stays, delivered to your account instantly.')],
         ['Delivery-Package-Give--Streamline-Freehand.png', __('Verified agents'), __('Trusted procurement & freight partners in China, rated by real buyers, to ship your goods home.')],
     ];
     $values = [
@@ -26,7 +26,7 @@
         [__('Create your account'), __('Sign up free and verify your identity to unlock funding and higher limits.')],
         [__('Top up your wallet'), __('Add funds with Mobile Money, bank transfer, card or crypto.')],
         [__('Fund or shop'), __('Send to any China wallet, or buy gift cards, eSIMs and top-ups.')],
-        [__('Delivered instantly'), __('Most orders confirm within seconds — track everything from your dashboard.')],
+        [__('Delivered instantly'), __('Most orders confirm within seconds, track everything from your dashboard.')],
     ];
 @endphp
 
@@ -87,7 +87,7 @@
         <div class="order-1 lg:order-2">
             <h2 class="text-3xl font-bold text-strong sm:text-4xl">{{ __('Our mission') }}</h2>
             <p class="mt-4 text-lg text-body">{{ __('Cross-border payments to China have always been slow, expensive and confusing for African buyers. We built :brand to change that.', ['brand' => $brand]) }}</p>
-            <p class="mt-4 text-body">{{ __('From a single dashboard you can fund any major China wallet, buy digital products, and connect with verified shipping agents — with clear pricing and instant delivery. We handle the complexity so you can focus on growing your business or getting what you need.') }}</p>
+            <p class="mt-4 text-body">{{ __('From a single dashboard you can fund any major China wallet, buy digital products, and connect with verified shipping agents, with clear pricing and instant delivery. We handle the complexity so you can focus on growing your business or getting what you need.') }}</p>
             <div class="mt-6 space-y-3">
                 @foreach ([__('No Chinese bank account required'), __('Transparent, upfront rates & fees'), __('Money-back protection on every order')] as $point)
                     <p class="flex items-center gap-3 text-body"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-slate-500/12 text-brand-500"><x-icon name="check" class="h-4 w-4" /></span> {{ $point }}</p>
@@ -102,8 +102,8 @@
     <div class="grid items-center gap-10 lg:grid-cols-2">
         <div>
             <span class="text-xs font-bold uppercase tracking-widest text-brand-500">{{ __('The digital shop') }}</span>
-            <h2 class="mt-2 text-3xl font-bold text-strong sm:text-4xl">{{ __('More than payments — a full digital shop') }}</h2>
-            <p class="mt-4 text-body">{{ __('Alongside wallet funding, :brand is a marketplace for instant digital goods — pay in your currency and get delivery to your account in seconds.', ['brand' => $brand]) }}</p>
+            <h2 class="mt-2 text-3xl font-bold text-strong sm:text-4xl">{{ __('More than payments, a full digital shop') }}</h2>
+            <p class="mt-4 text-body">{{ __('Alongside wallet funding, :brand is a marketplace for instant digital goods, pay in your currency and get delivery to your account in seconds.', ['brand' => $brand]) }}</p>
             <div class="mt-5 flex flex-wrap gap-2">
                 @foreach ([__('Gift cards'), __('eSIMs'), __('Mobile top-ups'), __('Bill payments'), __('Games & apps'), __('Flights & stays')] as $chip)
                     <span class="pill surface border border-app text-body">{{ $chip }}</span>
@@ -123,7 +123,7 @@
     <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div class="mx-auto max-w-2xl text-center">
             <h2 class="text-3xl font-bold text-strong sm:text-4xl">{{ __('What we do') }}</h2>
-            <p class="mt-3 text-body">{{ __('Everything you need to buy from and pay into China — in one place.') }}</p>
+            <p class="mt-3 text-body">{{ __('Everything you need to buy from and pay into China, in one place.') }}</p>
         </div>
         <div class="mt-10 grid gap-6 md:grid-cols-3">
             @foreach ($pillars as [$icon, $title, $body])
@@ -164,21 +164,21 @@
         {{-- Two infographics side by side: funding (left) & shop (right), steps wrapped around each loop --}}
         @php
             $shopStepsAbout = [
-                [__('Open the shop'), __('Browse gift cards, eSIMs, top-ups, bills & more — right from your dashboard.')],
+                [__('Open the shop'), __('Browse gift cards, eSIMs, top-ups, bills & more, right from your dashboard.')],
                 [__('Pick & pay'), __('Choose your product and pay from your wallet, MoMo, bank, card or crypto.')],
                 [__('Instant delivery'), __('Codes, PINs and eSIM QR details arrive in your account within seconds.')],
-                [__('Redeem & enjoy'), __('Follow the simple redeem steps — eSIMs install by scanning the QR code.')],
+                [__('Redeem & enjoy'), __('Follow the simple redeem steps, eSIMs install by scanning the QR code.')],
             ];
             $journeys = [
                 [__('Fund a China wallet'), $steps],
                 [__('Shop digital products'), $shopStepsAbout],
             ];
-            // [placement classes, mirrored (number on the right, text right-aligned)] — staggered so they hug the curve
+            // [placement classes, mirrored (number on the right, text right-aligned)], staggered so they hug the curve
             $miniPos = [
-                ['lg:absolute lg:left-0 lg:top-[2%] lg:w-56', true],       // 01 — upper-left
-                ['lg:absolute lg:left-[5%] lg:bottom-[5%] lg:w-56', true], // 02 — lower-left, tucked in
-                ['lg:absolute lg:right-[5%] lg:top-[5%] lg:w-56', false],  // 03 — upper-right, tucked in
-                ['lg:absolute lg:right-0 lg:bottom-[2%] lg:w-56', false],  // 04 — lower-right
+                ['lg:absolute lg:left-0 lg:top-[2%] lg:w-56', true],       // 01, upper-left
+                ['lg:absolute lg:left-[5%] lg:bottom-[5%] lg:w-56', true], // 02, lower-left, tucked in
+                ['lg:absolute lg:right-[5%] lg:top-[5%] lg:w-56', false],  // 03, upper-right, tucked in
+                ['lg:absolute lg:right-0 lg:bottom-[2%] lg:w-56', false],  // 04, lower-right
             ];
         @endphp
         <div class="mt-12 grid gap-16 lg:grid-cols-2 lg:gap-10">
@@ -226,7 +226,7 @@
             });
         });
 
-        // Count-up stats — animate from 0 to target when they scroll into view.
+        // Count-up stats, animate from 0 to target when they scroll into view.
         const counters = document.querySelectorAll('.count-up');
         const run = function (el) {
             const target = parseFloat(el.dataset.count) || 0;

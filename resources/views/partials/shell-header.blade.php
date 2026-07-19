@@ -22,7 +22,7 @@
 @endphp
 
 <header class="sticky top-0 z-40">
-    {{-- Utility strip — always visible (the whole header sticks; only the mid row collapses) --}}
+    {{-- Utility strip, always visible (the whole header sticks; only the mid row collapses) --}}
     <div class="relative z-50 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(12px);">
         <div class="mx-auto flex max-w-none items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6">
             {{-- Flipping social-proof badge: Google ⇄ Trustpilot, every 3.5s --}}
@@ -43,9 +43,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-1.5 text-muted sm:gap-2">
-                {{-- Country selector (searchable) — compact flag on mobile, full pill on larger screens --}}
+                {{-- Country selector (searchable), compact flag on mobile, full pill on larger screens --}}
                 <div class="pb-ts-header pb-ts-country block">
-                    <select data-pbselect="country" data-nav="{{ route('region.set', '__VALUE__') }}"
+                    <select data-pbselect="country" data-pbselect-trigger="onboarding" data-nav="{{ route('region.set', '__VALUE__') }}"
                             data-empty="{{ __('No matches') }}" data-search="{{ __('Search…') }}" aria-label="{{ __('Country') }}" autocomplete="off">
                         @foreach ($regionCountries as $c)
                             <option value="{{ $c->iso2 }}" @selected($region['iso'] === $c->iso2)>{{ $c->name }}</option>
@@ -53,9 +53,9 @@
                     </select>
                 </div>
 
-                {{-- Language selector (searchable) — globe-only on mobile, globe + name on larger screens --}}
+                {{-- Language selector (searchable), globe-only on mobile, globe + name on larger screens --}}
                 <div class="pb-ts-header pb-ts-lang block">
-                    <select data-pbselect="lang" data-nav="{{ route('locale.set', '__VALUE__') }}"
+                    <select data-pbselect="lang" data-pbselect-trigger="onboarding" data-nav="{{ route('locale.set', '__VALUE__') }}"
                             data-empty="{{ __('No matches') }}" data-search="{{ __('Search…') }}" aria-label="{{ __('Language') }}" autocomplete="off">
                         @foreach (supported_locales() as $code => $label)
                             <option value="{{ $code }}" @selected(current_locale() === $code)>{{ $label }}</option>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    {{-- Main bar — sticks directly under the utility strip. On scroll-down (past the hero)
+    {{-- Main bar, sticks directly under the utility strip. On scroll-down (past the hero)
          only the middle row (logo/search/actions) collapses; the menu row stays visible.
          Scrolling up brings the middle row back. --}}
     <div data-autohide-header class="relative z-40 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(16px);"
@@ -136,7 +136,7 @@
         </div>
         </div>{{-- /header-mid --}}
 
-        {{-- Primary menu — full menu on every screen; scrolls horizontally (no bar) until it fits, then centers. --}}
+        {{-- Primary menu, full menu on every screen; scrolls horizontally (no bar) until it fits, then centers. --}}
         <div class="mx-auto max-w-none px-4 sm:px-6">
             <nav class="no-scrollbar flex flex-nowrap items-center gap-x-5 overflow-x-auto pb-3 text-sm lg:flex-wrap lg:justify-center lg:gap-x-6 lg:overflow-visible">
                 @foreach ($menu as [$label, $url, $icon, $vis])

@@ -61,6 +61,18 @@ return [
     'base_currency' => 'XAF',
     'target_currency' => 'CNY',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Referral rewards (LshopBridge Coins)
+    |--------------------------------------------------------------------------
+    | Paid out once, when a referred friend's KYC is approved for the first
+    | time (App\Http\Controllers\Admin\KycController::approve).
+    */
+    'referrals' => [
+        'referrer_points' => 100,
+        'referred_points' => 20,
+    ],
+
     'kyc_levels' => [
         0 => ['name' => 'Registered',        'daily' => 0,        'monthly' => 0,         'per_tx' => 0],
         1 => ['name' => 'Email/Phone',       'daily' => 100000,   'monthly' => 500000,    'per_tx' => 50000],
@@ -85,7 +97,7 @@ return [
     | Secure uploads
     |--------------------------------------------------------------------------
     | KYC docs, selfies and proof live on the PRIVATE disk and are only ever
-    | streamed through authorised controllers — never linked publicly.
+    | streamed through authorised controllers, never linked publicly.
     */
     'private_disk' => 'private',
     'public_disk'  => 'public',

@@ -30,12 +30,12 @@ class DemoUserSeeder extends Seeder
         $cn = Country::where('iso2', 'CN')->first();
 
         // ---- Staff ----
-        User::updateOrCreate(['email' => 'superadmin@paybridge.test'], [
+        User::updateOrCreate(['email' => 'superadmin@lshopbridge.test'], [
             'name' => 'Super Admin', 'password' => Hash::make($password), 'role' => 'super_admin',
             'phone' => '+237600000000', 'country_id' => $cm?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
         ]);
-        User::updateOrCreate(['email' => 'admin@paybridge.test'], [
+        User::updateOrCreate(['email' => 'admin@lshopbridge.test'], [
             'name' => 'Amina Admin', 'password' => Hash::make($password), 'role' => 'admin',
             'phone' => '+237600000001', 'country_id' => $cm?->id, 'kyc_level' => 3, 'kyc_status' => 'approved',
             'email_verified_at' => now(), 'phone_verified_at' => now(),
@@ -106,7 +106,7 @@ class DemoUserSeeder extends Seeder
                 'bio' => 'Electronics, gadgets & accessories sourced from Shenzhen with quality checks and fast air freight to Africa.',
                 'methods' => ['air', 'express'], 'rating' => 4.8, 'reviews' => 12, 'featured' => true, 'orders' => 56, 'kg' => 11],
             ['email' => 'agent3@example.com', 'name' => 'Wang Mei', 'business' => 'Yiwu Trade Bridge', 'city' => 'Yiwu',
-                'bio' => 'Wholesale market sourcing from Yiwu — fashion, accessories & home goods with sea and consolidated shipping.',
+                'bio' => 'Wholesale market sourcing from Yiwu, fashion, accessories & home goods with sea and consolidated shipping.',
                 'methods' => ['sea', 'express'], 'rating' => 4.7, 'reviews' => 9, 'featured' => false, 'orders' => 38, 'kg' => 13],
         ];
         foreach ($moreAgents as $a) {
@@ -130,7 +130,7 @@ class DemoUserSeeder extends Seeder
 
         $this->command?->newLine();
         $this->command?->warn("Demo accounts password: {$password}");
-        $this->command?->line('  (superadmin@paybridge.test, admin@paybridge.test, kofi@example.com, agent@example.com)');
+        $this->command?->line('  (superadmin@lshopbridge.test, admin@lshopbridge.test, kofi@example.com, agent@example.com)');
         $this->command?->line('  Set DEMO_PASSWORD in .env to pin this across reseeds.');
     }
 }

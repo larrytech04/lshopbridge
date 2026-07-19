@@ -1,3 +1,4 @@
+
 <?php
 // Announcement bar messages + dismiss label.
 $root = dirname(__DIR__);

@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             RiskRuleSeeder::class,
             SettingSeeder::class,
             ContentSeeder::class,
+            GuideSeeder::class,
             ShopSeeder::class,
             DemoUserSeeder::class,
         ]);

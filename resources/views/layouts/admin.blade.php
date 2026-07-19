@@ -10,7 +10,8 @@
     <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="aurora min-h-screen" x-data="{ sidebar: false }">
+<body class="aurora pb-ash-theme min-h-screen" x-data="{ sidebar: false }">
+    @include('partials.page-skeleton')
 
     @php
         $q = [
@@ -84,13 +85,13 @@
     <div x-show="sidebar" @click="sidebar = false" x-transition.opacity class="fixed inset-0 z-40 bg-black/50 lg:hidden" style="display:none"></div>
 
     <div class="lg:pl-72">
-        <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-app px-4 sm:px-6" style="background: var(--header-bg); backdrop-filter: blur(16px);">
+        <header class="sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6" style="background: var(--header-bg);">
             <button @click="sidebar = true" class="rounded-lg p-2 text-muted hover:surface-2 lg:hidden"><x-icon name="menu" class="h-6 w-6" /></button>
             <h1 class="text-base font-semibold text-strong sm:text-lg">@yield('page-title', 'Overview')</h1>
             <div class="ml-auto flex items-center gap-3">
                 <a href="{{ route('home') }}" target="_blank" class="hidden text-sm text-muted hover:text-strong sm:block">View site ↗</a>
                 <x-theme-toggle />
-                <div x-data="{ open: false }" class="relative">
+                <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
                     <button @click="open = !open" class="flex items-center gap-2 rounded-xl border border-app surface p-1.5 pr-3 text-body hover:text-strong">
                         <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-xs font-bold text-white">{{ auth()->user()->initials() }}</span>
                         <x-icon name="chevron-down" class="h-4 w-4" />

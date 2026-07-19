@@ -12,11 +12,11 @@
         </thead>
         <tbody class="divide-y divide-app">
             @forelse ($transactions as $tx)
-                <tr class="hover:bg-white/[0.02]">
+                <tr class="hover:surface-2">
                     <td class="px-5 py-3 font-mono text-xs text-muted">{{ $tx->reference }}</td>
                     <td class="px-5 py-3 text-body">{{ $tx->description }}</td>
                     <td class="px-5 py-3"><span class="pill surface text-body ring-1 ring-white/10">{{ ucfirst($tx->category) }}</span></td>
-                    <td class="px-5 py-3 text-right font-semibold {{ $tx->isCredit() ? 'text-emerald-300' : 'text-rose-300' }}">
+                    <td class="px-5 py-3 text-right font-bold {{ $tx->isCredit() ? 'text-emerald-600' : 'text-rose-600' }}">
                         {{ $tx->isCredit() ? '+' : '−' }}{{ disp($tx->amount) }}
                     </td>
                     <td class="px-5 py-3 text-right text-body">{{ disp($tx->balance_after) }}</td>

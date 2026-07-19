@@ -19,7 +19,7 @@ class CountryCurrencySeeder extends Seeder
             ]);
         }
 
-        // Countries — every country worldwide.
+        // Countries, every country worldwide.
         $cc = config('platform.country_currency', []);
         $countries = config('platform.countries', []);
         uasort($countries, fn ($a, $b) => strcmp($a['name'], $b['name'])); // alphabetical

@@ -14,6 +14,7 @@ class KycVerification extends Model
         return [
             'date_of_birth' => 'date',
             'reviewed_at' => 'datetime',
+            'is_pep' => 'boolean',
         ];
     }
 
