@@ -869,30 +869,6 @@ html:not(.dark):not(.night) .pb-ash-field {
 }
 .legal-print-footer { display: none; }
 
-/* ---------------------------------------------- Accessibility panel (footer) */
-/* Each preference is a real, functional CSS override — not decoration. Applied
-   via a class on <html>, toggled from the footer's accessibility panel and
-   restored before first paint by theme-head.blade.php's anti-flash script. */
-html.a11y-text-lg { font-size: 112.5%; }
-html.a11y-text-xl { font-size: 125%; }
-
-html.a11y-contrast {
-    --text-muted: var(--text-strong);
-    --text-faint: var(--text-body);
-    --border: color-mix(in srgb, var(--text-strong) 45%, transparent);
-}
-
-html.a11y-underline-links a { text-decoration: underline; text-underline-offset: 2px; }
-
-html.a11y-reduced-motion *,
-html.a11y-reduced-motion *::before,
-html.a11y-reduced-motion *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-}
-
 /* ---------------------------------------------- LshopBridge Network Footer */
 .footer-shell {
     background: var(--surface-1);
@@ -946,18 +922,6 @@ html.dark .footer-shell, html.night .footer-shell {
     background: color-mix(in srgb, var(--color-brand-500) 16%, transparent); border-color: var(--color-brand-500); color: var(--color-brand-600);
 }
 .footer-interest-chip:has(.footer-interest-chip-input:focus-visible) span { outline: 2px solid var(--color-brand-400); outline-offset: 1px; }
-
-.footer-region-trigger {
-    display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; border: 1px solid var(--border);
-    padding: .35rem .75rem; font-size: .75rem; font-weight: 600; color: var(--text-body); transition: background .15s, color .15s;
-}
-.footer-region-trigger:hover { background: var(--surface-2); color: var(--text-strong); }
-
-.footer-a11y-option {
-    border-radius: .6rem; border: 1px solid var(--border); padding-block: .4rem; font-size: .75rem; font-weight: 600; color: var(--text-body);
-    transition: background .15s, color .15s, border-color .15s;
-}
-.footer-a11y-option-active { background: var(--color-brand-500); border-color: var(--color-brand-500); color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
     .footer-social-link, .footer-accordion-chevron { transition: none; }

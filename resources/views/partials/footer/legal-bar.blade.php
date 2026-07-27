@@ -13,7 +13,6 @@
                 <a href="{{ route('legal.show', 'privacy') }}" class="hover:text-body">{{ __('Privacy Choices') }}</a>
                 <a href="{{ route('legal.show', 'cookie-policy') }}" class="hover:text-body">{{ __('Cookie Preferences') }}</a>
             @endif
-            @include('partials.footer.accessibility-panel', ['triggerClass' => 'hover:text-body', 'plainTrigger' => true])
         </nav>
 
         @if (config('platform.version'))

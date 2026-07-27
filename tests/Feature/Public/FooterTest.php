@@ -269,15 +269,7 @@ class FooterTest extends TestCase
         $response->assertSessionHasErrors('interests.0');
     }
 
-    public function test_accessibility_panel_renders(): void
-    {
-        $response = $this->get(route('home'));
-
-        $response->assertOk();
-        $response->assertSee('Accessibility');
-    }
-
-    public function test_footer_renders_without_horizontal_overflow_markup_regressions_on_public_pages(): void
+public function test_footer_renders_without_horizontal_overflow_markup_regressions_on_public_pages(): void
     {
         foreach ([route('home'), route('shop.index'), route('legal.index')] as $url) {
             $this->get($url)->assertOk()->assertSee('footer-shell', false);

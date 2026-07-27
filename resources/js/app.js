@@ -1047,42 +1047,6 @@ document.addEventListener('DOMContentLoaded', () => {
  * before first paint (same anti-flash pattern as the light/dark/night theme)
  * so there's no flash of un-adjusted content on reload.
  */
-Alpine.data('accessibilityPanel', () => ({
-    open: false,
-    textSize: localStorage.getItem('pb-a11y-text-size') || 'md',
-    contrast: localStorage.getItem('pb-a11y-contrast') === '1',
-    underlineLinks: localStorage.getItem('pb-a11y-underline-links') === '1',
-    reducedMotion: localStorage.getItem('pb-a11y-reduced-motion') === '1',
-
-    setTextSize(size) {
-        document.documentElement.classList.remove('a11y-text-lg', 'a11y-text-xl');
-        this.textSize = size;
-        if (size === 'lg' || size === 'xl') {
-            document.documentElement.classList.add('a11y-text-' + size);
-            localStorage.setItem('pb-a11y-text-size', size);
-        } else {
-            localStorage.removeItem('pb-a11y-text-size');
-        }
-    },
-
-    toggle(key, storageKey, className) {
-        this[key] = !this[key];
-        document.documentElement.classList.toggle(className, this[key]);
-        if (this[key]) localStorage.setItem(storageKey, '1'); else localStorage.removeItem(storageKey);
-    },
-
-    toggleContrast() { this.toggle('contrast', 'pb-a11y-contrast', 'a11y-contrast'); },
-    toggleUnderlineLinks() { this.toggle('underlineLinks', 'pb-a11y-underline-links', 'a11y-underline-links'); },
-    toggleReducedMotion() { this.toggle('reducedMotion', 'pb-a11y-reduced-motion', 'a11y-reduced-motion'); },
-
-    reset() {
-        this.setTextSize('md');
-        if (this.contrast) this.toggleContrast();
-        if (this.underlineLinks) this.toggleUnderlineLinks();
-        if (this.reducedMotion) this.toggleReducedMotion();
-    },
-}));
-
 Alpine.data('esimCompatibilityChecker', (routes, brands) => ({
     brands,
     brand: '',
