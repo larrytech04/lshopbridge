@@ -24,9 +24,9 @@
             </button>
         </div>
 
-        <fieldset class="mt-3">
+        <fieldset class="mt-3 min-w-0">
             <legend class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-faint">{{ __('Interests (optional)') }}</legend>
-            <div class="no-scrollbar flex flex-nowrap gap-1.5 overflow-x-auto">
+            <div class="no-scrollbar flex min-w-0 flex-nowrap gap-1.5 overflow-x-auto">
                 @foreach (\App\Http\Controllers\Public\NewsletterController::INTERESTS as $key => $label)
                     <label class="footer-interest-chip shrink-0">
                         <input type="checkbox" name="interests[]" value="{{ $key }}" class="footer-interest-chip-input">
