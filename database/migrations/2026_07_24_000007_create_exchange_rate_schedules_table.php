@@ -30,7 +30,7 @@ return new class extends Migration
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
 
-            $table->index(['base_currency', 'quote_currency', 'status']);
+            $table->index(['base_currency', 'quote_currency', 'status'], 'exch_rate_schedules_currency_pair_status_idx');
         });
     }
 

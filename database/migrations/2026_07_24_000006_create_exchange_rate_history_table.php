@@ -28,7 +28,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->index(['base_currency', 'quote_currency', 'created_at']);
+            $table->index(['base_currency', 'quote_currency', 'created_at'], 'exch_rate_history_currency_pair_created_idx');
         });
     }
 

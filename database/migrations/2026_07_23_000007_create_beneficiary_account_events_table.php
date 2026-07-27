@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->index(['beneficiary_account_id', 'created_at']);
+            $table->index(['beneficiary_account_id', 'created_at'], 'bae_account_id_created_at_idx');
         });
     }
 
