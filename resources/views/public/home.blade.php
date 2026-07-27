@@ -62,8 +62,9 @@
         {{-- Ring video, mobile/tablet: in normal flow so it sits evenly between the CTAs
              and whatever follows, instead of pinned to the section's bottom edge. --}}
         <div class="relative z-0 mx-auto mt-8 w-48 sm:mt-10 sm:w-64 lg:hidden">
-            <video x-data x-show="$el.canPlayType('video/webm;codecs=vp9')" x-cloak class="hero-vid-alpha h-auto w-full" autoplay muted loop playsinline preload="auto">
+            <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
                 <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
+                <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
             </video>
         </div>
     </div>
@@ -84,11 +85,13 @@
 
     {{-- Ring video, desktop: bottom-left corner accent. The .webm carries a real alpha
          channel (bg keyed out in post), so the spinning ring renders alone on any theme.
-         Browsers without VP9-alpha support (e.g. Safari) just don't get the ring at all,
-         rather than a boxed non-alpha fallback with a visible background behind it. --}}
+         Safari doesn't support that codec and falls back to the plain .mp4, whose own
+         background can't be cleanly keyed via CSS (it overlaps in colour with the ring's
+         own highlights), so .hero-vid styles that fallback as a deliberate card instead. --}}
     <div class="pointer-events-none absolute bottom-0 left-0 z-0 hidden lg:block lg:w-[300px] xl:w-[360px]">
-        <video x-data x-show="$el.canPlayType('video/webm;codecs=vp9')" x-cloak class="hero-vid-alpha h-auto w-full" autoplay muted loop playsinline preload="auto">
+        <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
             <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
+            <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
         </video>
     </div>
 </section>

@@ -161,6 +161,11 @@ html.night {
         background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='%23ffffff' fill-opacity='0.07'><circle cx='32' cy='15' r='3'/><circle cx='45' cy='24' r='3'/><circle cx='40' cy='41' r='3'/><circle cx='23' cy='41' r='3'/><circle cx='19' cy='24' r='3'/><circle cx='90' cy='76' r='1.8'/><circle cx='99' cy='82' r='1.8'/><circle cx='96' cy='94' r='1.8'/><circle cx='84' cy='94' r='1.8'/><circle cx='81' cy='82' r='1.8'/><circle cx='96' cy='26' r='2.4'/><circle cx='104' cy='33' r='1.5'/><circle cx='18' cy='92' r='2.6'/><circle cx='10' cy='84' r='1.4'/></g></svg>");
     }
 
+    /* Hero ring video fallback (Safari, no VP9-alpha support): its .mp4 has a real
+       rectangular background that can't be keyed transparent via CSS (it overlaps
+       in colour with the ring's own highlights), so style it as a deliberate small
+       device-preview card instead of leaving a raw, unstyled box. */
+    .hero-vid { border-radius: 1rem; box-shadow: var(--shadow); }
 
     .glass {
         background: var(--glass-bg);
