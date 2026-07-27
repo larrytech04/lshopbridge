@@ -58,15 +58,6 @@
                 <x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-4 w-4 sm:h-5 sm:w-5" /> {{ __('Browse the shop') }}
             </a>
         </div>
-
-        {{-- Ring video, mobile/tablet: in normal flow so it sits evenly between the CTAs
-             and whatever follows, instead of pinned to the section's bottom edge. --}}
-        <div class="relative z-0 mx-auto mt-8 w-48 sm:mt-10 sm:w-64 lg:hidden">
-            <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
-                <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
-                <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
-            </video>
-        </div>
     </div>
 
     {{-- Decorative "pinpoint" graphic, bottom-right accent (desktop+), no card. The target
