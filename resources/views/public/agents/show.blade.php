@@ -112,7 +112,7 @@
         @forelse ($reviews as $review)
             <div class="rounded-2xl border border-app card-solid p-5">
                 <div class="flex items-center justify-between">
-                    <span class="font-medium text-strong">{{ $review->user->name }}</span>
+                    <span class="font-medium text-strong">{{ $review->reviewerName() }}</span>
                     <span class="flex items-center gap-0.5 text-amber-400">@for($i=0;$i<$review->rating;$i++)<x-icon name="star" class="h-4 w-4 fill-current" />@endfor</span>
                 </div>
                 @if ($review->comment)<p class="mt-2 text-sm text-muted">{{ __($review->comment) }}</p>@endif
@@ -120,6 +120,32 @@
         @empty
             <x-empty icon="star" title="{{ __('No reviews yet') }}" message="Be the first to review this agent after an order." />
         @endforelse
+
+        <div class="rounded-2xl border border-dashed border-app p-5" x-data="{ open: false }">
+            <button type="button" @click="open = !open" class="flex w-full items-center justify-between text-left">
+                <span class="text-sm font-semibold text-strong">{{ __('Dealt with this agent off-platform? Leave feedback') }}</span>
+                <x-icon name="chevron-down" class="h-4 w-4 text-faint" />
+            </button>
+            <form method="POST" action="{{ route('agents.guest-review', $agent) }}" x-show="open" x-cloak class="mt-4 space-y-3">
+                @csrf
+                <x-honeypot />
+                <x-form-timing form-type="review_feedback" />
+                <p class="text-xs text-faint">{{ __('This feedback is unverified and held for review before it appears.') }}</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div><label class="label">{{ __('Your name (optional)') }}</label><input name="guest_name" class="field"></div>
+                    <div><label class="label">{{ __('Your email (optional)') }}</label><input name="guest_email" type="email" class="field"></div>
+                </div>
+                <div>
+                    <label class="label">{{ __('Rating') }}</label>
+                    <select name="rating" class="field" required>
+                        @for ($i = 5; $i >= 1; $i--)<option value="{{ $i }}">{{ $i }} {{ __('star') }}{{ $i > 1 ? 's' : '' }}</option>@endfor
+                    </select>
+                </div>
+                <div><label class="label">{{ __('Comment (optional)') }}</label><textarea name="comment" rows="3" class="field"></textarea></div>
+                <x-turnstile action="review_feedback" />
+                <button class="btn btn-ghost w-full">{{ __('Submit feedback') }}</button>
+            </form>
+        </div>
     </div>
 
     <div class="mt-10 mb-4 rounded-2xl border border-app card-solid p-6 text-center">

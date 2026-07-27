@@ -7,6 +7,7 @@ use App\Models\PaymentIntent;
 use App\Models\WebhookEvent;
 use App\Services\Deposit\DepositService;
 use App\Services\Funding\FundingService;
+use App\Services\Payments\DTO\WebhookResult;
 use App\Services\Shop\ShopService;
 
 /**
@@ -79,6 +80,36 @@ class WebhookProcessor
             return $event;
         }
 
+        return $this->attemptSettlement($event, $result);
+    }
+
+    /**
+     * Re-runs the match+settle step (4-5) for a previously failed event,
+     * using its stored payload. Signature is not re-verified here: a status
+     * of Failed only ever follows a successful verifySignature() check in
+     * handle(), so there is nothing dishonest about skipping it on retry.
+     */
+    public function retry(WebhookEvent $event): WebhookEvent
+    {
+        if ($event->status !== WebhookStatus::Failed) {
+            throw new \InvalidArgumentException('Only failed webhook events can be retried.');
+        }
+
+        $event->increment('retry_count');
+        $event->update(['last_retried_at' => now()]);
+
+        if (! $this->payments->exists($event->provider_code)) {
+            return $event;
+        }
+
+        $provider = $this->payments->driver($event->provider_code);
+        $result = $provider->parseWebhook($event->payload ?? []);
+
+        return $this->attemptSettlement($event, $result);
+    }
+
+    private function attemptSettlement(WebhookEvent $event, WebhookResult $result): WebhookEvent
+    {
         try {
             // (4) Match to our intent.
             $intent = PaymentIntent::where('reference', $result->reference)->first();
@@ -103,6 +134,7 @@ class WebhookProcessor
             $event->update([
                 'status' => WebhookStatus::Processed,
                 'processed_at' => now(),
+                'error' => null,
                 'related_type' => $related?->getMorphClass(),
                 'related_id' => $related?->getKey(),
             ]);

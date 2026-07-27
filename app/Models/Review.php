@@ -11,7 +11,7 @@ class Review extends Model
 
     protected function casts(): array
     {
-        return ['rating' => 'integer'];
+        return ['rating' => 'integer', 'is_guest' => 'boolean'];
     }
 
     public function agent(): BelongsTo
@@ -22,5 +22,10 @@ class Review extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reviewerName(): string
+    {
+        return $this->is_guest ? ($this->guest_name ?: 'Guest') : ($this->user->name ?? 'Unknown');
     }
 }

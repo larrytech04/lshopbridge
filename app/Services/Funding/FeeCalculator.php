@@ -2,49 +2,30 @@
 
 namespace App\Services\Funding;
 
-use App\Models\Fee;
+use App\Models\User;
+use App\Services\Fees\FeeCalculationService;
 
 /**
- * Resolves the active admin-defined fee for a given context and computes the
- * fee amount. Fees are fully managed from the admin panel (fees table).
+ * Thin backward-compatible facade over FeeCalculationService, kept so
+ * DepositService/FundingService don't need constructor changes. All real
+ * matching/calculation logic lives in the one centralized engine.
  */
 class FeeCalculator
 {
-    public function feeFor(float $amount, string $appliesTo = 'funding', ?string $scope = null): float
+    public function __construct(private FeeCalculationService $engine) {}
+
+    public function feeFor(float $amount, string $appliesTo = 'funding', ?string $scope = null, ?User $user = null): float
     {
-        $fee = $this->resolveFee($appliesTo, $scope);
-
-        if (! $fee) {
-            return 0.0;
-        }
-
-        $value = $fee->type === 'percent'
-            ? ($amount * (float) $fee->value) / 100
-            : (float) $fee->value;
-
-        $value = max($value, (float) $fee->min_fee);
-
-        if ($fee->max_fee !== null) {
-            $value = min($value, (float) $fee->max_fee);
-        }
-
-        return round($value, 2);
+        return (float) $this->quote($amount, $appliesTo, $scope, $user)['calculated_fee'];
     }
 
-    private function resolveFee(string $appliesTo, ?string $scope): ?Fee
+    /** Full breakdown, so callers can freeze which rule priced a transaction. */
+    public function quote(float $amount, string $appliesTo = 'funding', ?string $scope = null, ?User $user = null): array
     {
-        $query = Fee::active()->where(function ($q) use ($appliesTo) {
-            $q->where('applies_to', $appliesTo)->orWhere('applies_to', 'all');
-        });
-
-        // Prefer a scoped fee (e.g. specific method) over a generic one.
-        if ($scope) {
-            $scoped = (clone $query)->where('scope', $scope)->orderBy('sort')->first();
-            if ($scoped) {
-                return $scoped;
-            }
-        }
-
-        return $query->whereNull('scope')->orderBy('sort')->first();
+        return $this->engine->calculate($amount, $appliesTo, [
+            'scope' => $scope,
+            'user' => $user,
+            'customer_role' => $user?->role?->value,
+        ]);
     }
 }

@@ -66,4 +66,28 @@ class MtnMomoProvider extends AbstractPaymentProvider
 
         return (string) ($res->json('access_token') ?? '');
     }
+
+    /** Real, non-money-moving check: request an OAuth token with the configured credentials. */
+    public function testConnection(): array
+    {
+        if ($this->isSandbox()) {
+            return parent::testConnection();
+        }
+
+        foreach (['api_user', 'api_key', 'subscription_key', 'base_url'] as $key) {
+            if (empty($this->config[$key])) {
+                return ['ok' => false, 'message' => "Missing required credential: {$key}."];
+            }
+        }
+
+        try {
+            $token = $this->accessToken();
+
+            return $token !== ''
+                ? ['ok' => true, 'message' => 'Authenticated successfully and obtained an access token.']
+                : ['ok' => false, 'message' => 'MTN rejected the credentials (no access token returned).'];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => 'Connection failed: '.$e->getMessage()];
+        }
+    }
 }

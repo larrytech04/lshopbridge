@@ -2,17 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\SecurityAlert;
+use App\Services\Security\LoginSecurityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, LoginSecurityService $loginSecurity): View
     {
+        $user = $request->user();
+        $currentSessionId = $request->session()->getId();
+
+        $sessions = DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->orderByDesc('last_activity')
+            ->get()
+            ->map(fn ($s) => (object) [
+                'id' => $s->id,
+                'is_current' => $s->id === $currentSessionId,
+                'ip' => $s->ip_address,
+                'device' => $loginSecurity->describeDevice($s->user_agent),
+                'last_active' => \Carbon\Carbon::createFromTimestamp($s->last_activity),
+            ]);
+
+        $recentLogins = $user->loginAttempts()->latest('id')->take(10)->get();
+
         return view('dashboard.security', [
-            'user' => $request->user(),
+            'user' => $user,
+            'sessions' => $sessions,
+            'recentLogins' => $recentLogins,
         ]);
     }
 
@@ -54,5 +76,39 @@ class SecurityController extends Controller
         ]);
 
         return back()->with('success', 'Transaction PIN saved.');
+    }
+
+    /** Revoke a single session — the customer-facing equivalent of the admin-only action that already existed. */
+    public function revokeSession(Request $request, string $sessionId)
+    {
+        $user = $request->user();
+
+        $deleted = DB::table('sessions')
+            ->where('id', $sessionId)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        abort_unless($deleted, 404);
+
+        return back()->with('success', 'That session has been signed out.');
+    }
+
+    /** Sign out every session except the one making this request. */
+    public function revokeOtherSessions(Request $request)
+    {
+        $user = $request->user();
+        $currentSessionId = $request->session()->getId();
+
+        DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $currentSessionId)
+            ->delete();
+
+        $user->notify(new SecurityAlert(
+            title: 'You signed out of all other sessions',
+            message: 'Every session except the one you\'re using now has been signed out.',
+        ));
+
+        return back()->with('success', 'Signed out of all other sessions.');
     }
 }

@@ -1,4 +1,14 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* Self-hosted Plus Jakarta Sans (bundled by Vite from @fontsource). Replaces the
+   old render-blocking fonts.bunny.net <link> tags, which hung whole page loads
+   for 20-30s whenever that host was slow or unreachable. */
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
+@import '@fontsource/plus-jakarta-sans/800.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -145,8 +155,10 @@ html.night {
         -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
         mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 94%, transparent 100%);
     }
+    /* Dark & night: dots at the light theme's relative strength read as bright
+       noise specks against a near-black page — keep the texture but barely-there. */
     html.dark .leopard::before, html.night .leopard::before {
-        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='%23ffffff' fill-opacity='0.22'><circle cx='32' cy='15' r='3'/><circle cx='45' cy='24' r='3'/><circle cx='40' cy='41' r='3'/><circle cx='23' cy='41' r='3'/><circle cx='19' cy='24' r='3'/><circle cx='90' cy='76' r='1.8'/><circle cx='99' cy='82' r='1.8'/><circle cx='96' cy='94' r='1.8'/><circle cx='84' cy='94' r='1.8'/><circle cx='81' cy='82' r='1.8'/><circle cx='96' cy='26' r='2.4'/><circle cx='104' cy='33' r='1.5'/><circle cx='18' cy='92' r='2.6'/><circle cx='10' cy='84' r='1.4'/></g></svg>");
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><g fill='%23ffffff' fill-opacity='0.07'><circle cx='32' cy='15' r='3'/><circle cx='45' cy='24' r='3'/><circle cx='40' cy='41' r='3'/><circle cx='23' cy='41' r='3'/><circle cx='19' cy='24' r='3'/><circle cx='90' cy='76' r='1.8'/><circle cx='99' cy='82' r='1.8'/><circle cx='96' cy='94' r='1.8'/><circle cx='84' cy='94' r='1.8'/><circle cx='81' cy='82' r='1.8'/><circle cx='96' cy='26' r='2.4'/><circle cx='104' cy='33' r='1.5'/><circle cx='18' cy='92' r='2.6'/><circle cx='10' cy='84' r='1.4'/></g></svg>");
     }
 
     .glass {
@@ -343,31 +355,127 @@ html.night {
 
     .field { @apply w-full rounded-xl px-4 py-2.5 shadow-inner transition focus:outline-none focus:ring-2 focus:ring-brand-400/30; background: var(--field-bg); border:1px solid var(--field-border); color: var(--text-strong); }
     .field::placeholder { color: var(--text-faint); }
+
+    /* Manage-user console: quick-action pills, tab strip, vertical timeline. */
+    .qa-btn { @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-200; border-color: var(--border); background: var(--surface-1); color: var(--text-body); }
+    .qa-btn:hover { background: var(--surface-2); color: var(--text-strong); transform: translateY(-1px); }
+    .qa-btn-danger { color: #be123c; border-color: rgba(244,63,94,.35); background: rgba(244,63,94,.12); }
+    .qa-btn-danger:hover { background: #e11d48; color: #fff; }
+    .qa-btn-warn { color: #b45309; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+    .qa-btn-warn:hover { background: #d97706; color: #fff; }
+    .qa-btn-good { color: #047857; border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
+    .qa-btn-good:hover { background: #059669; color: #fff; }
+    html.dark .qa-btn-danger, html.night .qa-btn-danger { color: #fecaca; }
+    html.dark .qa-btn-warn, html.night .qa-btn-warn { color: #fde68a; }
+    html.dark .qa-btn-good, html.night .qa-btn-good { color: #a7f3d0; }
+
+    .mu-tab { @apply relative shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200; color: var(--text-muted); }
+    .mu-tab:hover { color: var(--text-strong); }
+    .mu-tab-active { background: var(--color-brand-600); color: #fff; box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-600) 40%, transparent); }
+
+    .mu-timeline { position: relative; }
+    .mu-timeline::before { content: ''; position: absolute; left: 15px; top: .5rem; bottom: .5rem; width: 2px; background: var(--border); }
+    .mu-timeline-item { position: relative; padding-left: 2.5rem; }
+    .mu-timeline-dot { position: absolute; left: 6px; top: .2rem; width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center; color: #fff; box-shadow: 0 0 0 4px var(--surface-1); }
     .field:focus { background: var(--field-bg-focus); border-color: color-mix(in srgb, var(--color-brand-500) 55%, transparent); }
     .label { @apply mb-1.5 block text-sm font-medium; color: var(--text-body); }
 
     .pill { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium; }
 
+    /* Dashboard shell: primary sidebar / main content as real grid columns —
+       never floating panels, never manual margins. Column widths are plain CSS
+       driven by one boolean class Alpine toggles (.shell-sbc = primary collapsed),
+       deliberately NOT a computed inline `grid-template-columns`, so there's no
+       runtime JS expression that can silently fail to apply. Explicit grid-column
+       pins keep placement stable regardless of which children render (a
+       display:none or fixed-position child generates no grid item). Below `lg`
+       everything collapses to a single column since nav is a drawer there. */
+    .dashboard-shell {
+        display: grid;
+        align-items: start;
+        grid-template-columns: 18rem minmax(0, 1fr);
+    }
+    .dashboard-shell.shell-sbc { grid-template-columns: 5rem minmax(0, 1fr); }
+    .shell-col-primary { grid-column: 1; }
+    .shell-col-main { grid-column: 2; }
+    @media (max-width: 1023px) {
+        .dashboard-shell,
+        .dashboard-shell.shell-sbc { grid-template-columns: minmax(0, 1fr) !important; }
+        .shell-col-primary,
+        .shell-col-main { grid-column: 1 !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .dashboard-shell { transition: none !important; }
+    }
+    .shell-col-primary {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+    /* min-height (not height): lets the column grow past 100vh for long pages
+       instead of clipping/scrolling internally, while still giving <main>'s
+       flex-column below something to grow against on short pages — that's
+       what pins the Privacy/Terms/copyright footer to the bottom of the
+       viewport instead of it floating right under a short page's content. */
+    .shell-col-main { min-width: 0; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Sidebar edge controls (collapse arrow + social dock) ride the primary
+       sidebar's own right edge. Same plain-class-toggle approach as the shell
+       columns above, not a computed inline `left` expression. */
+    .edge-ctl { left: 18rem; }
+    .edge-ctl.edge-ctl-sbc { left: 5rem; }
+
     /* Collapsed sidebar → icon-only mini rail (desktop): labels, section headers
-       and the (too-wide) logo hide; the nav SVGs stay, centered. */
+       and the (too-wide) logo hide; the nav SVGs stay, centered. Width itself comes
+       from the shell's grid-template-columns, not from this class. */
     @media (min-width: 1024px) {
-        /* !important: these must beat the w-72 / inline-flex utilities, which
-           Tailwind emits in a later layer than components. */
-        .sb-mini { width: 5rem !important; }
         .sb-mini nav p { display: none !important; }
         .sb-mini .nav-item { justify-content: center; padding-inline: 0.5rem; gap: 0.25rem; }
         /* hide labels/badges but NOT the masked-PNG icons (which are spans too) */
         .sb-mini .nav-item span:not(.png-icon) { display: none !important; }
-        .sb-mini [data-shop-sub] { display: none !important; }
-        /* Shop row keeps its dropdown caret even collapsed (it's an <svg>, not a
-           label span), so shrink it: same !important reason as above. */
+        /* Section headers are collapsible in the full-width sidebar (own
+           open/closed preference per section, see nav-user.blade.php's
+           `open || sbc` guard); the mini icon rail always shows every item
+           regardless of that preference, so only the header itself hides here. */
+        .sb-mini nav [data-nav-section] { display: none !important; }
+        /* The Marketplace row keeps its dropdown caret even collapsed (it's an
+           <svg>, not a label span), so shrink it: same !important reason as above. */
         .sb-mini .nav-item .shop-caret { width: 0.7rem !important; height: 0.7rem !important; }
     }
 
     .nav-item { @apply flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition; color: var(--text-muted); }
     .nav-item:hover { background: var(--surface-2); color: var(--text-strong); }
-    .nav-item-active { color: var(--text-strong); background: color-mix(in srgb, #94a3b8 24%, transparent); border: 1px solid var(--glass-border); }
-    html:not(.dark):not(.night) .nav-item-active { color: var(--color-brand-700); background: color-mix(in srgb, #475569 20%, transparent); }
+    .nav-item-active { color: var(--text-strong); background: color-mix(in srgb, #475569 24%, transparent); border: 1px solid transparent; border-left: 2.5px solid var(--color-brand-500); }
+    html:not(.dark):not(.night) .nav-item-active { color: var(--text-strong); background: color-mix(in srgb, #475569 16%, transparent); }
+
+    /* Withdraw Funds (money leaving the account) gets a distinct active look:
+       neutral ash-grey fill/text instead of the brand-red tint every other nav
+       item uses, while keeping the red left border as a deliberate caution
+       accent. The rounded outline itself stays neutral on every nav item —
+       red is reserved for that one left-edge stripe, never the full border. */
+    .nav-item-active.nav-item-ash { color: #475569; background: color-mix(in srgb, #64748b 18%, transparent); border: 1px solid transparent; border-left: 2.5px solid var(--color-brand-500); }
+    html:not(.dark):not(.night) .nav-item-active.nav-item-ash { color: #475569; background: color-mix(in srgb, #64748b 14%, transparent); }
+    html.dark .nav-item-active.nav-item-ash, html.night .nav-item-active.nav-item-ash { color: #cbd5e1; }
+
+    /* currentColor-masked nav icons (.png-icon, fine line-art at 20px) need more
+       contrast than the muted label text they sit next to to stay legible on
+       dark/night sidebars — bump just the icon, independent of hover/active state. */
+    html.dark .nav-item .png-icon, html.night .nav-item .png-icon { background-color: var(--text-strong); opacity: .82; }
+    html.dark .nav-item:hover .png-icon, html.dark .nav-item-active .png-icon,
+    html.night .nav-item:hover .png-icon, html.night .nav-item-active .png-icon { opacity: 1; }
+
+    /* Raw multi-colour nav icons (real PNG/SVG assets, not the currentColor-mask
+       .png-icon ones) are drawn with light fills + near-black outline strokes for
+       a light sidebar. On dark/night, the black strokes vanish into the background
+       and the icon reads as a fuzzy blob, so give it a small light backdrop chip
+       there so both the fill and the stroke stay legible. */
+    html.dark .nav-icon-raw, html.night .nav-icon-raw {
+        background: #f1f1f1; border-radius: 0.4rem; padding: 2px; box-sizing: content-box;
+    }
 
     /* App shell: floating bottom dock — iOS/WhatsApp-style liquid-glass capsule.
        Opaque enough (and blurred hard enough) that content scrolling underneath
@@ -503,6 +611,34 @@ html.night {
     .border-app { border-color: var(--border); }
     .ring-app { --tw-ring-color: var(--border); }
     .divide-app > :not([hidden]) ~ :not([hidden]) { border-color: var(--border); }
+
+    /* Legal & Policy Center content (Markdown -> HTML via LegalContentRenderer).
+       Maps @tailwindcss/typography's prose color vars onto this app's own
+       theme tokens instead of its default gray scale, so policy pages follow
+       light/dark/night the same as everything else. */
+    .legal-content {
+        --tw-prose-body: var(--text-body);
+        --tw-prose-headings: var(--text-strong);
+        --tw-prose-lead: var(--text-body);
+        --tw-prose-links: var(--color-brand-500);
+        --tw-prose-bold: var(--text-strong);
+        --tw-prose-counters: var(--text-muted);
+        --tw-prose-bullets: var(--text-muted);
+        --tw-prose-hr: var(--border);
+        --tw-prose-quotes: var(--text-body);
+        --tw-prose-quote-borders: var(--color-brand-500);
+        --tw-prose-captions: var(--text-faint);
+        --tw-prose-code: var(--text-strong);
+        --tw-prose-pre-code: var(--text-body);
+        --tw-prose-pre-bg: var(--surface-2);
+        --tw-prose-th-borders: var(--border);
+        --tw-prose-td-borders: var(--border);
+        max-width: none;
+    }
+    .legal-content :is(h2, h3) { scroll-margin-top: 6rem; }
+    .legal-content .legal-heading-anchor { margin-left: .5rem; font-weight: 400; color: var(--text-faint); text-decoration: none; opacity: 0; transition: opacity .15s; }
+    .legal-content :is(h2, h3):hover .legal-heading-anchor, .legal-content .legal-heading-anchor:focus-visible { opacity: 1; }
+    .legal-content strong { color: var(--text-strong); }
 }
 
 /* ------------------------------------------------------------ Tom Select */
@@ -713,4 +849,116 @@ html:not(.dark):not(.night) body.pb-ash-theme {
 }
 html:not(.dark):not(.night) .pb-ash-field {
     background: #e0e0e0 !important;
+}
+
+/* ---------------------------------------------- Legal & Policy Center: print */
+/* "Print this policy" (section 46) uses the browser's native print dialog —
+   no server-side PDF generation exists yet (no PDF library installed), so
+   this is the honest Phase-1 substitute: it lets a user print-to-PDF from
+   any browser, it just isn't a generated file the platform hands them. */
+@media print {
+    header, .legal-toc-sidebar, .legal-toc-mobile, .legal-print-hide,
+    [data-header-spacer], .app-dock, .announce-bar {
+        display: none !important;
+    }
+    body { background: #fff !important; }
+    .legal-content { color: #000 !important; }
+    .legal-content a { color: #000 !important; text-decoration: underline; }
+    .legal-heading-anchor { display: none !important; }
+    .legal-print-footer { display: block !important; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #999; font-size: 10px; color: #555; }
+}
+.legal-print-footer { display: none; }
+
+/* ---------------------------------------------- Accessibility panel (footer) */
+/* Each preference is a real, functional CSS override — not decoration. Applied
+   via a class on <html>, toggled from the footer's accessibility panel and
+   restored before first paint by theme-head.blade.php's anti-flash script. */
+html.a11y-text-lg { font-size: 112.5%; }
+html.a11y-text-xl { font-size: 125%; }
+
+html.a11y-contrast {
+    --text-muted: var(--text-strong);
+    --text-faint: var(--text-body);
+    --border: color-mix(in srgb, var(--text-strong) 45%, transparent);
+}
+
+html.a11y-underline-links a { text-decoration: underline; text-underline-offset: 2px; }
+
+html.a11y-reduced-motion *,
+html.a11y-reduced-motion *::before,
+html.a11y-reduced-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* ---------------------------------------------- LshopBridge Network Footer */
+.footer-shell {
+    background: var(--surface-1);
+    border-top: 1px solid var(--border);
+}
+html.dark .footer-shell, html.night .footer-shell {
+    background: color-mix(in srgb, var(--bg) 60%, black 15%);
+}
+
+.footer-eyebrow { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); }
+
+/* Desktop section list (.footer-list-desktop): plain, static, no Alpine
+   involved at all — see service-network.blade.php's header comment for why
+   this is a separate render from the mobile accordion rather than one
+   Alpine-controlled element styled two ways. */
+.footer-section { margin-bottom: 1.5rem; }
+.footer-section-title { margin-bottom: .5rem; font-size: .8125rem; font-weight: 700; color: var(--text-strong); }
+.footer-plain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .1rem; }
+
+/* Mobile accordion (.footer-list-mobile): a real collapsible section. */
+.footer-accordion { border-bottom: 1px solid var(--border); padding-block: .1px; }
+.footer-accordion:last-child { border-bottom: none; }
+.footer-accordion-trigger {
+    display: flex; width: 100%; align-items: center; justify-content: space-between;
+    padding-block: .875rem; font-size: .8125rem; font-weight: 700; color: var(--text-strong);
+}
+.footer-accordion-chevron { color: var(--text-faint); transition: transform .2s; flex-shrink: 0; }
+.footer-accordion-panel { list-style: none; margin: 0; padding: 0 0 .875rem; display: flex; flex-direction: column; gap: .1rem; }
+
+.footer-link { display: block; padding-block: .375rem; font-size: .8125rem; color: var(--text-muted); }
+.footer-link:hover { color: var(--text-strong); }
+.footer-badge {
+    margin-left: .4rem; display: inline-flex; border-radius: .35rem; padding: .0625rem .375rem;
+    font-size: .625rem; font-weight: 700; text-transform: uppercase; background: color-mix(in srgb, var(--color-brand-500) 15%, transparent); color: var(--color-brand-500);
+}
+
+.footer-social-link {
+    display: grid; place-items: center; height: 2.25rem; width: 2.25rem; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--text-muted); transition: color .15s, border-color .15s, transform .15s;
+}
+.footer-social-link:hover { color: var(--footer-social-color, var(--color-brand-500)); border-color: var(--footer-social-color, var(--color-brand-500)); transform: translateY(-2px); }
+
+.footer-newsletter { max-width: 34rem; }
+.footer-interest-chip { position: relative; display: inline-flex; }
+.footer-interest-chip-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; margin: 0; }
+.footer-interest-chip span {
+    display: inline-flex; border-radius: 999px; border: 1px solid var(--border); padding: .3rem .7rem;
+    font-size: .6875rem; font-weight: 600; color: var(--text-muted); transition: background .15s, color .15s, border-color .15s;
+}
+.footer-interest-chip:has(.footer-interest-chip-input:checked) span {
+    background: color-mix(in srgb, var(--color-brand-500) 16%, transparent); border-color: var(--color-brand-500); color: var(--color-brand-600);
+}
+.footer-interest-chip:has(.footer-interest-chip-input:focus-visible) span { outline: 2px solid var(--color-brand-400); outline-offset: 1px; }
+
+.footer-region-trigger {
+    display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; border: 1px solid var(--border);
+    padding: .35rem .75rem; font-size: .75rem; font-weight: 600; color: var(--text-body); transition: background .15s, color .15s;
+}
+.footer-region-trigger:hover { background: var(--surface-2); color: var(--text-strong); }
+
+.footer-a11y-option {
+    border-radius: .6rem; border: 1px solid var(--border); padding-block: .4rem; font-size: .75rem; font-weight: 600; color: var(--text-body);
+    transition: background .15s, color .15s, border-color .15s;
+}
+.footer-a11y-option-active { background: var(--color-brand-500); border-color: var(--color-brand-500); color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+    .footer-social-link, .footer-accordion-chevron { transition: none; }
 }

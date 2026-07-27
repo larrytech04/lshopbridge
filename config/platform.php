@@ -15,6 +15,10 @@ return [
     'name'    => env('APP_NAME', 'LshopBridge'),
     'tagline' => 'Fund Alipay, WeChat Pay & China wallets from anywhere in Africa.',
     'support_email' => 'support@lshopbridge.com',
+    // Single source of truth for the release label shown in the admin footer
+    // and System Information page. This is a manually maintained label, not
+    // derived from git/CI — bump it by hand (or via APP_VERSION) on release.
+    'version' => env('APP_VERSION', '2.0.0'),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,6 +94,10 @@ return [
         'velocity_count'           => 5,   // tx within window
         'velocity_window_minutes'  => 30,
         'large_tx_multiplier'      => 0.9, // % of per-tx limit considered "large"
+        'max_margin_percent'       => 10,  // admin exchange-rate margin ceiling
+        'large_rate_change_percent' => 5,  // % change from the previous rate that requires extra confirmation
+        'max_fee_percent'          => 20,  // admin percentage-fee ceiling
+        'large_fee_change_percent' => 20,  // % change from the previous fee value that requires extra confirmation
     ],
 
     /*

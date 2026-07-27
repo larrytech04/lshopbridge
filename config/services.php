@@ -25,6 +25,25 @@ return [
         'secret_key' => env('TURNSTILE_SECRET_KEY'),
     ],
 
+    'sms' => [
+        'provider' => env('SMS_PROVIDER'),
+        'account_sid' => env('SMS_ACCOUNT_SID'),
+        'api_key' => env('SMS_API_KEY'),
+        'sender' => env('SMS_SENDER'),
+    ],
+
+    'discord' => [
+        'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+    ],
+
+    'slack_alerts' => [
+        'webhook_url' => env('SLACK_WEBHOOK_URL'),
+    ],
+
+    'ipinfo' => [
+        'api_key' => env('IPINFO_API_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

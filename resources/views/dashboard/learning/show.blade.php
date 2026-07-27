@@ -73,6 +73,8 @@
                 </div>
             @endif
 
+            @include('public.guides._feedback', ['guide' => $guide, 'alreadyVoted' => $alreadyVoted])
+
             {{-- Prev / next, turn the page --}}
             @if ($prev || $next)
                 <div class="grid gap-3 sm:grid-cols-2">

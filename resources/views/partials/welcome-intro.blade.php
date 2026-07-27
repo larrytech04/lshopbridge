@@ -10,7 +10,7 @@
     <x-sheet max-width="sm:max-w-lg" class="!p-0">
         {{-- Header banner (solid brand) --}}
         <div class="relative rounded-t-3xl bg-brand-900 px-6 py-6 sm:px-8 sm:py-7">
-            <button type="button" @click="skip()" class="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25">
+            <button type="button" @click="skip()" aria-label="{{ __('Skip') }}" class="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/25">
                 <x-icon name="x" class="h-4 w-4" />
             </button>
             <div class="flex items-center gap-5">

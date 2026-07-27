@@ -12,6 +12,26 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('esim_activation_policy_label')) {
+    /**
+     * Plain-language label for a plan's real activation_policy value.
+     * Deliberately per-policy — never one blanket "installation won't start
+     * your validity" message for every plan (the eSIM spec is explicit that
+     * this varies by plan and provider).
+     */
+    function esim_activation_policy_label(?string $policy): string
+    {
+        return match ($policy) {
+            'first_connect' => 'Safe to install before travelling. Validity begins the first time your device connects to a supported network.',
+            'on_install' => 'Validity begins immediately after installation, even before you connect.',
+            'on_date' => 'Validity begins on the date you select during setup.',
+            'manual' => 'This plan requires manual activation. Follow the instructions on your installation page.',
+            'provider_defined' => 'Activation timing is set by the eSIM provider. Check your installation page for the exact terms.',
+            default => 'Check your installation page for exactly when this plan activates.',
+        };
+    }
+}
+
 if (! function_exists('site_logo')) {
     /** URL of the site logo, admin-uploaded if set, else the bundled default. */
     function site_logo(): string
@@ -29,6 +49,34 @@ if (! function_exists('site_favicon')) {
         $custom = setting('site_favicon_path');
 
         return $custom ? asset($custom) : asset('assets/'.rawurlencode('favicon shopbridge.png'));
+    }
+}
+
+if (! function_exists('local_avatar')) {
+    /**
+     * Data-URI SVG initials avatar, generated locally. Replaces the old
+     * api.dicebear.com images, which stalled page loads (spinner never
+     * finishing) whenever that host was slow or unreachable.
+     */
+    function local_avatar(string $name, ?string $background = null): string
+    {
+        $initials = collect(preg_split('/[\s._-]+/u', trim($name)) ?: [])
+            ->filter()
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->take(2)
+            ->implode('');
+        $initials = $initials !== '' ? $initials : 'U';
+
+        // Deterministic per-name background so different users get distinct colors.
+        $palette = ['#9C0F26', '#B4532A', '#7C2D4A', '#4A5568', '#2F6B4F', '#5B4B8A'];
+        $bg = $background ?: $palette[abs(crc32($name)) % count($palette)];
+
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+            .'<rect width="64" height="64" rx="32" fill="'.$bg.'"/>'
+            .'<text x="32" y="41" font-family="ui-sans-serif,system-ui,sans-serif" font-size="24" font-weight="700" fill="#ffffff" text-anchor="middle">'.e($initials).'</text>'
+            .'</svg>';
+
+        return 'data:image/svg+xml;utf8,'.rawurlencode($svg);
     }
 }
 

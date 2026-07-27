@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KycLevel;
 use App\Models\ShopCategory;
 use App\Models\ShopProduct;
+use App\Services\Navigation\NavigationBadgeService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -27,6 +28,7 @@ class DashboardController extends Controller
         });
 
         return view('dashboard.index', [
+            'navBadges' => app(NavigationBadgeService::class)->forUser($user),
             'txSeries' => $txSeries,
             'txInflow' => (float) $txSeries->sum('credit'),
             'txOutflow' => (float) $txSeries->sum('debit'),
@@ -39,6 +41,9 @@ class DashboardController extends Controller
             'recentOrders' => $user->shopOrders()->with('items')->latest()->take(3)->get(),
             'popular' => ShopProduct::active()->where('is_featured', true)->orderBy('sort')->with('variants')->take(6)->get(),
             'shopCategories' => ShopCategory::active()->whereNull('parent_id')->take(8)->get(),
+            'esimProducts' => ShopProduct::active()->where('type', 'esim')
+                ->whereHas('variants', fn ($q) => $q->where('is_active', true))
+                ->with('variants')->orderByDesc('is_featured')->orderByDesc('sales_count')->take(6)->get(),
             'level' => KycLevel::where('level', $user->kyc_level)->first(),
             'nextLevel' => KycLevel::where('level', $user->kyc_level + 1)->first(),
             'stats' => [

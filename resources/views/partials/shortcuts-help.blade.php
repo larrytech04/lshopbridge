@@ -21,7 +21,7 @@
                 <h2 class="text-lg font-bold text-strong">{{ __('Keyboard shortcuts') }}</h2>
                 <div class="flex items-center gap-2">
                     <button type="button" @click="window.print()" class="rounded-full border border-app px-3 py-1.5 text-xs font-semibold text-body transition hover:surface-2">{{ __('Print') }}</button>
-                    <button type="button" @click="close()" class="grid h-8 w-8 place-items-center rounded-full transition hover:surface-2">
+                    <button type="button" @click="close()" aria-label="{{ __('Close') }}" class="grid h-8 w-8 place-items-center rounded-full transition hover:surface-2">
                         <x-icon name="x" class="h-4 w-4" />
                     </button>
                 </div>

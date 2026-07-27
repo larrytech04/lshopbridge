@@ -7,10 +7,10 @@
         @forelse ($faqs as $faq)
             <div class="glass rounded-2xl p-5" x-data="{ edit: false }">
                 <div class="flex items-start justify-between gap-3">
-                    <div><p class="font-medium text-strong">{{ $faq->question }}</p><p class="mt-1 text-sm text-muted">{{ $faq->answer }}</p><p class="mt-1 text-xs text-faint">{{ ucfirst($faq->category) }} @unless($faq->is_published)· <span class="text-amber-300">Hidden</span>@endunless</p></div>
+                    <div><p class="font-medium text-strong">{{ $faq->question }}</p><p class="mt-1 text-sm text-muted">{{ $faq->answer }}</p><p class="mt-1 text-xs text-faint">{{ ucfirst($faq->category) }} @unless($faq->is_published)· <span class="text-amber-600">Hidden</span>@endunless</p></div>
                     <div class="flex items-center gap-2">
-                        <button @click="edit=!edit" class="text-brand-300 text-sm">Edit</button>
-                        <form method="POST" action="{{ route('admin.faqs.destroy', $faq) }}" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="text-rose-300"><x-icon name="x" class="h-4 w-4" /></button></form>
+                        <button @click="edit=!edit" class="text-brand-600 text-sm">Edit</button>
+                        <form method="POST" action="{{ route('admin.faqs.destroy', $faq) }}" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="text-rose-600"><x-icon name="x" class="h-4 w-4" /></button></form>
                     </div>
                 </div>
                 <div x-show="edit" x-collapse style="display:none">

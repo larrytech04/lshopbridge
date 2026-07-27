@@ -1,12 +1,22 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.public')
-@section('title', 'My orders · '.config('platform.name'))
-@section('page-title', __('Order history'))
+@php $digitalOnly = $digitalOnly ?? false; @endphp
+@section('title', ($digitalOnly ? 'Digital purchases' : 'My orders').' · '.config('platform.name'))
+@section('page-title', $digitalOnly ? __('Digital Purchases') : __('My Orders'))
 
 @section('content')
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
     <div class="flex items-center justify-between gap-3">
-        <h1 class="text-2xl font-bold text-strong">{{ __('Order history') }}</h1>
-        <a href="{{ route('shop.index') }}" class="btn btn-ghost text-sm"><x-icon name="bag" class="h-4 w-4" /> {{ __('Shop') }}</a>
+        <div>
+            <h1 class="text-2xl font-bold text-strong">{{ $digitalOnly ? __('Digital Purchases') : __('My Orders') }}</h1>
+            @if ($digitalOnly)
+                <p class="mt-1 text-sm text-muted">{{ __('Gift cards, eSIMs, top-ups & other instantly delivered purchases.') }}</p>
+            @endif
+        </div>
+        @if ($digitalOnly)
+            <a href="{{ route('shop.orders.index') }}" class="btn btn-ghost text-sm"><x-icon name="receipt" class="h-4 w-4" /> {{ __('All Orders') }}</a>
+        @else
+            <a href="{{ route('shop.index') }}" class="btn btn-ghost text-sm"><x-icon name="bag" class="h-4 w-4" /> {{ __('Marketplace') }}</a>
+        @endif
     </div>
 
     <form method="GET" class="mt-6">
@@ -47,9 +57,15 @@
                 </div>
             </div>
         @empty
-            <x-empty icon="receipt" title="{{ __('No orders yet') }}" message="{{ __('Your digital purchases will appear here.') }}">
-                <a href="{{ route('shop.index') }}" class="btn btn-primary mt-4">{{ __('Browse the shop') }}</a>
-            </x-empty>
+            @if ($digitalOnly)
+                <x-empty icon="download" title="{{ __('No digital purchases yet') }}" message="{{ __('Gift cards, eSIMs and other instant purchases will appear here.') }}">
+                    <a href="{{ route('shop.index') }}" class="btn btn-primary">{{ __('Browse the Marketplace') }}</a>
+                </x-empty>
+            @else
+                <x-empty icon="receipt" title="{{ __('No orders yet') }}" message="{{ __('Your purchases will appear here.') }}">
+                    <a href="{{ route('shop.index') }}" class="btn btn-primary">{{ __('Browse the Marketplace') }}</a>
+                </x-empty>
+            @endif
         @endforelse
     </div>
     <div class="mt-8">{{ $orders->links() }}</div>

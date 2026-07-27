@@ -3,7 +3,6 @@
 
 @section('content')
 @php
-    $hero = $banners->firstWhere('type', 'hero');
     $dc = display_currency();
     $dispRate = $dc['rate'] ?: 1;
     $effRate = $rate / $dispRate;          // display currency -> CNY (today's admin rate)
@@ -41,15 +40,15 @@
                       . e(__('China')).' '.e(__('Funding &')).'<br>'
                       . e(__('Digital Shop'));
         @endphp
-        <h1 class="hero-spot relative cursor-default text-center text-[2.65rem] font-black leading-[1.1] tracking-tight text-strong sm:text-[3.25rem] lg:text-[4.25rem]"
+        <h1 class="hero-spot relative cursor-default text-center text-[2.05rem] font-black leading-[1.15] tracking-tight text-strong sm:text-[3.25rem] sm:leading-[1.1] lg:text-[4.25rem]"
             x-data="{ mx: '-200px', my: '-200px' }"
             @mousemove="mx = $event.offsetX + 'px'; my = $event.offsetY + 'px'"
             @mouseleave="mx = '-200px'; my = '-200px'"
             :style="`--mx:${mx}; --my:${my}`">{!! $heroHtml !!}<span class="hero-spot-red" aria-hidden="true">{!! $heroHtml !!}</span></h1>
-        <p class="mx-auto mt-4 max-w-xl text-base text-body sm:mt-5 sm:text-lg">
+        <p class="mx-auto mt-3 line-clamp-2 max-w-[19rem] text-sm text-body sm:mt-5 sm:line-clamp-none sm:max-w-xl sm:text-lg">
             {{ $hero ? __($hero->subtitle) : __('Top up with MoMo, bank, card or crypto and we deliver to any China wallet automatically, plus shop gift cards, eSIMs, VPN & more, delivered in minutes.') }}
         </p>
-        <div class="mt-8 flex flex-nowrap items-center justify-center gap-2 sm:gap-3">
+        <div class="mt-6 flex flex-nowrap items-center justify-center gap-2 sm:mt-8 sm:gap-3">
             <a href="{{ $hero->cta_url ?? route('register') }}"
                class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl px-4 py-2.5 text-sm font-bold text-white shadow-lg transition duration-300 hover:-translate-y-0.5 sm:gap-2 sm:px-6 sm:py-3 sm:text-base"
                style="background: color-mix(in srgb, var(--color-brand-600) 90%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
@@ -58,6 +57,15 @@
             <a href="{{ route('shop.index') }}" class="glass inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl px-4 py-2.5 text-sm font-semibold text-body transition duration-300 hover:-translate-y-0.5 hover:text-strong sm:gap-2 sm:px-6 sm:py-3 sm:text-base">
                 <x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-4 w-4 sm:h-5 sm:w-5" /> {{ __('Browse the shop') }}
             </a>
+        </div>
+
+        {{-- Ring video, mobile/tablet: in normal flow so it sits evenly between the CTAs
+             and whatever follows, instead of pinned to the section's bottom edge. --}}
+        <div class="relative z-0 mx-auto mt-8 w-48 sm:mt-10 sm:w-64 lg:hidden">
+            <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
+                <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
+                <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
+            </video>
         </div>
     </div>
 
@@ -73,6 +81,16 @@
             <span class="delay-300 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-slate-700 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
             <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-sky-600 opacity-0 transition-all delay-500 duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 87.5%; left: 68%; right: 11%;">{{ __('Secure & fast') }}</span>
         </div>
+    </div>
+
+    {{-- Ring video, desktop: bottom-left corner accent. The .webm carries a real alpha
+         channel (bg keyed out in post), so the spinning ring renders alone on any theme.
+         Browsers without VP9-alpha fall back to the .mp4 + the .hero-vid CSS blend trick. --}}
+    <div class="pointer-events-none absolute bottom-0 left-0 z-0 hidden lg:block lg:w-[300px] xl:w-[360px]">
+        <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
+            <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
+            <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
+        </video>
     </div>
 </section>
 
@@ -137,14 +155,7 @@
 </div>
 
 {{-- ALL-IN-ONE HUB, the two pillars: China funding + digital goods --}}
-<section class="mx-auto mt-16 max-w-none px-4 sm:mt-24 sm:px-6" x-data="{ shown: false }" x-intersect.once="shown = true">
-    <div class="mb-10 text-center sm:mb-14">
-        <h2 class="text-2xl font-black leading-[1.12] tracking-tight text-strong sm:text-4xl lg:text-5xl"
-            x-data="typewriter([@js(__('Alipay')), @js(__('WeChat Pay')), @js(__('UnionPay')), @js(__('QQ Wallet'))])">
-            {{ __('Fund') }} <span class="text-brand-600"><span x-text="txt"></span><span class="tw-caret">|</span></span> {{ __('in seconds.') }}
-        </h2>
-    </div>
-
+<section class="mx-auto mt-10 max-w-none px-4 sm:mt-14 sm:px-6" x-data="{ shown: false }" x-intersect.once="shown = true">
     @php
         $reveal = "transition-all duration-500 ease-out";
         $hidden = "shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'";
@@ -320,30 +331,6 @@
 @php
     $gword = '<span class="g-wordmark"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span>';
     $avatarPalette = [['#ffe4e6','#e11d48'],['#e0f2fe','#0284c7'],['#d1fae5','#059669'],['#ede9fe','#7c3aed'],['#fef3c7','#b45309'],['#e0e7ff','#4f46e5'],['#ccfbf1','#0d9488'],['#fae8ff','#c026d3']];
-    // [name, date, source, rating, verified, text]
-    $reviews = [
-        ['Chizuka', 'Jun 17, 2026', 'trustpilot', 5, true, 'Fast and smooth, happy to use this website :)'],
-        ['Paynes J.', 'Apr 3, 2026', 'trustpilot', 4.5, true, 'Great service: fast delivery. Highly recommend it!'],
-        ['Thomas Kane', 'Jan 22, 2026', 'google', 5, false, 'Perfect transaction using BTC for Tracfone refill cards.'],
-        ['Dmitry S.', 'Nov 9, 2025', 'google', 4.8, true, 'Fantastic service, funded my Alipay in minutes.'],
-        ['Aïcha Diallo', 'Sep 14, 2025', 'trustpilot', 5, true, 'Topped up WeChat Pay with MoMo, super easy and quick.'],
-        ['Kwame Mensah', 'Jul 28, 2025', 'google', 4.5, false, 'Best rates I found for sending money to China. Recommended.'],
-        ['Linh Tran', 'May 5, 2025', 'trustpilot', 4.7, true, 'Bought an eSIM for my trip and it worked instantly.'],
-        ['Samuel O.', 'Mar 19, 2025', 'google', 4, true, 'Gift card delivered in seconds. Will definitely use again.'],
-        ['Fatima Bello', 'Feb 2, 2025', 'trustpilot', 5, false, 'Reliable and transparent fees. No hidden charges.'],
-        ['Jean-Paul N.', 'Dec 12, 2024', 'google', 4.5, true, 'Funded my 1688 supplier without any stress. Great job.'],
-        ['Grace Achieng', 'Oct 30, 2024', 'trustpilot', 5, true, 'Customer support replied fast and helped me right away.'],
-        ['Mohammed Al-Amin', 'Sep 8, 2024', 'google', 4.3, false, 'Smooth Alipay top-up and a great exchange rate.'],
-        ['Chen Wei', 'Aug 21, 2024', 'trustpilot', 4.5, true, 'Used USDT to buy a gift card, no issues at all.'],
-        ['Ngozi Eze', 'Jul 4, 2024', 'google', 5, true, 'Everything worked exactly as promised. Five stars.'],
-        ['David Mwangi', 'Jun 15, 2024', 'trustpilot', 4, false, 'Quick delivery and fair pricing. Solid platform.'],
-        ['Sofia Rossi', 'May 1, 2024', 'google', 4.8, true, 'Easy to set up and fund Alipay as a foreigner.'],
-        ['Ahmed Sani', 'Apr 10, 2024', 'trustpilot', 5, true, 'Funded WeChat Pay in under five minutes. Impressive.'],
-        ['Blessing Okafor', 'Mar 2, 2024', 'google', 4.5, false, 'Honestly the easiest way I have found to pay in China.'],
-        ['Yuki Tanaka', 'Feb 14, 2024', 'trustpilot', 4.7, true, 'Great rates and instant eSIM delivery. Thank you!'],
-        ['Pierre Dubois', 'Jan 20, 2024', 'google', 5, true, 'Trustworthy platform, I have used it many times now.'],
-        ['Amara Okoye', 'Jan 5, 2024', 'trustpilot', 4.5, false, 'Smooth experience from start to finish. Highly recommend.'],
-    ];
 @endphp
 <section class="mx-auto mt-24 max-w-none px-4 sm:px-6" x-data="{ scroll(d) { $refs.revRow.scrollBy({ left: d * $refs.revRow.clientWidth * 0.8, behavior: 'smooth' }) } }">
     <div class="flex items-center justify-between gap-4">
@@ -362,21 +349,21 @@
                 <div class="rev-flip__face flex flex-col justify-center rounded-2xl card-solid border border-app p-5">
                     <div class="flex items-center justify-between">
                         <span class="inline-flex items-center gap-1.5" style="color:#00b67a"><x-icon name="star" class="h-5 w-5 fill-current" /><span class="text-base font-bold text-strong">Trustpilot</span></span>
-                        <span class="text-2xl font-black text-strong">4.5<span class="text-sm font-medium text-muted"> / 5</span></span>
+                        <span class="text-2xl font-black text-strong">{{ cms('cms_reviews_trustpilot_rating', '4.5') }}<span class="text-sm font-medium text-muted"> / 5</span></span>
                     </div>
-                    <x-stars variant="trustpilot" :rating="4.5" size="h-5 w-5" inner="h-3 w-3" class="mt-3 gap-1" />
-                    <p class="mt-4 text-sm text-muted">460+ {{ __('reviews on Trustpilot') }}</p>
-                    <p class="mt-1 text-sm font-bold text-strong">{{ __('Trusted since 2024') }}</p>
+                    <x-stars variant="trustpilot" :rating="(float) cms('cms_reviews_trustpilot_rating', '4.5')" size="h-5 w-5" inner="h-3 w-3" class="mt-3 gap-1" />
+                    <p class="mt-4 text-sm text-muted">{{ cms('cms_reviews_trustpilot_count', '460+') }} {{ __('reviews on Trustpilot') }}</p>
+                    <p class="mt-1 text-sm font-bold text-strong">{{ cms('cms_reviews_trusted_since', __('Trusted since 2024')) }}</p>
                 </div>
                 {{-- Google --}}
                 <div class="rev-flip__face rev-flip__back flex flex-col justify-center rounded-2xl card-solid border border-app p-5">
                     <div class="flex items-center justify-between">
                         <span class="text-base font-bold">{!! $gword !!}</span>
-                        <span class="text-2xl font-black text-strong">4.8<span class="text-sm font-medium text-muted"> / 5</span></span>
+                        <span class="text-2xl font-black text-strong">{{ cms('cms_reviews_google_rating', '4.8') }}<span class="text-sm font-medium text-muted"> / 5</span></span>
                     </div>
-                    <x-stars variant="amber" :rating="4.8" size="h-5 w-5" class="mt-3" />
-                    <p class="mt-4 text-sm text-muted">1,200+ {{ __('reviews on Google') }}</p>
-                    <p class="mt-1 text-sm font-bold text-strong">{{ __('Trusted since 2024') }}</p>
+                    <x-stars variant="amber" :rating="(float) cms('cms_reviews_google_rating', '4.8')" size="h-5 w-5" class="mt-3" />
+                    <p class="mt-4 text-sm text-muted">{{ cms('cms_reviews_google_count', '1,200+') }} {{ __('reviews on Google') }}</p>
+                    <p class="mt-1 text-sm font-bold text-strong">{{ cms('cms_reviews_trusted_since', __('Trusted since 2024')) }}</p>
                 </div>
             </div>
         </div>
@@ -384,27 +371,27 @@
         {{-- Manually-scrolled testimonials (prev/next buttons; pass under the summary box) --}}
         <div x-ref="revRow" class="no-scrollbar overflow-x-auto scroll-smooth sm:absolute sm:inset-0">
             <div class="flex w-max gap-4 sm:pl-[19rem]">
-                @foreach ($reviews as [$name, $date, $src, $rating, $verified, $text])
+                @foreach ($testimonials as $t)
                     @php
-                        $ac = $avatarPalette[abs(crc32($name)) % count($avatarPalette)];
+                        $ac = $avatarPalette[abs(crc32($t->name)) % count($avatarPalette)];
                     @endphp
                     <div class="flex h-44 w-72 shrink-0 flex-col rounded-2xl card-solid border border-app p-4 sm:h-52 sm:w-80 sm:p-5">
                         <div class="flex items-start justify-between gap-2">
                             <div class="flex items-center gap-2.5">
-                                <img src="https://api.dicebear.com/9.x/avataaars/svg?seed={{ urlencode($name) }}&backgroundColor=transparent" alt="{{ $name }}" loading="lazy" class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-app" style="background: {{ $ac[0] }}" />
+                                <img src="{{ local_avatar($t->name, $ac[0]) }}" alt="{{ $t->name }}" loading="lazy" class="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-app" style="background: {{ $ac[0] }}" />
                                 <div>
-                                    <div class="flex items-center gap-1 text-sm font-bold text-strong">{{ $name }} @if ($verified)<x-verified-tick class="h-3.5 w-3.5" />@endif</div>
-                                    <p class="text-xs text-muted">{{ $date }}</p>
+                                    <div class="flex items-center gap-1 text-sm font-bold text-strong">{{ $t->name }} @if ($t->verified)<x-verified-tick class="h-3.5 w-3.5" />@endif</div>
+                                    <p class="text-xs text-muted">{{ $t->review_date?->format('M j, Y') }}</p>
                                 </div>
                             </div>
-                            @if ($src === 'trustpilot')
+                            @if ($t->source === 'trustpilot')
                                 <span class="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-strong"><x-icon name="star" class="h-3.5 w-3.5 fill-current" style="color:#00b67a" />Trustpilot</span>
-                            @else
+                            @elseif ($t->source === 'google')
                                 <span class="shrink-0 text-sm font-bold">{!! $gword !!}</span>
                             @endif
                         </div>
-                        <x-stars :variant="$src === 'trustpilot' ? 'trustpilot' : 'amber'" :rating="$rating" class="mt-3" />
-                        <p class="mt-2.5 line-clamp-3 text-sm text-body">{{ $text }}</p>
+                        <x-stars :variant="$t->source === 'trustpilot' ? 'trustpilot' : 'amber'" :rating="(float) $t->rating" class="mt-3" />
+                        <p class="mt-2.5 line-clamp-3 text-sm text-body">{{ $t->text }}</p>
                     </div>
                 @endforeach
             </div>

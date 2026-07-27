@@ -69,16 +69,28 @@ class SearchController extends Controller
             ['icon' => 'home', 'title' => __('Dashboard'), 'description' => __('Your account overview'), 'route' => 'dashboard'],
             ['icon' => 'wallet', 'title' => __('Wallet'), 'description' => __('Top up & balance'), 'route' => 'wallet.index'],
             ['icon' => 'deposit', 'title' => __('Deposits'), 'description' => __('Add money to your wallet'), 'route' => 'deposit.index'],
-            ['icon' => 'fund', 'title' => __('Fund a China wallet'), 'description' => __('Alipay, WeChat Pay & more'), 'route' => 'funding.index'],
+            ['icon' => 'fund', 'title' => __('Fund China Wallet'), 'description' => __('Alipay, WeChat Pay & more'), 'route' => 'funding.create'],
+            ['icon' => 'card', 'title' => __('Saved Payment Methods'), 'description' => __('Your saved deposit sources'), 'route' => 'payment-methods.index'],
+            ['icon' => 'arrow-up', 'title' => __('Withdraw Funds'), 'description' => __('Cash out to your saved payment method'), 'route' => 'withdrawals.index'],
             ['icon' => 'chart', 'title' => __('Transactions'), 'description' => __('Activity history'), 'route' => 'transactions.index'],
-            ['icon' => 'cart', 'title' => __('Orders'), 'description' => __('Recent purchases'), 'route' => 'shop.orders.index'],
-            ['icon' => 'bag', 'title' => __('Shop'), 'description' => __('Gift cards, eSIMs, VPN & more'), 'route' => 'shop.index'],
-            ['icon' => 'truck', 'title' => __('Shipping agents'), 'description' => __('Verified China agents'), 'route' => 'marketplace.index'],
-            ['icon' => 'book', 'title' => __('Learning center'), 'description' => __('China buying guides'), 'route' => 'learning.index'],
+            ['icon' => 'cart', 'title' => __('My Orders'), 'description' => __('Recent purchases'), 'route' => 'shop.orders.index'],
+            ['icon' => 'bag', 'title' => __('Marketplace'), 'description' => __('Gift cards, eSIMs, VPN & more'), 'route' => 'shop.index'],
+            ['icon' => 'heart', 'title' => __('Wishlist'), 'description' => __('Products you have saved'), 'route' => 'wishlist.index'],
+            ['icon' => 'download', 'title' => __('Digital Purchases'), 'description' => __('Gift cards, eSIMs & instant purchases'), 'route' => 'shop.orders.digital'],
+            ['icon' => 'user-circle', 'title' => __('Identity Verification'), 'description' => __('KYC status & documents'), 'route' => 'verification.index'],
+            ['icon' => 'shield', 'title' => __('Security & Devices'), 'description' => __('Password, 2FA & sessions'), 'route' => 'security.index'],
+            ['icon' => 'wallet', 'title' => __('My China Wallets'), 'description' => __('Alipay & WeChat destinations'), 'route' => 'beneficiaries.index'],
+            ['icon' => 'clock', 'title' => __('Funding History'), 'description' => __('Past China wallet fundings'), 'route' => 'funding.index'],
+            ['icon' => 'truck', 'title' => __('Shipping Agents'), 'description' => __('Verified China agents'), 'route' => 'marketplace.index'],
+            ['icon' => 'truck', 'title' => __('Shipping Requests'), 'description' => __('Get competing quotes from agents'), 'route' => 'shipping-requests.index'],
+            ['icon' => 'search', 'title' => __('Track Shipment'), 'description' => __('Look up a shipment by reference'), 'route' => 'shipments.track'],
+            ['icon' => 'book', 'title' => __('Learning Center'), 'description' => __('China buying guides'), 'route' => 'learning.index'],
+            ['icon' => 'help', 'title' => __('Help Center'), 'description' => __('Search frequently asked questions'), 'route' => 'help.index'],
             ['icon' => 'bell', 'title' => __('Notifications'), 'description' => __('Recent alerts'), 'route' => 'notifications.index'],
             ['icon' => 'user', 'title' => __('Profile'), 'description' => __('Account information'), 'route' => 'profile.edit'],
-            ['icon' => 'shield', 'title' => __('Security'), 'description' => __('Password & verification'), 'route' => 'verification.index'],
-            ['icon' => 'mail', 'title' => __('Support'), 'description' => __('Open a support ticket'), 'route' => 'disputes.index'],
+            ['icon' => 'users', 'title' => __('Referrals & Rewards'), 'description' => __('Invite friends, earn rewards'), 'route' => 'referrals.index'],
+            ['icon' => 'mail', 'title' => __('Support Tickets'), 'description' => __('Open a support ticket'), 'route' => 'disputes.index'],
+            ['icon' => 'refresh', 'title' => __('Disputes & Refunds'), 'description' => __('Request a refund on an eligible order'), 'route' => 'refunds.index'],
         ];
 
         if ($isAdmin) {
@@ -138,7 +150,7 @@ class SearchController extends Controller
             ->take(5)->get()
             ->map(fn ($p) => [
                 'icon' => 'giftcard', 'title' => $p->name,
-                'description' => $p->summary ?? Str::title($p->type),
+                'description' => $p->summary ?? $p->type->label(),
                 'url' => route('shop.show', $p),
             ])->all();
     }

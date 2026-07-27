@@ -2,22 +2,33 @@
 
 namespace App\Models;
 
+use App\Enums\ShopProductStatus;
+use App\Enums\ShopProductType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class ShopProduct extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $guarded = [];
 
     protected function casts(): array
     {
         return [
+            'type' => ShopProductType::class,
+            'status' => ShopProductStatus::class,
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'is_best_deal' => 'boolean',
+            'scheduled_publish_at' => 'datetime',
+            'last_synced_at' => 'datetime',
             'meta' => 'array',
+            'esim_coverage_countries' => 'array',
         ];
     }
 
@@ -43,6 +54,26 @@ class ShopProduct extends Model
         return $this->variants()->where('is_active', true);
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function importSource(): BelongsTo
+    {
+        return $this->belongsTo(ImportSource::class);
+    }
+
+    public function productImport(): BelongsTo
+    {
+        return $this->belongsTo(ProductImport::class);
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -56,5 +87,10 @@ class ShopProduct extends Model
     public function scopeActive($q)
     {
         return $q->where('is_active', true);
+    }
+
+    public function isImported(): bool
+    {
+        return $this->source !== 'native';
     }
 }

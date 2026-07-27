@@ -103,4 +103,18 @@ abstract class AbstractPaymentProvider implements PaymentProvider
             raw: $payload,
         );
     }
+
+    /**
+     * Default: sandbox mode has no live credentials to test; live mode with no
+     * override is honestly reported as unimplemented. Concrete providers that
+     * support a real, safe (non-money-moving) credential check override this.
+     */
+    public function testConnection(): array
+    {
+        if ($this->isSandbox()) {
+            return ['ok' => true, 'message' => 'Sandbox mode active, no live credentials to test.'];
+        }
+
+        return ['ok' => false, 'message' => 'Live connection testing is not implemented for this provider yet.'];
+    }
 }

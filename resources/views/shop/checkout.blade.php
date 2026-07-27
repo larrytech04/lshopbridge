@@ -2,6 +2,10 @@
 @section('title', 'Checkout · '.config('platform.name'))
 @section('page-title', __('Checkout'))
 
+@php
+    $esimLines = $lines->filter(fn ($l) => $l['variant']->product->type === \App\Enums\ShopProductType::Esim);
+@endphp
+
 @section('content')
 <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6" x-data="{ source: 'wallet' }">
     <h1 class="text-2xl font-bold text-strong">{{ __('Checkout') }}</h1>
@@ -14,6 +18,24 @@
                 <p class="mt-1 text-sm text-muted">{{ __('Your codes are shown instantly on the order page and emailed here.') }}</p>
                 <div class="mt-3"><label class="label">{{ __('Email') }}</label><input name="email" type="email" value="{{ old('email', auth()->user()->email) }}" required class="field"></div>
             </x-glass-card>
+
+            @if ($esimLines->isNotEmpty())
+                <x-glass-card>
+                    <h3 class="font-semibold text-strong">{{ __('Before you pay: eSIM plans') }}</h3>
+                    <ul class="mt-3 space-y-2 text-sm text-muted">
+                        @foreach ($esimLines as $line)
+                            <li class="flex items-start gap-2">
+                                <x-icon name="sim" class="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
+                                <span>{{ $line['variant']->product->name }} ({{ $line['variant']->name }}): {{ __(esim_activation_policy_label($line['variant']->activation_policy)) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <label class="mt-4 flex items-start gap-2.5 text-sm text-body">
+                        <input type="checkbox" name="esim_device_confirmed" value="1" required class="mt-0.5 h-4 w-4 rounded border-app text-brand-600 focus:ring-brand-500">
+                        <span>{{ __('I\'ve confirmed my device supports eSIM (') }}<a href="{{ route('esim.compatibility.index') }}" target="_blank" class="font-semibold text-brand-500 hover:text-brand-600">{{ __('check here') }}</a>{{ __(') and understand eSIM plans cannot be refunded once installed.') }}</span>
+                    </label>
+                </x-glass-card>
+            @endif
 
             <x-glass-card>
                 <h3 class="font-semibold text-strong">{{ __('Payment') }}</h3>
@@ -52,7 +74,9 @@
                     <div class="flex justify-between border-t border-app pt-2 text-base font-bold"><span class="text-strong">{{ __('Total') }}</span><span class="text-strong">{{ disp($subtotal) }}</span></div>
                 </div>
                 <button class="btn btn-primary mt-5 w-full">{{ __('Pay') }} {{ disp($subtotal) }}</button>
-                <p class="mt-2 text-center text-xs text-faint">{{ __('Digital goods · delivered instantly') }}</p>
+                <p class="mt-2 text-center text-xs text-faint">
+                    {{ $esimLines->isNotEmpty() ? __('Most items deliver instantly; eSIMs are provisioned as soon as possible after payment') : __('Digital goods · delivered instantly') }}
+                </p>
             </x-glass-card>
         </div>
     </form>

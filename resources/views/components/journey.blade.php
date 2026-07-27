@@ -1,4 +1,5 @@
 @props(['steps' => [], 'start' => null, 'end' => null])
+@if (count($steps))
 @php
     $n = count($steps);
 
@@ -113,3 +114,4 @@
         @endif
     </div>
 </div>
+@endif

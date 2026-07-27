@@ -23,7 +23,9 @@
         <input type="checkbox" name="remember" class="rounded border-app surface text-brand-500 focus:ring-brand-400/40">
         {{ __('Remember me') }}
     </label>
-    <x-turnstile />
+    @if ($requireTurnstile ?? true)
+        <x-turnstile action="login" />
+    @endif
     <button type="submit" class="btn btn-primary w-full">{{ __('Sign in') }} <x-icon name="arrow-right" class="h-4 w-4" /></button>
 </form>
 

@@ -22,7 +22,7 @@ class DepositController extends Controller
     public function index(Request $request): View
     {
         return view('dashboard.deposit.index', [
-            'methods' => PaymentMethod::active()->get(),
+            'methods' => PaymentMethod::active()->where('deposit_enabled', true)->get(),
             'recent' => $request->user()->deposits()->latest()->take(8)->get(),
             'momoNumbers' => MomoNumber::where('is_active', true)->get(),
             'cryptoWallets' => CryptoWallet::where('is_active', true)->get(),
@@ -42,7 +42,7 @@ class DepositController extends Controller
         ]);
 
         $user = $request->user();
-        $method = PaymentMethod::active()->findOrFail($data['payment_method_id']);
+        $method = PaymentMethod::active()->where('deposit_enabled', true)->findOrFail($data['payment_method_id']);
         $amount = (float) $data['amount'];
         $phone = $data['phone'] ?? $user->phone;
 

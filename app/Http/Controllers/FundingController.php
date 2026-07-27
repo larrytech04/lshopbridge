@@ -37,9 +37,10 @@ class FundingController extends Controller
         }
 
         return view('dashboard.funding.create', [
+            'user' => $user,
             'beneficiaries' => $beneficiaries,
             'wallet' => $user->primaryWallet(),
-            'methods' => PaymentMethod::active()->where('is_automated', true)->get(),
+            'methods' => PaymentMethod::active()->where('is_automated', true)->where('deposit_enabled', true)->get(),
             'sampleQuote' => $this->funding->quote(50000),
         ]);
     }
@@ -51,7 +52,7 @@ class FundingController extends Controller
             'app_type' => ['nullable', 'string'],
         ]);
 
-        return response()->json($funding->quote((float) $data['amount'], $data['app_type'] ?? null));
+        return response()->json($funding->quote((float) $data['amount'], $data['app_type'] ?? null, $request->user()));
     }
 
     public function store(Request $request)
@@ -61,9 +62,22 @@ class FundingController extends Controller
             'amount' => ['required', 'numeric', 'min:1'],
             'funding_source' => ['required', 'in:wallet,direct'],
             'payment_method_id' => ['required_if:funding_source,direct', 'nullable', 'exists:payment_methods,id'],
+            'pin' => ['required_if:funding_source,wallet', 'nullable', 'string'],
         ]);
 
         $user = $request->user();
+
+        // Step-up confirmation: spending money already sitting in the platform
+        // wallet gets the same PIN check as a withdrawal. Paying "direct" charges
+        // a fresh external method instead, so there's no standing balance at risk.
+        if ($data['funding_source'] === 'wallet') {
+            if (! $user->hasTransactionPin()) {
+                return back()->withErrors(['pin' => 'Set a transaction PIN in Security & Devices before funding from your wallet.'])->withInput();
+            }
+            if (! \Illuminate\Support\Facades\Hash::check($data['pin'], $user->transaction_pin)) {
+                return back()->withErrors(['pin' => 'Incorrect PIN.'])->withInput();
+            }
+        }
 
         /** @var BeneficiaryAccount $beneficiary */
         $beneficiary = $user->beneficiaryAccounts()->where('status', 'approved')->findOrFail($data['beneficiary_account_id']);
@@ -73,7 +87,7 @@ class FundingController extends Controller
             if ($data['funding_source'] === 'wallet') {
                 $funding = $this->funding->createFromWallet($user, $beneficiary, $amount);
             } else {
-                $method = PaymentMethod::active()->findOrFail($data['payment_method_id']);
+                $method = PaymentMethod::active()->where('deposit_enabled', true)->findOrFail($data['payment_method_id']);
                 $result = $this->funding->createWithDirectPayment($user, $beneficiary, $amount, $method, [
                     'phone' => $user->phone, 'email' => $user->email,
                 ]);

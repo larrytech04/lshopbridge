@@ -15,7 +15,7 @@
     @forelse ($reviews as $review)
         <div class="glass rounded-2xl p-5">
             <div class="flex items-center justify-between">
-                <span class="font-medium text-strong">{{ $review->user->name }}</span>
+                <span class="font-medium text-strong">{{ $review->reviewerName() }}</span>
                 <div class="flex items-center gap-2"><span class="text-amber-300">@for($i=0;$i<$review->rating;$i++)★@endfor</span><x-status-badge :status="$review->status" /></div>
             </div>
             @if ($review->comment)<p class="mt-2 text-sm text-muted">{{ $review->comment }}</p>@endif

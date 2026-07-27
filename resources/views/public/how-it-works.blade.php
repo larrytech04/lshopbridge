@@ -2,32 +2,9 @@
 @section('title', 'How it works · '.config('platform.name'))
 
 @php
+    // $fundSteps, $shopSteps, $promises now come from PageController::howItWorks()
+    // (Admin -> Page content -> How It Works), not hardcoded here.
     $brand = setting('site_name', config('platform.name'));
-
-    $fundSteps = [
-        ['Recruiting-Employee-Target-Validated-Check-2--Streamline-Ultimate.png', __('Create & verify your account'), __('Sign up free, confirm your email and phone (OTP), then complete KYC by uploading your ID and a selfie. Higher verification tiers unlock higher funding limits.')],
-        ['Money-Wallet-1--Streamline-Ultimate.png', __('Save a China wallet'), __('Add your Alipay, WeChat Pay, UnionPay or QQ details once as a saved beneficiary, we store them securely so future funding is one tap.')],
-        ['Cash-Exchange-Rate--Streamline-Flex.png', __('Choose an amount & see the live rate'), __('Enter how much CNY you want to send. We instantly show the exact rate and fee (XAF/NGN → CNY) upfront, what you see is what you pay, no hidden charges.')],
-        ['Credit-Card-Payment--Streamline-Ultimate.png', __('Pay your way'), __('Top up your wallet first, or pay directly with MTN MoMo, Orange Money, bank transfer, card or crypto, whatever is easiest for you.')],
-        ['Gateway-Security--Streamline-Ultimate.png', __('We confirm automatically'), __('Automated methods are verified in seconds through secure provider webhooks. Only flagged or manual bank transfers go to a quick human review for safety.')],
-        ['Shipment-Smartphone-Arrive--Streamline-Ultimate.png', __('Delivered to the wallet'), __('Our funding engine pays the China wallet automatically, usually within minutes. You get notified and can track every step live in your dashboard.')],
-    ];
-
-    $shopSteps = [
-        ['Shop-Sign-Bag--Streamline-Ultimate.png', __('Open the shop'), __('Browse categories right inside your dashboard: gift cards, eSIMs, mobile top-ups, bill payments, flights & stays.')],
-        ['Gift-Rectangle-With-Bow--Streamline-Ultimate.png', __('Pick a product & plan'), __('Choose the brand or region and the exact option, e.g. an Amazon $25 gift card, or a China eSIM with 5GB for 30 days.')],
-        ['Products-Shopping-Bags--Streamline-Ultimate.png', __('Add to cart or buy now'), __('Bundle several items into one order, or check out a single product instantly.')],
-        ['Credit-Card--Streamline-Ultimate.png', __('Pay from wallet or directly'), __('Use your wallet balance for one-tap checkout, or pay with MoMo, bank, card or crypto. The exact price and any fee are shown before you confirm.')],
-        ['Email-Delivered-4--Streamline-Ux.png', __('Instant delivery'), __('Gift card codes & PINs, and eSIM QR codes / activation details, are delivered to your dashboard and email, usually within seconds.')],
-        ['Love-Gift-Box-Heart--Streamline-Ultimate.png', __('Redeem & enjoy'), __('Follow the redeem steps on your order. eSIMs install by scanning the QR code, no physical SIM, connected in minutes.')],
-    ];
-
-    $promises = [
-        ['shield', __('Bank-grade security'), __('Encrypted data, KYC tiers and automatic fraud screening on every order.')],
-        ['bolt', __('Instant & automated'), __('Webhook-confirmed payments trigger instant payouts and delivery.')],
-        ['chart', __('Transparent pricing'), __('The exact rate and fee are shown before you confirm, always.')],
-        ['heart', __('Human support'), __('Real people on chat, WhatsApp and email whenever you need help.')],
-    ];
 @endphp
 
 @section('content')

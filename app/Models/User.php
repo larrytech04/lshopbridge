@@ -9,24 +9,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'phone_country', 'phone_verified_at',
         'country_id', 'city', 'address', 'date_of_birth', 'gender', 'kyc_level', 'kyc_status',
-        'status', 'status_reason', 'points', 'referral_code', 'referred_by', 'avatar_path',
-        'two_factor_enabled', 'two_factor_secret', 'locale', 'last_login_at', 'last_login_ip',
+        'status', 'status_reason', 'admin_notes', 'tags', 'points', 'referral_code', 'referred_by', 'avatar_path',
+        'two_factor_enabled', 'two_factor_secret', 'two_factor_confirmed_at', 'two_factor_recovery_codes',
+        'two_factor_disabled_at', 'password_changed_at', 'locale', 'last_login_at', 'last_login_ip',
         'preferences', 'google_id', 'avatar_url', 'shortcuts_enabled', 'shortcut_overrides',
         'transaction_pin', 'transaction_pin_set_at', 'last_seen_at',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'transaction_pin'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'transaction_pin'];
 
     protected function casts(): array
     {
@@ -38,21 +40,44 @@ class User extends Authenticatable implements MustVerifyEmail
             'transaction_pin_set_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
+            'password_changed_at' => 'datetime',
             'transaction_pin' => 'hashed',
             'role' => UserRole::class,
             'kyc_status' => KycStatus::class,
             'kyc_level' => 'integer',
             'points' => 'integer',
             'two_factor_enabled' => 'boolean',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_disabled_at' => 'datetime',
             'preferences' => 'array',
             'shortcuts_enabled' => 'boolean',
             'shortcut_overrides' => 'array',
+            'tags' => 'array',
         ];
     }
 
     public function hasTransactionPin(): bool
     {
         return ! is_null($this->transaction_pin);
+    }
+
+    /** Real MFA is only "on" once a generated secret has actually been confirmed with a live code. */
+    public function hasMfaEnabled(): bool
+    {
+        return $this->two_factor_enabled && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function hasPasskeys(): bool
+    {
+        return $this->webauthnCredentials()->exists();
+    }
+
+    /** Whether login must stop at the second-factor challenge — true if either TOTP or a passkey is registered. */
+    public function requiresMfaChallenge(): bool
+    {
+        return $this->hasMfaEnabled() || $this->hasPasskeys();
     }
 
     public function isOnline(): bool
@@ -115,6 +140,26 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ShopOrder::class);
     }
 
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function savedPaymentMethods(): HasMany
+    {
+        return $this->hasMany(SavedPaymentMethod::class);
+    }
+
+    public function withdrawalRequests(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class);
+    }
+
+    public function shippingRequests(): HasMany
+    {
+        return $this->hasMany(ShippingRequest::class);
+    }
+
     public function referrals(): HasMany
     {
         return $this->hasMany(self::class, 'referred_by');
@@ -133,6 +178,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function riskFlags(): HasMany
     {
         return $this->hasMany(RiskFlag::class);
+    }
+
+    public function loginAttempts(): HasMany
+    {
+        return $this->hasMany(LoginAttempt::class);
+    }
+
+    public function webauthnCredentials(): HasMany
+    {
+        return $this->hasMany(WebauthnCredential::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
     }
 
     /* -------------------------------------------------- Role helpers */

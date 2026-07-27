@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\AgentRegistrationRequest;
 use App\Models\Agent;
 use App\Models\Country;
 use App\Models\User;
+use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +22,12 @@ class AgentRegistrationController extends Controller
         return view('auth.register-agent', ['countries' => Country::active()->get()]);
     }
 
-    public function store(AgentRegistrationRequest $request)
+    public function store(AgentRegistrationRequest $request, TurnstileVerificationService $turnstile)
     {
+        if (setting('agent_registration_protection', true) && ! $turnstile->verify($request, 'agent_registration')->success) {
+            return back()->withInput()->with('error', 'Please complete the bot-protection challenge.');
+        }
+
         $user = DB::transaction(function () use ($request) {
             $user = User::create([
                 'name' => $request->name,

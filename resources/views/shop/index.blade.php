@@ -107,8 +107,4 @@
         </div>
     </div>
 </div>
-
-@unless ($activeTop)
-    @include('partials.esim-carousel', ['esimProducts' => $esimProducts, 'transparent' => true])
-@endunless
 @endsection

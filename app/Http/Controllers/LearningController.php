@@ -8,17 +8,10 @@ use Illuminate\View\View;
 
 class LearningController extends Controller
 {
-    /** The academy's table of contents: section => ordered category keys. */
+    /** The academy's table of contents, shared with the public academy page (see Guide::academySections). */
     private function sections(): array
     {
-        return [
-            'start' => ['orientation'],
-            'platforms' => ['1688', 'taobao', 'tmall', 'pinduoduo', 'jd', 'xiaohongshu', 'weidian', 'aliexpress', 'dhgate'],
-            'payments' => ['alipay', 'wechatpay'],
-            'logistics' => ['shipping', 'customs'],
-            'safety' => ['mistakes'],
-            'reference' => ['glossary'],
-        ];
+        return Guide::academySections();
     }
 
     public function index(Request $request): View
@@ -60,6 +53,7 @@ class LearningController extends Controller
             'prev' => $pos !== false && $pos > 0 ? $siblings[$pos - 1] : null,
             'next' => $pos !== false && $pos < $siblings->count() - 1 ? $siblings[$pos + 1] : null,
             'related' => Guide::published()->where('id', '!=', $guide->id)->where('category', $guide->category)->take(3)->get(),
+            'alreadyVoted' => (bool) session("guide_feedback_{$guide->id}"),
         ]);
     }
 }

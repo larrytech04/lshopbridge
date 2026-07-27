@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Account') · {{ setting('site_name', config('platform.name')) }}</title>
     @include('partials.theme-head')
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
+    {{-- Plus Jakarta Sans is self-hosted (bundled via app.css); no external font host. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="aurora grid min-h-screen place-items-center overflow-hidden px-4 py-10">

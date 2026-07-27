@@ -7,7 +7,9 @@ use App\Models\BeneficiaryAccount;
 use App\Models\Deposit;
 use App\Models\DisputeMessage;
 use App\Models\FundingRequest;
+use App\Models\GuestSupportTicket;
 use App\Models\KycVerification;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class SecureFileController extends Controller
 {
-    public function show(Request $request, string $kind, int $id): StreamedResponse
+    public function show(Request $request, string $kind, int $id, AuditLogger $audit): StreamedResponse
     {
         [$path, $ownerId] = $this->resolve($kind, $id);
 
@@ -28,6 +30,21 @@ class SecureFileController extends Controller
         $user = $request->user();
         abort_unless($user->isAdmin() || $user->id === $ownerId, 403);
         abort_unless(Storage::disk('private')->exists($path), 404);
+
+        if ($user->isAdmin() && str_starts_with($kind, 'kyc-') && $user->id !== $ownerId) {
+            $kyc = KycVerification::find($id);
+            $audit->log('admin.kyc.document_viewed', "Viewed {$kind} for KYC case #{$id}", $kyc);
+        }
+
+        if ($user->isAdmin() && $kind === 'beneficiary-qr' && $user->id !== $ownerId) {
+            $beneficiary = BeneficiaryAccount::find($id);
+            $audit->log('admin.beneficiary.qr_viewed', "Viewed QR code for China wallet #{$id}", $beneficiary);
+        }
+
+        if ($user->isAdmin() && $kind === 'guest-support-attachment') {
+            $ticket = GuestSupportTicket::find($id);
+            $audit->log('admin.support_ticket.attachment_viewed', "Viewed attachment for guest support ticket #{$id}", $ticket);
+        }
 
         return Storage::disk('private')->response($path);
     }
@@ -46,8 +63,17 @@ class SecureFileController extends Controller
             'agent-business' => $this->fromAgent($id, 'business_doc_path'),
             'agent-id' => $this->fromAgent($id, 'id_doc_path'),
             'dispute-attachment' => $this->disputeAttachment($id),
+            'guest-support-attachment' => $this->guestSupportAttachment($id),
             default => [null, null],
         };
+    }
+
+    /** No owning user exists for guest content, so access is admin-only (see the check in show()). */
+    private function guestSupportAttachment(int $id): array
+    {
+        $ticket = GuestSupportTicket::find($id);
+
+        return [$ticket?->attachment_path, null];
     }
 
     private function kyc(int $id, string $field): array

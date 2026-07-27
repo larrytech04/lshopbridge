@@ -18,4 +18,10 @@ interface FundingProvider
 
     /** Submit a payout to the recipient's China wallet. */
     public function submit(FundingRequest $request): FundingResult;
+
+    /**
+     * Real, non-money-moving credential check — never simulated. Returns
+     * ['ok' => bool, 'message' => string].
+     */
+    public function testConnection(): array;
 }

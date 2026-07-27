@@ -11,15 +11,21 @@ use App\Models\FundingRequest;
 use App\Models\Guide;
 use App\Models\PaymentMethod;
 use App\Models\ShopProduct;
+use App\Models\Testimonial;
+use App\Services\Admin\BannerAdminService;
 use App\Services\Funding\RateService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(RateService $rates): View
+    public function index(Request $request, RateService $rates, BannerAdminService $bannerService): View
     {
+        $heroBanners = Banner::active()->where('position', 'home')->where('type', 'hero')->get();
+
         return view('public.home', [
-            'banners' => Banner::active()->where('position', 'home')->get(),
+            'hero' => $bannerService->firstVisible($heroBanners, $request->user()),
+            'testimonials' => Testimonial::active()->get(),
             'guides' => Guide::published()->latest()->take(3)->get(),
             'agents' => Agent::approved()->with(['warehouseCountry', 'shippingRates'])->orderByDesc('is_featured')->orderByDesc('rating')->take(3)->get(),
             'methods' => PaymentMethod::active()->get(),

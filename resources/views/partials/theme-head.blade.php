@@ -14,6 +14,22 @@
     })();
 </script>
 
+{{-- Anti-flash: apply saved accessibility preferences before first paint.
+     Site-wide (not just the public pages where the toggle panel lives) so a
+     preference set once persists into the dashboard and admin too. --}}
+<script>
+    (function () {
+        try {
+            var r = document.documentElement;
+            var textSize = localStorage.getItem('pb-a11y-text-size'); // 'lg' | 'xl' | null
+            if (textSize === 'lg' || textSize === 'xl') r.classList.add('a11y-text-' + textSize);
+            if (localStorage.getItem('pb-a11y-contrast') === '1') r.classList.add('a11y-contrast');
+            if (localStorage.getItem('pb-a11y-underline-links') === '1') r.classList.add('a11y-underline-links');
+            if (localStorage.getItem('pb-a11y-reduced-motion') === '1') r.classList.add('a11y-reduced-motion');
+        } catch (e) {}
+    })();
+</script>
+
 {{-- Favicon (admin-managed, falls back to the logo) --}}
 <link rel="icon" href="{{ site_favicon() }}">
 <link rel="apple-touch-icon" href="{{ site_favicon() }}">

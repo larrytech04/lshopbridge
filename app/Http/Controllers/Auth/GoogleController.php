@@ -9,26 +9,19 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 /**
- * "Continue with Google" sign-up / sign-in. Credentials are read from the
- * admin Integrations page (settings) first, then .env. If unconfigured the
- * button is hidden and this controller fails gracefully.
+ * "Continue with Google" sign-up / sign-in. Credentials come from .env only
+ * (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) — never admin-editable. If
+ * unconfigured the button is hidden and this controller fails gracefully.
  */
 class GoogleController extends Controller
 {
     private function configure(): bool
     {
-        $clientId = setting('google_client_id', config('services.google.client_id'));
-        $clientSecret = setting('google_client_secret', config('services.google.client_secret'));
-
-        if (! $clientId || ! $clientSecret) {
+        if (! config('services.google.client_id') || ! config('services.google.client_secret')) {
             return false;
         }
 
-        config([
-            'services.google.client_id' => $clientId,
-            'services.google.client_secret' => $clientSecret,
-            'services.google.redirect' => url('/auth/google/callback'),
-        ]);
+        config(['services.google.redirect' => url('/auth/google/callback')]);
 
         return true;
     }

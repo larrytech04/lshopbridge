@@ -6,6 +6,7 @@ use App\Models\KycLevel;
 use App\Models\RiskFlag;
 use App\Models\RiskRule;
 use App\Models\User;
+use App\Services\Security\LoginSecurityService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -19,6 +20,10 @@ use Illuminate\Support\Str;
  */
 class RiskEngine
 {
+    public function __construct(private LoginSecurityService $loginSecurity)
+    {
+    }
+
     /**
      * @param  string  $context  deposit|funding
      * @param  array   $data     extra signals: ['recipient_name' => ..., 'ip' => ...]
@@ -69,6 +74,8 @@ class RiskEngine
             'velocity' => $this->velocity($user, $params),
             'failed_attempts' => $this->failedAttempts($user, $params),
             'name_mismatch' => $context === 'funding' ? $this->nameMismatch($user, $data) : null,
+            'new_device_high_value' => $this->newDeviceHighValue($user, $amount, $params),
+            'password_reset_then_transaction' => $this->passwordResetThenTransaction($user, $params),
             default => null,
         };
     }
@@ -157,6 +164,30 @@ class RiskEngine
 
         if (! array_intersect($userTokens, $recipientTokens)) {
             return 'Recipient name does not match the account holder.';
+        }
+
+        return null;
+    }
+
+    /** Flags a high-value transaction made right after a login from a device we've never seen succeed for this user before. */
+    private function newDeviceHighValue(User $user, float $amount, array $params): ?string
+    {
+        $threshold = (float) ($params['amount'] ?? 0);
+
+        if ($amount >= $threshold && $this->loginSecurity->lastLoginWasNewDevice($user)) {
+            return 'High-value transaction shortly after a login from a new device.';
+        }
+
+        return null;
+    }
+
+    /** Flags any transaction made shortly after the account password was changed, a classic account-takeover pattern. */
+    private function passwordResetThenTransaction(User $user, array $params): ?string
+    {
+        $hours = (int) ($params['window_hours'] ?? 24);
+
+        if ($user->password_changed_at && $user->password_changed_at->gte(Carbon::now()->subHours($hours))) {
+            return "Password was changed within the last {$hours}h before this transaction.";
         }
 
         return null;

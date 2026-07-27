@@ -3,6 +3,7 @@
 namespace App\Services\Shop;
 
 use App\Enums\PaymentIntentStatus;
+use App\Enums\ShopOrderItemStatus;
 use App\Enums\ShopOrderStatus;
 use App\Models\PaymentIntent;
 use App\Models\PaymentMethod;
@@ -12,9 +13,12 @@ use App\Models\ShopOrderItem;
 use App\Models\ShopVariant;
 use App\Models\User;
 use App\Notifications\ShopOrderDelivered;
+use App\Notifications\ShopOrderProcessing;
 use App\Services\Audit\AuditLogger;
+use App\Services\Esim\EsimOrderService;
 use App\Services\Payments\DTO\WebhookResult;
 use App\Services\Payments\PaymentManager;
+use App\Services\Risk\RiskEngine;
 use App\Services\Wallet\WalletService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +26,10 @@ use Illuminate\Support\Str;
 
 /**
  * Digital storefront engine: builds orders from the cart, takes payment (wallet
- * or a provider charge settled by webhook) and delivers the digital goods, * pulling from pre-loaded code inventory or auto-generating realistic secrets.
+ * or a provider charge settled by webhook) and delivers the digital goods,
+ * pulling from pre-loaded code inventory, handing eSIMs off to EsimOrderService
+ * for real (or genuinely-pending) provisioning, or auto-generating realistic
+ * secrets for the remaining sandbox product types.
  */
 class ShopService
 {
@@ -30,6 +37,8 @@ class ShopService
         private WalletService $wallet,
         private PaymentManager $payments,
         private AuditLogger $audit,
+        private RiskEngine $risk,
+        private EsimOrderService $esimOrders,
     ) {}
 
     /** Pay instantly from the wallet, then deliver. */
@@ -113,22 +122,42 @@ class ShopService
         $this->fulfill($order);
     }
 
-    /** Deliver every line item, then mark the order delivered. */
+    /**
+     * Deliver every line item, then settle the order status. An order only
+     * reaches Fulfilled once every item is genuinely fulfilled — an eSIM item
+     * awaiting manual provisioning (see EsimOrderService) holds the order at
+     * Processing/PartiallyFulfilled instead of a premature "delivered" claim.
+     */
     public function fulfill(ShopOrder $order): void
     {
         $order->loadMissing('items.product', 'items.variant');
 
         foreach ($order->items as $item) {
-            if ($item->status === 'fulfilled') {
+            if ($item->status === ShopOrderItemStatus::Fulfilled) {
                 continue;
             }
             $this->deliverItem($item);
             $item->product?->increment('sales_count', $item->quantity);
         }
 
-        $order->update(['status' => ShopOrderStatus::Fulfilled]);
-        $this->audit->log('shop.order.fulfilled', "Shop order {$order->reference} delivered", $order);
-        $order->user->notify(new ShopOrderDelivered($order));
+        $order->refresh();
+        $order->loadMissing('items');
+
+        if ($order->items->every(fn ($i) => $i->status === ShopOrderItemStatus::Fulfilled)) {
+            $order->update(['status' => ShopOrderStatus::Fulfilled]);
+            $this->audit->log('shop.order.fulfilled', "Shop order {$order->reference} delivered", $order);
+            $order->user->notify(new ShopOrderDelivered($order));
+
+            return;
+        }
+
+        $status = $order->items->contains(fn ($i) => $i->status === ShopOrderItemStatus::Fulfilled)
+            ? ShopOrderStatus::PartiallyFulfilled
+            : ShopOrderStatus::Processing;
+
+        $order->update(['status' => $status]);
+        $this->audit->log('shop.order.processing', "Shop order {$order->reference} paid, one or more items awaiting fulfilment", $order);
+        $order->user->notify(new ShopOrderProcessing($order));
     }
 
     public function refund(ShopOrder $order, ?User $admin = null, string $reason = 'Refunded'): ShopOrder
@@ -176,12 +205,17 @@ class ShopService
                     'shop_product_id' => $v->shop_product_id,
                     'shop_variant_id' => $v->id,
                     'name' => $v->product->name.', '.$v->name,
-                    'type' => $v->product->type,
+                    'type' => $v->product->type->value,
                     'unit_price' => $v->price,
                     'quantity' => $line['qty'],
                     'line_total' => $line['line_total'],
                     'status' => 'pending',
                 ]);
+            }
+
+            $assessment = $this->risk->evaluate($user, $total, 'shop', $order);
+            if ($assessment['requires_review']) {
+                $order->update(['risk_flagged' => true, 'manual_review_reason' => implode(' ', $assessment['reasons'])]);
             }
 
             return $order;
@@ -190,6 +224,16 @@ class ShopService
 
     private function deliverItem(ShopOrderItem $item): void
     {
+        if ($item->type === 'esim') {
+            // Never fabricate an activation code here. EsimOrderService either
+            // provisions for real via a connected provider or leaves the item
+            // PendingProvisioning and alerts staff — it sets the item's final
+            // status itself, so there is nothing left to do after it returns.
+            $this->esimOrders->provision($item);
+
+            return;
+        }
+
         $delivered = [];
 
         for ($i = 0; $i < $item->quantity; $i++) {
@@ -218,7 +262,6 @@ class ShopService
         $chunk = fn (int $n = 4) => strtoupper(Str::random($n));
 
         return match ($type) {
-            'esim' => 'LPA:1$rsp.truphone.com$'.$chunk(8).$chunk(8),
             'vpn' => 'VPN-'.$chunk(4).'-'.$chunk(4).'-'.$chunk(4).'-'.$chunk(4),
             'data' => 'DATA PIN: '.random_int(100000, 999999).' '.random_int(100000, 999999),
             'gaming', 'giftcard', 'streaming', 'software' => $chunk(4).'-'.$chunk(4).'-'.$chunk(4).'-'.$chunk(4),

@@ -1,5 +1,6 @@
 @extends('layouts.public')
-@section('title', $page->title.' · '.config('platform.name'))
+@section('title', ($page->meta_title ?: $page->title).' · '.config('platform.name'))
+@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($page->excerpt ?: $page->body ?: ''), 160))
 
 @section('content')
 <article class="mx-auto max-w-3xl px-4 pt-20 sm:px-6">

@@ -38,4 +38,21 @@ class WalletTransaction extends Model
     {
         return $this->type === 'credit';
     }
+
+    /** Where "view details" should send the customer, when the source record has its own page. */
+    public function sourceUrl(): ?string
+    {
+        if (! $this->source) {
+            return null;
+        }
+
+        return match ($this->source_type) {
+            \App\Models\ShopOrder::class => route('shop.orders.show', $this->source),
+            \App\Models\FundingRequest::class => route('funding.show', $this->source),
+            \App\Models\Deposit::class => route('deposit.show', $this->source),
+            \App\Models\WithdrawalRequest::class => route('withdrawals.index'),
+            \App\Models\ShippingRequest::class => route('shipping-requests.show', $this->source),
+            default => null,
+        };
+    }
 }

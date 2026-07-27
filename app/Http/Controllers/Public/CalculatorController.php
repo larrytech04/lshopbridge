@@ -16,6 +16,6 @@ class CalculatorController extends Controller
             'app_type' => ['nullable', 'string'],
         ]);
 
-        return response()->json($funding->quote((float) $data['amount'], $data['app_type'] ?? null));
+        return response()->json($funding->quote((float) $data['amount'], $data['app_type'] ?? null, $request->user()));
     }
 }

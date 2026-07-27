@@ -1,8 +1,13 @@
 @extends('layouts.admin')
-@section('page-title', 'Webhook logs')
+@section('page-title', 'Webhook monitor')
 
 @section('content')
 <div class="space-y-5">
+    <div>
+        <h1 class="text-2xl font-bold text-strong">Webhook monitor</h1>
+        <p class="text-sm text-muted">Inbound provider webhooks, signature verification, and retry for failed deliveries.</p>
+    </div>
+
     <form method="GET" class="glass flex flex-wrap gap-3 rounded-2xl p-4">
         <input name="provider" value="{{ $filters['provider'] ?? '' }}" class="field max-w-[200px]" placeholder="Provider code">
         <select name="status" class="field max-w-[200px]">
@@ -14,20 +19,30 @@
 
     <x-glass-card padding="p-0">
         <div class="overflow-x-auto"><table class="w-full text-left text-sm">
-            <thead class="border-b border-app text-muted"><tr><th class="px-5 py-3">Provider</th><th class="px-5 py-3">Event</th><th class="px-5 py-3">Reference</th><th class="px-5 py-3">Signature</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">When</th><th class="px-5 py-3"></th></tr></thead>
+            <thead class="border-b border-app text-muted"><tr><th class="px-5 py-3">Provider</th><th class="px-5 py-3">Event</th><th class="px-5 py-3">Reference</th><th class="px-5 py-3">Signature</th><th class="px-5 py-3">Status</th><th class="px-5 py-3">Retries</th><th class="px-5 py-3">When</th><th class="px-5 py-3"></th></tr></thead>
             <tbody class="divide-y divide-app">
                 @forelse ($events as $e)
                     <tr class="hover:bg-white/[0.02]">
                         <td class="px-5 py-3 text-strong">{{ $e->provider_code }}</td>
                         <td class="px-5 py-3 text-body">{{ $e->event_type ?? '-' }}</td>
                         <td class="px-5 py-3 font-mono text-xs text-muted">{{ $e->reference ?? '-' }}</td>
-                        <td class="px-5 py-3">@if($e->signature_valid)<span class="text-emerald-300">✓ valid</span>@else<span class="text-rose-300">✕</span>@endif</td>
+                        <td class="px-5 py-3">@if($e->signature_valid)<span class="text-emerald-600">✓ valid</span>@else<span class="text-rose-600">✕</span>@endif</td>
                         <td class="px-5 py-3"><x-status-badge :status="$e->status" /></td>
+                        <td class="px-5 py-3 text-muted">{{ $e->retry_count > 0 ? $e->retry_count : '-' }}</td>
                         <td class="px-5 py-3 text-muted">{{ $e->created_at->diffForHumans() }}</td>
-                        <td class="px-5 py-3 text-right"><a href="{{ route('admin.webhooks.show', $e) }}" class="text-brand-300">Inspect →</a></td>
+                        <td class="px-5 py-3 text-right">
+                            <div class="flex items-center justify-end gap-3">
+                                @if ($e->status === \App\Enums\WebhookStatus::Failed)
+                                    <form method="POST" action="{{ route('admin.webhooks.retry', $e) }}" onsubmit="return confirm('Reprocess this webhook event?')">@csrf
+                                        <button class="text-amber-600">Retry</button>
+                                    </form>
+                                @endif
+                                <a href="{{ route('admin.webhooks.show', $e) }}" class="text-brand-600">Inspect →</a>
+                            </div>
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-5 py-10 text-center text-faint">No webhook events yet.</td></tr>
+                    <tr><td colspan="8" class="px-5 py-10 text-center text-faint">No webhook events yet.</td></tr>
                 @endforelse
             </tbody>
         </table></div>

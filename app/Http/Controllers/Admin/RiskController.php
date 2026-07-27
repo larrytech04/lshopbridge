@@ -17,10 +17,18 @@ class RiskController extends Controller
             $query->where('status', $status);
         }
 
+        $rules = RiskRule::orderBy('code')->get();
+
         return view('admin.risk.index', [
             'flags' => $query->latest()->paginate(20)->withQueryString(),
-            'rules' => RiskRule::orderBy('code')->get(),
+            'rules' => $rules,
             'status' => $status,
+            'stats' => [
+                'open' => RiskFlag::where('status', 'open')->count(),
+                'high_open' => RiskFlag::where('status', 'open')->where('severity', 'high')->count(),
+                'rules_active' => $rules->where('is_active', true)->count(),
+                'rules_total' => $rules->count(),
+            ],
         ]);
     }
 

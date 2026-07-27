@@ -6,57 +6,80 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('page-title', 'Dashboard') · {{ setting('site_name', config('platform.name')) }}</title>
     @include('partials.theme-head')
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800" rel="stylesheet" />
+    {{-- Plus Jakarta Sans is self-hosted (bundled via app.css); no external font host. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="aurora pb-ash-theme min-h-screen overflow-x-hidden" x-data="{ sbc: localStorage.getItem('pb-sbc') === '1', edgeHover: false }">
+<body class="aurora pb-ash-theme min-h-screen overflow-x-hidden"
+      x-data="{
+        sbc: localStorage.getItem('pb-sbc') === '1',
+        edgeHover: false,
+        ctx: null,
+        openCtx(name) { this.ctx = name; },
+        closeCtx() { this.ctx = null; },
+      }"
+      @keydown.escape.window="closeCtx()">
     @include('partials.page-skeleton')
 
     @php
         $user = auth()->user();
         $isAgentArea = $user->isAgent();
         $unread = $user->unreadNotifications()->count();
+        $navBadges = app(\App\Services\Navigation\NavigationBadgeService::class)->forUser($user);
+        $megaMenuCategories = $isAgentArea ? collect() : app(\App\Services\Shop\CategoryNavigationService::class)->visibleTopLevel(region()['iso'] ?? null);
         $hdrCountries = \App\Models\Country::active()->get(['id', 'name', 'iso2', 'flag_emoji']);
         $hdrRegion = region();
         $hdrAvatar = $user->avatar_path
             ? Storage::url($user->avatar_path)
-            : ($user->avatar_url ?: 'https://api.dicebear.com/9.x/avataaars/svg?seed='.urlencode($user->name));
+            : ($user->avatar_url ?: local_avatar($user->name));
     @endphp
 
-    {{-- Sidebar, desktop-only persistent nav. No mobile drawer/hamburger: the bottom
-         dock's "Menu" sheet covers the same links on phones, so there's no toggle state
-         here to flash open on load. --}}
-    <aside class="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-app transition-[width] duration-300 lg:block"
-           style="background: var(--sidebar-bg); backdrop-filter: blur(18px);"
-           :class="sbc ? 'sb-mini' : ''"
-           @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
-        <div class="flex h-16 items-center px-5">
-            <a href="{{ $isAgentArea ? route('agent.dashboard') : route('dashboard') }}" class="inline-flex items-center">
-                <img src="{{ site_logo() }}" alt="{{ setting('site_name', config('platform.name')) }}" class="h-9 w-auto" :class="sbc ? 'lg:hidden' : ''" />
-                <img src="{{ site_favicon() }}" alt="{{ setting('site_name', config('platform.name')) }}" class="hidden h-8 w-8 object-contain" :class="sbc ? 'lg:!block' : ''" />
-            </a>
+    @if (session('impersonator_id'))
+        <div class="sticky top-0 z-[60] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-center text-sm font-semibold text-amber-950">
+            <x-icon name="user-circle" class="h-4 w-4 shrink-0" />
+            {{ __('You are viewing the site as :name.', ['name' => $user->name]) }}
+            <form method="POST" action="{{ route('impersonate.stop') }}">
+                @csrf
+                <button class="rounded-full bg-amber-950 px-3 py-1 text-xs font-bold text-amber-50 hover:bg-amber-900">{{ __('Return to admin') }}</button>
+            </form>
         </div>
-        <nav class="h-[calc(100vh-4rem)] overflow-y-auto px-3 pb-6">
-            @include($isAgentArea ? 'partials.nav-agent' : 'partials.nav-user')
-        </nav>
-    </aside>
+    @endif
 
-    {{-- Sidebar edge controls, small social trigger + collapse arrow riding the border line.
-         Only shown while the mouse is over the sidebar or header, so it doesn't float
-         permanently over page content. --}}
-    <div class="fixed top-4 z-[60] hidden -translate-x-1/2 flex-col items-center gap-2 transition-[left,opacity] duration-300 lg:flex"
-         :class="(sbc ? 'left-20' : 'left-72') + (edgeHover ? ' opacity-100' : ' opacity-0 pointer-events-none')"
-         @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
-        @include('partials.social-dock')
-        <button type="button" @click="sbc = !sbc; localStorage.setItem('pb-sbc', sbc ? '1' : '0')"
-                :aria-expanded="!sbc" aria-label="{{ __('Toggle sidebar') }}"
-                class="grid h-6 w-6 place-items-center text-muted transition hover:scale-110 hover:text-strong">
-            <x-img-icon name="Arrow-Button-Right-3--Streamline-Ultimate.png" class="h-4 w-4 transition-transform duration-300" ::class="sbc ? '' : 'rotate-180'" />
-        </button>
-    </div>
+    {{-- Dashboard shell: primary sidebar / main content as real CSS Grid columns
+         (see .dashboard-shell in app.css). No floating panels, no manual margins
+         on individual pages — this wrapper owns the whole layout. --}}
+    <div class="dashboard-shell transition-[grid-template-columns] duration-200" :class="{ 'shell-sbc': sbc }">
 
-    <div class="lg:pl-72 transition-[padding] duration-300" :class="sbc ? 'lg:!pl-20' : ''">
+        {{-- Primary sidebar, desktop-only persistent nav. No mobile drawer/hamburger: the
+             bottom dock's "Menu" sheet covers the same links on phones. --}}
+        <aside class="shell-col-primary hidden border-r border-app lg:flex"
+               style="background: var(--sidebar-bg); backdrop-filter: blur(18px);"
+               :class="sbc ? 'sb-mini' : ''"
+               @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
+            <div class="flex h-16 shrink-0 items-center px-5">
+                <a href="{{ $isAgentArea ? route('agent.dashboard') : route('dashboard') }}" class="inline-flex items-center">
+                    <img src="{{ site_logo() }}" alt="{{ setting('site_name', config('platform.name')) }}" class="h-9 w-auto" :class="sbc ? 'lg:hidden' : ''" />
+                    <img src="{{ site_favicon() }}" alt="{{ setting('site_name', config('platform.name')) }}" class="hidden h-8 w-8 object-contain" :class="sbc ? 'lg:!block' : ''" />
+                </a>
+            </div>
+            <nav class="min-h-0 flex-1 overflow-y-auto px-3 pb-6">
+                @include($isAgentArea ? 'partials.nav-agent' : 'partials.nav-user')
+            </nav>
+        </aside>
+
+        {{-- Sidebar edge controls, small social trigger + collapse arrow riding the primary
+             sidebar's own border. Only shown while the mouse is over the sidebar or header. --}}
+        <div class="edge-ctl pointer-events-none fixed top-4 z-[60] hidden -translate-x-1/2 flex-col items-center gap-2 transition-[left,opacity] duration-300 lg:flex"
+             :class="{ 'edge-ctl-sbc': sbc, 'opacity-100 pointer-events-auto': edgeHover, 'opacity-0': !edgeHover }"
+             @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
+            @include('partials.social-dock')
+            <button type="button" @click="sbc = !sbc; localStorage.setItem('pb-sbc', sbc ? '1' : '0')"
+                    :aria-expanded="!sbc" aria-label="{{ __('Toggle sidebar') }}"
+                    class="grid h-6 w-6 place-items-center text-muted transition hover:scale-110 hover:text-strong">
+                <x-img-icon name="Arrow-Button-Right-3--Streamline-Ultimate.png" class="h-4 w-4 transition-transform duration-300" ::class="sbc ? '' : 'rotate-180'" />
+            </button>
+        </div>
+
+        <div class="shell-col-main">
         {{-- Top bar --}}
         <header class="sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6" style="background: var(--header-bg);"
                 @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
@@ -122,7 +145,7 @@
                 <x-theme-toggle bare />
 
                 <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" class="relative grid h-9 w-9 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong">
+                    <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="{{ __('Notifications') }}" class="relative grid h-9 w-9 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong">
                         <x-icon name="bell" class="h-5 w-5" />
                         @if ($unread)<span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
                     </button>
@@ -163,28 +186,44 @@
                     <button @click="open = !open" aria-label="{{ __('Account') }}" class="block rounded-full transition hover:scale-105">
                         <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-9 w-9 rounded-full object-cover" />
                     </button>
-                    <div x-show="open" @click.outside="open = false" x-transition style="display:none" class="card-solid absolute right-0 mt-2 w-56 rounded-2xl border border-app p-2 shadow-lg">
-                        <div class="border-b border-app px-3 py-2"><p class="text-sm font-semibold text-strong">{{ $user->name }}</p><p class="truncate text-xs text-muted">{{ $user->email }}</p></div>
-                        <a href="{{ route('profile.edit') }}" class="mt-1 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="user" class="h-4 w-4" /> {{ __('Profile') }}</a>
-                        <a href="{{ route('security.index') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="shield" class="h-4 w-4" /> {{ __('Security') }}</a>
+                    <div x-show="open" @click.outside="open = false" x-transition style="display:none" class="card-solid absolute right-0 mt-2 w-64 rounded-2xl border border-app p-2 shadow-lg">
+                        <div class="flex items-center gap-3 border-b border-app px-3 py-2.5">
+                            <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-10 w-10 shrink-0 rounded-full object-cover" />
+                            <div class="min-w-0">
+                                <p class="flex items-center gap-1.5 truncate text-sm font-semibold text-strong">
+                                    {{ $user->name }}
+                                    @if ($user->kyc_status === \App\Enums\KycStatus::Approved)
+                                        <span title="{{ __('Identity verified') }}"><x-icon name="check-circle" class="h-3.5 w-3.5 shrink-0 text-emerald-500" /></span>
+                                    @endif
+                                </p>
+                                <p class="truncate text-xs text-muted">{{ $user->email }}</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('profile.edit') }}" class="mt-1 flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="user" class="h-4 w-4" /> {{ __('My Profile') }}</a>
                         <button type="button" @click="open = false; window.dispatchEvent(new CustomEvent('open-theme-menu'))" class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="cog" class="h-4 w-4" /> {{ __('Appearance') }}</button>
-                        <a href="{{ route('notifications.index') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="bell" class="h-4 w-4" /> {{ __('Notifications') }} @if ($unread)<span class="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $unread > 9 ? '9+' : $unread }}</span>@endif</a>
-                        <a href="{{ route('shop.orders.index') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="receipt" class="h-4 w-4" /> {{ __('My orders') }}</a>
+                        <a href="{{ route('profile.edit') }}#account-settings" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="doc" class="h-4 w-4" /> {{ __('Account Settings') }}</a>
                         @if ($user->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="gauge" class="h-4 w-4" /> {{ __('Admin panel') }}</a>
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="gauge" class="h-4 w-4" /> {{ __('Switch to Admin Panel') }}</a>
                         @endif
-                        <a href="{{ route('home') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="arrow-right" class="h-4 w-4 rotate-180" /> {{ __('Back to store') }}</a>
-                        <form method="POST" action="{{ route('logout') }}" class="border-t border-app mt-1 pt-1">@csrf<button class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-400 hover:surface"><x-icon name="logout" class="h-4 w-4" /> {{ __('Log out') }}</button></form>
+                        <a href="{{ route('home') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-body hover:surface"><x-icon name="globe" class="h-4 w-4" /> {{ __('Visit Public Website') }}</a>
+                        <form method="POST" action="{{ route('logout') }}" class="border-t border-app mt-1 pt-1">@csrf<button class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-400 hover:surface"><x-icon name="logout" class="h-4 w-4" /> {{ __('Log Out') }}</button></form>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="mx-auto max-w-none px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
+        {{-- flex column + flex-1 content wrapper is what makes the footer a
+             genuine "sticky footer": pinned to the bottom of the viewport on
+             short pages, pushed below the fold normally on long ones — never
+             a position:sticky/fixed overlay sitting on top of content. --}}
+        <main class="mx-auto flex w-full max-w-none flex-1 flex-col px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
             <x-flash />
-            @yield('content')
+            <div class="flex-1">
+                @yield('content')
+            </div>
             @include('partials.dashboard-footer')
         </main>
+        </div>
     </div>
 
     @include('partials.bottom-dock')

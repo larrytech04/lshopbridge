@@ -86,4 +86,29 @@ class FlutterwaveProvider extends AbstractPaymentProvider
             raw: $payload,
         );
     }
+
+    /** Real, non-money-moving check: read the account balance with the configured secret key. */
+    public function testConnection(): array
+    {
+        if ($this->isSandbox()) {
+            return parent::testConnection();
+        }
+
+        foreach (['secret_key', 'base_url'] as $key) {
+            if (empty($this->config[$key])) {
+                return ['ok' => false, 'message' => "Missing required credential: {$key}."];
+            }
+        }
+
+        try {
+            $response = Http::withToken($this->config['secret_key'])
+                ->get(rtrim((string) $this->config['base_url'], '/').'/balances');
+
+            return $response->successful()
+                ? ['ok' => true, 'message' => 'Authenticated successfully.']
+                : ['ok' => false, 'message' => 'Flutterwave rejected the credentials (HTTP '.$response->status().').'];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => 'Connection failed: '.$e->getMessage()];
+        }
+    }
 }

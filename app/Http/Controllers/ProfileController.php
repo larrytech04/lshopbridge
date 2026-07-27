@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Notifications\SecurityAlert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -67,7 +68,15 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
 
-        $request->user()->update(['password' => Hash::make($request->password)]);
+        $user = $request->user();
+        $user->update(['password' => Hash::make($request->password), 'password_changed_at' => now()]);
+
+        $user->notify(new SecurityAlert(
+            title: 'Your password was changed',
+            message: "Your account password was just changed.\n\nIf you didn't do this, secure your account immediately.",
+            actionLabel: 'Review account security',
+            actionUrl: route('security.index'),
+        ));
 
         return back()->with('success', 'Password changed.');
     }

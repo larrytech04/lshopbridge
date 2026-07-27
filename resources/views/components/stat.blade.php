@@ -1,6 +1,6 @@
-@props(['label', 'value', 'icon' => 'chart', 'hint' => null, 'prefix' => '', 'suffix' => '', 'counter' => false, 'decimals' => 0])
+@props(['label', 'value', 'icon' => 'chart', 'img' => null, 'tint' => '#7C5CFC', 'hint' => null, 'prefix' => '', 'suffix' => '', 'counter' => false, 'decimals' => 0, 'solid' => false])
 
-<div class="glass glass-hover rounded-2xl p-5">
+<div @class(['rounded-2xl p-5 transition', 'card-solid border border-app shadow-sm hover:shadow-md' => $solid, 'glass glass-hover' => ! $solid])>
     <div class="flex items-start justify-between">
         <div>
             <p class="text-sm text-muted">{{ $label }}</p>
@@ -15,8 +15,14 @@
                 <p class="mt-1 text-xs text-faint">{{ $hint }}</p>
             @endif
         </div>
-        <span class="grid h-11 w-11 place-items-center rounded-xl bg-slate-500/15 text-slate-500 ring-1 ring-app">
-            <x-icon :name="$icon" class="h-5 w-5" />
-        </span>
+        @if ($img)
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-white shadow-sm" style="background: {{ $tint }}">
+                <x-img-icon :name="$img" class="h-5 w-5" />
+            </span>
+        @else
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-slate-500/15 text-slate-500 ring-1 ring-app">
+                <x-icon :name="$icon" class="h-5 w-5" />
+            </span>
+        @endif
     </div>
 </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Agent;
 use App\Models\AgentLead;
 use App\Models\Country;
+use App\Services\Security\FormRateLimitService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -121,12 +122,20 @@ class MarketplaceController extends Controller
         return back()->with('success', 'Thanks for confirming, delivery marked as completed.');
     }
 
-    public function review(Request $request, Agent $agent)
+    public function review(Request $request, Agent $agent, FormRateLimitService $rateLimit)
     {
         $data = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        // Defense-in-depth against a compromised or scripted authenticated
+        // session posting spam reviews at scale — login alone isn't a
+        // guarantee once a session/token has been hijacked.
+        if (setting('reviews_protection', true) && $rateLimit->tooManyAttempts('review_feedback', $request)) {
+            return back()->with('error', 'Please wait a moment before submitting again.');
+        }
+        $rateLimit->hit('review_feedback', $request);
 
         $agent->reviews()->create([
             'user_id' => $request->user()->id,

@@ -3,6 +3,8 @@
 namespace App\Services\Settings;
 
 use App\Models\Setting;
+use App\Models\SystemSettingRevision;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -13,6 +15,9 @@ use Illuminate\Support\Facades\Cache;
 class SettingsService
 {
     private const CACHE_KEY = 'platform.settings';
+
+    /** Keys whose values are secrets — masked in revision history, never stored raw. */
+    private const SENSITIVE_KEYS = ['mail_password'];
 
     /** @var array<string, mixed>|null */
     private ?array $cache = null;
@@ -42,14 +47,32 @@ class SettingsService
 
     public function set(string $key, mixed $value, string $type = 'string', string $group = 'general'): Setting
     {
+        $oldValue = Setting::where('key', $key)->value('value');
+        $newValue = is_array($value) ? json_encode($value) : (string) $value;
+
         $setting = Setting::updateOrCreate(
             ['key' => $key],
-            ['value' => is_array($value) ? json_encode($value) : (string) $value, 'type' => $type, 'group' => $group],
+            ['value' => $newValue, 'type' => $type, 'group' => $group],
         );
+
+        if ($oldValue !== $newValue) {
+            $masked = $this->isSensitiveKey($key);
+            SystemSettingRevision::create([
+                'key' => $key,
+                'old_value' => $masked ? ($oldValue !== null ? '••••••••' : null) : $oldValue,
+                'new_value' => $masked ? '••••••••' : $newValue,
+                'changed_by' => Auth::id(),
+            ]);
+        }
 
         $this->flush();
 
         return $setting;
+    }
+
+    public function isSensitiveKey(string $key): bool
+    {
+        return in_array($key, self::SENSITIVE_KEYS, true);
     }
 
     public function flush(): void

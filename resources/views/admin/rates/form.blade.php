@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="mx-auto max-w-xl">
-    <a href="{{ route('admin.rates.index') }}" class="text-sm text-brand-300 hover:text-brand-200">← Rates</a>
+    <a href="{{ route('admin.rates.index') }}" class="text-sm text-brand-600 hover:text-brand-700">← Rates</a>
     <x-glass-card class="mt-4">
         <form method="POST" action="{{ $rate->exists ? route('admin.rates.update', $rate) : route('admin.rates.store') }}" class="space-y-4">
             @csrf @if($rate->exists)@method('PUT')@endif

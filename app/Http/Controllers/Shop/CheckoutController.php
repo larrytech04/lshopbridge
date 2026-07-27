@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\ShopOrderStatus;
+use App\Enums\ShopProductType;
 use App\Exceptions\InsufficientFundsException;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentMethod;
@@ -30,22 +32,25 @@ class CheckoutController extends Controller
             'lines' => $lines,
             'subtotal' => $this->cart->subtotal(),
             'wallet' => $request->user()->primaryWallet(),
-            'methods' => PaymentMethod::active()->where('is_automated', true)->get(),
+            'methods' => PaymentMethod::active()->where('is_automated', true)->where('marketplace_enabled', true)->get(),
         ]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'payment_source' => ['required', 'in:wallet,direct'],
-            'payment_method_id' => ['required_if:payment_source,direct', 'nullable', 'exists:payment_methods,id'],
-            'email' => ['required', 'email'],
-        ]);
-
         $lines = $this->cart->lines();
         if ($lines->isEmpty()) {
             return redirect()->route('shop.index')->with('warning', 'Your cart is empty.');
         }
+
+        $hasEsim = $lines->contains(fn ($l) => $l['variant']->product->type === ShopProductType::Esim);
+
+        $data = $request->validate([
+            'payment_source' => ['required', 'in:wallet,direct'],
+            'payment_method_id' => ['required_if:payment_source,direct', 'nullable', 'exists:payment_methods,id'],
+            'email' => ['required', 'email'],
+            'esim_device_confirmed' => [$hasEsim ? 'accepted' : 'nullable'],
+        ]);
 
         $user = $request->user();
 
@@ -53,7 +58,7 @@ class CheckoutController extends Controller
             if ($data['payment_source'] === 'wallet') {
                 $order = $this->shop->checkoutFromWallet($user, $lines, $data['email']);
             } else {
-                $method = PaymentMethod::active()->findOrFail($data['payment_method_id']);
+                $method = PaymentMethod::active()->where('marketplace_enabled', true)->findOrFail($data['payment_method_id']);
                 $result = $this->shop->checkoutWithDirectPayment($user, $lines, $data['email'], $method);
 
                 if ($result['charge']->redirectUrl) {
@@ -68,6 +73,10 @@ class CheckoutController extends Controller
 
         $this->cart->clear();
 
-        return redirect()->route('shop.orders.show', $order)->with('success', 'Order complete, your digital products are ready!');
+        $message = in_array($order->status, [ShopOrderStatus::Processing, ShopOrderStatus::PartiallyFulfilled], true)
+            ? 'Payment received! Most items are ready now; anything still preparing will be emailed to you shortly.'
+            : 'Order complete, your digital products are ready!';
+
+        return redirect()->route('shop.orders.show', $order)->with('success', $message);
     }
 }

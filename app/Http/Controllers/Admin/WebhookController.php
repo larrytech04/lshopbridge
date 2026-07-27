@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\WebhookStatus;
 use App\Http\Controllers\Controller;
 use App\Models\WebhookEvent;
+use App\Services\Payments\WebhookProcessor;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class WebhookController extends Controller
@@ -28,5 +31,16 @@ class WebhookController extends Controller
     public function show(WebhookEvent $event): View
     {
         return view('admin.webhooks.show', ['event' => $event->load('related')]);
+    }
+
+    public function retry(WebhookEvent $event, WebhookProcessor $processor): RedirectResponse
+    {
+        if ($event->status !== WebhookStatus::Failed) {
+            return back()->with('error', 'Only failed events can be retried.');
+        }
+
+        $processor->retry($event);
+
+        return back()->with('success', 'Webhook event reprocessed.');
     }
 }

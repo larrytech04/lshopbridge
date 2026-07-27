@@ -8,12 +8,12 @@
     <div class="flex items-end justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-strong sm:text-3xl">{{ cms('cms_home_esim_title', __('Global travel eSIMs')) }}</h2>
-            <p class="mt-1 max-w-2xl text-sm text-muted sm:text-base">{{ cms('cms_home_esim_subtitle', __('Get a data eSIM for 190+ countries, installed in minutes, no physical SIM. Choose a plan below.')) }}</p>
+            <p class="mt-1 max-w-2xl text-sm text-muted sm:text-base">{{ cms('cms_home_esim_subtitle', __('Get a data eSIM for your next trip, installed in minutes, no physical SIM. Choose a plan below.')) }}</p>
         </div>
         <div class="flex shrink-0 items-center gap-2">
             <button type="button" @click="scroll(-1)" aria-label="{{ __('Previous') }}" class="grid h-9 w-9 place-items-center rounded-full border border-app surface text-muted transition hover:text-strong"><x-icon name="chevron-right" class="h-4 w-4 rotate-180" /></button>
             <button type="button" @click="scroll(1)" aria-label="{{ __('Next') }}" class="grid h-9 w-9 place-items-center rounded-full border border-app surface text-muted transition hover:text-strong"><x-icon name="chevron-right" class="h-4 w-4" /></button>
-            <a href="{{ route('shop.category', 'esims') }}" class="ml-1 text-sm font-semibold text-brand-500 hover:text-brand-600">{{ __('See all') }} →</a>
+            <a href="{{ \Illuminate\Support\Facades\Route::has('esim.index') ? route('esim.index') : route('shop.category', 'esims') }}" class="ml-1 text-sm font-semibold text-brand-500 hover:text-brand-600">{{ __('See all') }} →</a>
         </div>
     </div>
     <div x-ref="esimRow" class="no-scrollbar mt-6 flex snap-x gap-4 overflow-x-auto pb-2">

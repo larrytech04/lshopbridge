@@ -34,6 +34,20 @@ return [
 
         'Footer' => [
             ['cms_footer_tagline', 'Tagline', 'textarea', 'Make payments, fund China wallets, and buy instant digital products, gift cards, eSIMs & VPN, delivered in minutes.'],
+            ['cms_footer_deck_heading', 'Action deck: heading', 'text', 'Move money, shop, learn and ship with one connected platform.'],
+            ['cms_footer_deck_description', 'Action deck: description', 'textarea', 'One account for wallet funding, China payments, the marketplace and shipping, backed by real support.'],
+            ['cms_footer_brand_statement', 'Brand statement', 'textarea', 'LshopBridge connects African customers with China-focused financial, digital-commerce and logistics services through one secure platform.'],
+            ['cms_footer_support_hours', 'Support hours (shown as-is, leave blank to hide)', 'text', ''],
+            ['cms_footer_newsletter_heading', 'Newsletter: heading', 'text', 'The LshopBridge Brief'],
+            ['cms_footer_newsletter_description', 'Newsletter: description', 'textarea', 'Useful China-shopping updates, service launches, rate notices and important platform information.'],
+        ],
+
+        'Reviews: aggregate numbers' => [
+            ['cms_reviews_trustpilot_rating', 'Trustpilot rating (out of 5)', 'text', '4.5'],
+            ['cms_reviews_trustpilot_count', 'Trustpilot review count label', 'text', '460+'],
+            ['cms_reviews_google_rating', 'Google rating (out of 5)', 'text', '4.8'],
+            ['cms_reviews_google_count', 'Google review count label', 'text', '1,200+'],
+            ['cms_reviews_trusted_since', '"Trusted since" label', 'text', 'Trusted since 2024'],
         ],
     ],
 ];

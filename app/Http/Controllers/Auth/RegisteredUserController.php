@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Country;
 use App\Models\User;
-use App\Services\Security\Turnstile;
+use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,9 +23,9 @@ class RegisteredUserController extends Controller
         ]);
     }
 
-    public function store(RegisterRequest $request, Turnstile $turnstile)
+    public function store(RegisterRequest $request, TurnstileVerificationService $turnstile)
     {
-        if (! $turnstile->verify($request)) {
+        if (setting('registration_protection', true) && ! $turnstile->verify($request, 'register')->success) {
             return back()->withInput()->with('error', 'Please complete the bot-protection challenge.');
         }
 

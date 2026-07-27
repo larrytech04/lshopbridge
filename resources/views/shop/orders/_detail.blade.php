@@ -77,7 +77,20 @@
                     </div>
                 </div>
 
-                @if (! empty($item->delivered))
+                @if ($item->type === 'esim')
+                    @php $esim = $item->esimProvisioning; @endphp
+                    <div class="mt-3">
+                        @if ($esim?->status === 'ready')
+                            <a href="{{ route('esim.mine.show', $esim) }}" class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+                                <x-icon name="sim" class="h-3.5 w-3.5" /> {{ __('Install my eSIM') }}
+                            </a>
+                        @elseif ($esim?->status === 'failed')
+                            <p class="text-sm text-rose-600">{{ __('We could not provision this eSIM automatically. Our team has been notified, contact support if you need an update.') }}</p>
+                        @else
+                            <p class="text-sm text-muted">{{ __('Your eSIM is being prepared. We\'ll email you the moment it\'s ready to install.') }}</p>
+                        @endif
+                    </div>
+                @elseif (! empty($item->delivered))
                     <div class="mt-3 space-y-2" x-data>
                         @foreach ($item->delivered as $code)
                             <div class="flex items-center gap-2 rounded-xl border border-app surface px-4 py-2.5">
@@ -96,7 +109,7 @@
                             <button type="button" @click="open = !open" class="text-xs font-semibold text-brand-500 hover:text-brand-600">{{ __('Redeem instructions') }}</button>
                             <span class="text-faint">·</span>
                         @endif
-                        <a href="{{ route('pages.show', 'terms') }}" class="text-xs font-semibold text-muted hover:text-strong">{{ __('Terms and conditions') }}</a>
+                        <a href="{{ route('legal.show', 'terms') }}" class="text-xs font-semibold text-muted hover:text-strong">{{ __('Terms and conditions') }}</a>
                         @if ($item->product?->redeem_instructions)
                             <p x-show="open" x-collapse style="display:none" class="mt-2 basis-full text-xs leading-relaxed text-muted">{{ $item->product->redeem_instructions }}</p>
                         @endif

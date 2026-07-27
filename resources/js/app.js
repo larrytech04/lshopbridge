@@ -138,11 +138,28 @@ document.addEventListener('DOMContentLoaded', initAutoHideHeader);
 // SPA), so instead of one generic shape we match the URL against known route
 // patterns and pick the closest-shaped variant to show.
 const SKELETON_VARIANTS = [
-    { variant: 'grid', test: /\/shop(\/c\/[^/]+)?$|\/shipping-agents$|\/marketplace$|\/learn$|\/china-guide$|\/admin\/shop\/products$/ },
-    { variant: 'detail', test: /\/shop\/p\/|\/fund\/\d|\/deposit\/\d|\/shop\/orders\/\d|\/support\/\d|\/marketplace\/[^/]+$|\/china-guide\/[^/]+$|\/learn\/[^/]+$|\/admin\/(users|deposits|funding|agents|disputes|webhooks|kyc)\/\d/ },
-    { variant: 'form', test: /\/deposit$|\/fund\/new$|\/profile$|\/checkout$|\/verification$|\/register|\/login$|\/admin\/(settings|integrations|channels|providers)$/ },
-    { variant: 'list', test: /\/transactions$|\/notifications$|\/beneficiaries$|\/support$|\/shop\/orders$|\/admin\/(users|kyc|deposits|risk|funding|agents|audit|disputes|webhooks|reviews|beneficiaries)$|\/(leads|reviews)$/ },
-    { variant: 'dashboard', test: /\/dashboard$|\/admin\/?$|\/agent\/?$/ },
+    // These three admin pages got a much larger, structurally different redesign than
+    // their siblings that still share the generic buckets below — checked first so
+    // they don't fall through to a mismatched generic shape.
+    { variant: 'admin-user-profile', test: /\/admin\/users\/\d/ },
+    { variant: 'admin-users-list', test: /\/admin\/users$/ },
+    { variant: 'admin-command-center', test: /\/admin\/?$/ },
+    { variant: 'admin-kyc-case', test: /\/admin\/kyc\/\d/ },
+    { variant: 'admin-kyc-queue', test: /\/admin\/kyc$/ },
+    { variant: 'admin-agents-list', test: /\/admin\/agents$/ },
+    { variant: 'admin-wallets-list', test: /\/admin\/beneficiaries$/ },
+    { variant: 'admin-deposits-list', test: /\/admin\/deposits$/ },
+    { variant: 'admin-funding-list', test: /\/admin\/funding$/ },
+    { variant: 'admin-rates-list', test: /\/admin\/rates$/ },
+    { variant: 'admin-fees-list', test: /\/admin\/fees$/ },
+    { variant: 'admin-products-list', test: /\/admin\/shop\/products$/ },
+    { variant: 'admin-categories-tree', test: /\/admin\/shop\/categories$/ },
+    { variant: 'admin-orders-list', test: /\/admin\/shop\/orders$/ },
+    { variant: 'grid', test: /\/shop(\/c\/[^/]+)?$|\/shipping-agents$|\/marketplace$|\/learn$|\/china-guide$/ },
+    { variant: 'detail', test: /\/shop\/p\/|\/fund\/\d|\/deposit\/\d|\/shop\/orders\/\d|\/admin\/shop\/orders\/\d|\/support\/\d|\/marketplace\/[^/]+$|\/china-guide\/[^/]+$|\/learn\/[^/]+$|\/admin\/(deposits|funding|agents|disputes|webhooks)\/\d/ },
+    { variant: 'form', test: /\/deposit$|\/fund\/new$|\/profile$|\/checkout$|\/verification$|\/register|\/login$|\/admin\/(settings|integrations|channels|providers|payment-methods|countries|currencies|china-wallet-types|api-health)$/ },
+    { variant: 'list', test: /\/transactions$|\/notifications$|\/beneficiaries$|\/support$|\/shop\/orders$|\/admin\/(risk|audit|disputes|webhooks|reviews)$|\/(leads|reviews)$/ },
+    { variant: 'dashboard', test: /\/dashboard$|\/agent\/?$/ },
 ];
 const DEFAULT_SKELETON_VARIANT = 'list';
 
@@ -728,6 +745,40 @@ Alpine.data('leadChat', (leadId, pollUrl, initial) => ({
     },
 }));
 
+Alpine.data('discordLive', (inviteUrl) => ({
+    online: null,
+    members: null,
+    name: '',
+    icon: '',
+    loading: true,
+    failed: false,
+    timer: null,
+    init() {
+        this.fetchStats();
+        this.timer = setInterval(() => this.fetchStats(), 60000);
+    },
+    destroy() { clearInterval(this.timer); },
+    async fetchStats() {
+        let code = '';
+        try { code = new URL(inviteUrl).pathname.replace(/^\/+/, ''); } catch (e) { /* invalid/placeholder URL */ }
+        if (!code) { this.loading = false; this.failed = true; return; }
+        try {
+            const res = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`);
+            if (!res.ok) throw new Error('bad status');
+            const data = await res.json();
+            this.online = data.approximate_presence_count ?? null;
+            this.members = data.approximate_member_count ?? null;
+            this.name = data.guild?.name || '';
+            this.icon = data.guild?.icon ? `https://cdn.discordapp.com/icons/${data.guild_id}/${data.guild.icon}.png?size=64` : '';
+            this.failed = false;
+        } catch (e) {
+            this.failed = true;
+        } finally {
+            this.loading = false;
+        }
+    },
+}));
+
 Alpine.data('shortcutsHelp', (groups) => ({
     open: false,
     q: '',
@@ -763,10 +814,311 @@ Alpine.data('shortcutsHelp', (groups) => ({
     },
 }));
 
+// ── WebAuthn / passkeys ──────────────────────────────────────────────
+// These live here (not a page-level <script> pushed from Blade) because
+// layouts.app has no @stack('scripts') to render one into — every Alpine
+// component used across the app is registered centrally like this.
+function base64urlToBuffer(value) {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(value.length + (4 - value.length % 4) % 4, '=');
+    const raw = atob(padded);
+    const buffer = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buffer[i] = raw.charCodeAt(i);
+    return buffer.buffer;
+}
+function bufferToBase64url(buffer) {
+    let str = '';
+    new Uint8Array(buffer).forEach((b) => { str += String.fromCharCode(b); });
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+}
+
+Alpine.data('passkeyManager', (routes) => ({
+    name: '',
+    busy: false,
+    error: '',
+    success: '',
+    async register() {
+        this.busy = true;
+        this.error = '';
+        this.success = '';
+        try {
+            const optionsRes = await fetch(routes.optionsUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json' },
+            });
+            if (!optionsRes.ok) throw new Error('Could not start passkey registration.');
+            const options = await optionsRes.json();
+
+            const publicKey = {
+                ...options,
+                challenge: base64urlToBuffer(options.challenge),
+                user: { ...options.user, id: base64urlToBuffer(options.user.id) },
+                excludeCredentials: (options.excludeCredentials || []).map((c) => ({ ...c, id: base64urlToBuffer(c.id) })),
+            };
+
+            const credential = await navigator.credentials.create({ publicKey });
+
+            const payload = {
+                id: credential.id,
+                rawId: bufferToBase64url(credential.rawId),
+                type: credential.type,
+                response: {
+                    clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                    attestationObject: bufferToBase64url(credential.response.attestationObject),
+                    transports: credential.response.getTransports ? credential.response.getTransports() : [],
+                },
+            };
+
+            const storeRes = await fetch(routes.storeUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: this.name, response: payload }),
+            });
+
+            const data = await storeRes.json().catch(() => ({}));
+            if (!storeRes.ok) throw new Error(data.errors?.response?.[0] || data.message || 'Could not save that passkey.');
+
+            this.success = 'Passkey added.';
+            setTimeout(() => window.location.reload(), 800);
+        } catch (e) {
+            this.error = e.message || 'Passkey registration was cancelled or failed.';
+        } finally {
+            this.busy = false;
+        }
+    },
+}));
+
+Alpine.data('passkeyChallenge', (routes) => ({
+    busy: false,
+    error: '',
+    async verify() {
+        this.busy = true;
+        this.error = '';
+        try {
+            const optionsRes = await fetch(routes.optionsUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json' },
+            });
+            if (!optionsRes.ok) throw new Error('Could not start passkey verification.');
+            const options = await optionsRes.json();
+
+            const publicKey = {
+                ...options,
+                challenge: base64urlToBuffer(options.challenge),
+                allowCredentials: (options.allowCredentials || []).map((c) => ({ ...c, id: base64urlToBuffer(c.id) })),
+            };
+
+            const credential = await navigator.credentials.get({ publicKey });
+
+            const payload = {
+                id: credential.id,
+                rawId: bufferToBase64url(credential.rawId),
+                type: credential.type,
+                response: {
+                    clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+                    authenticatorData: bufferToBase64url(credential.response.authenticatorData),
+                    signature: bufferToBase64url(credential.response.signature),
+                    userHandle: credential.response.userHandle ? bufferToBase64url(credential.response.userHandle) : null,
+                },
+            };
+
+            const verifyRes = await fetch(routes.verifyUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ response: payload }),
+            });
+
+            if (verifyRes.redirected) { window.location.href = verifyRes.url; return; }
+            if (!verifyRes.ok) {
+                const data = await verifyRes.json().catch(() => ({}));
+                throw new Error(data.errors?.response?.[0] || data.message || 'That passkey could not be verified.');
+            }
+            window.location.href = routes.dashboardUrl;
+        } catch (e) {
+            this.error = e.message || 'Passkey verification was cancelled or failed.';
+        } finally {
+            this.busy = false;
+        }
+    },
+}));
+
+/**
+ * Marketplace mobile drawer content: search-filter + "recently viewed
+ * categories" only (see partials/marketplace-menu.blade.php). Open/close is
+ * the shell's ctx/openCtx/closeCtx state, not this component's job. Desktop
+ * has no panel at all: the Marketplace entry in the primary sidebar expands
+ * inline on hover (see partials/nav-user.blade.php). `categories` here is a
+ * flat list (all levels) used only to resolve slugs back to display info for
+ * the recent-viewed list and the search results.
+ */
+Alpine.data('marketplaceMenu', (categories = []) => ({
+    q: '',
+    categories,
+    recent: [],
+    recentKey: 'pb-recent-categories',
+
+    init() {
+        this.loadRecent();
+    },
+
+    loadRecent() {
+        try {
+            const slugs = JSON.parse(localStorage.getItem(this.recentKey) || '[]');
+            this.recent = slugs.map((slug) => this.categories.find((c) => c.slug === slug)).filter(Boolean).slice(0, 4);
+        } catch {
+            this.recent = [];
+        }
+    },
+
+    trackVisit(slug) {
+        try {
+            let slugs = JSON.parse(localStorage.getItem(this.recentKey) || '[]');
+            slugs = [slug, ...slugs.filter((s) => s !== slug)].slice(0, 6);
+            localStorage.setItem(this.recentKey, JSON.stringify(slugs));
+        } catch { /* localStorage unavailable — recently-viewed is a nicety, not required */ }
+    },
+
+    filtered() {
+        const term = this.q.trim().toLowerCase();
+        if (!term) return [];
+
+        return this.categories.filter((c) => c.name.toLowerCase().includes(term));
+    },
+
+    visit(slug) {
+        if (slug) this.trackVisit(slug);
+    },
+}));
+
+/**
+ * Admin financial performance chart: hover/touch crosshair + tooltip for the
+ * smooth multi-series wave lines rendered server-side in
+ * admin/dashboard/_financial.blade.php. `points` already carry pixel-space
+ * x/y coordinates computed in PHP (single source of truth for the scale) —
+ * this component only finds the nearest point to the pointer.
+ */
+Alpine.data('financialWaveChart', (points = [], currency = 'XAF') => ({
+    points,
+    currency,
+    hover: null,
+
+    nearestTo(clientX, rect) {
+        if (!this.points.length) return;
+        const x = clientX - rect.left;
+        let nearest = 0;
+        let best = Infinity;
+        this.points.forEach((p, i) => {
+            const dist = Math.abs(p.x - x);
+            if (dist < best) { best = dist; nearest = i; }
+        });
+        this.hover = nearest;
+    },
+
+    handleMove(event) {
+        this.nearestTo(event.clientX, event.currentTarget.getBoundingClientRect());
+    },
+
+    handleTouch(event) {
+        const touch = event.touches[0];
+        if (!touch) return;
+        this.nearestTo(touch.clientX, event.currentTarget.getBoundingClientRect());
+    },
+
+    clear() { this.hover = null; },
+
+    get active() { return this.hover === null ? null : this.points[this.hover]; },
+
+    get activeX() { return this.active ? this.active.x : 0; },
+
+    fmt(v) { return Number(v || 0).toLocaleString(); },
+}));
+
 document.addEventListener('DOMContentLoaded', () => {
     ShortcutManager.load(window.__SHORTCUTS__ || []);
     ShortcutManager.init();
 });
+
+/**
+ * Footer accessibility panel: text size, high contrast, reduced motion,
+ * underline links. Each preference is a real CSS class toggled on <html> and
+ * persisted to localStorage — theme-head.blade.php applies the saved state
+ * before first paint (same anti-flash pattern as the light/dark/night theme)
+ * so there's no flash of un-adjusted content on reload.
+ */
+Alpine.data('accessibilityPanel', () => ({
+    open: false,
+    textSize: localStorage.getItem('pb-a11y-text-size') || 'md',
+    contrast: localStorage.getItem('pb-a11y-contrast') === '1',
+    underlineLinks: localStorage.getItem('pb-a11y-underline-links') === '1',
+    reducedMotion: localStorage.getItem('pb-a11y-reduced-motion') === '1',
+
+    setTextSize(size) {
+        document.documentElement.classList.remove('a11y-text-lg', 'a11y-text-xl');
+        this.textSize = size;
+        if (size === 'lg' || size === 'xl') {
+            document.documentElement.classList.add('a11y-text-' + size);
+            localStorage.setItem('pb-a11y-text-size', size);
+        } else {
+            localStorage.removeItem('pb-a11y-text-size');
+        }
+    },
+
+    toggle(key, storageKey, className) {
+        this[key] = !this[key];
+        document.documentElement.classList.toggle(className, this[key]);
+        if (this[key]) localStorage.setItem(storageKey, '1'); else localStorage.removeItem(storageKey);
+    },
+
+    toggleContrast() { this.toggle('contrast', 'pb-a11y-contrast', 'a11y-contrast'); },
+    toggleUnderlineLinks() { this.toggle('underlineLinks', 'pb-a11y-underline-links', 'a11y-underline-links'); },
+    toggleReducedMotion() { this.toggle('reducedMotion', 'pb-a11y-reduced-motion', 'a11y-reduced-motion'); },
+
+    reset() {
+        this.setTextSize('md');
+        if (this.contrast) this.toggleContrast();
+        if (this.underlineLinks) this.toggleUnderlineLinks();
+        if (this.reducedMotion) this.toggleReducedMotion();
+    },
+}));
+
+Alpine.data('esimCompatibilityChecker', (routes, brands) => ({
+    brands,
+    brand: '',
+    model: '',
+    models: [],
+    result: null,
+    checking: false,
+
+    async onBrandChange() {
+        this.model = '';
+        this.models = [];
+        this.result = null;
+        if (!this.brand) return;
+        const res = await fetch(`${routes.modelsUrl}?brand=${encodeURIComponent(this.brand)}`, {
+            headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json' },
+        });
+        const data = await res.json();
+        this.models = data.models || [];
+    },
+
+    async check() {
+        if (!this.brand || !this.model) return;
+        this.checking = true;
+        this.result = null;
+        try {
+            const res = await fetch(routes.checkUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ brand: this.brand, model: this.model }),
+            });
+            this.result = await res.json();
+        } finally {
+            this.checking = false;
+        }
+    },
+}));
 
 window.Alpine = Alpine;
 Alpine.start();

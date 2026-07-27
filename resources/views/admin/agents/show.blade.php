@@ -3,14 +3,21 @@
 
 @section('content')
 <div class="mx-auto max-w-4xl space-y-6">
-    <a href="{{ route('admin.agents.index') }}" class="text-sm text-brand-300 hover:text-brand-200">← All agents</a>
+    <a href="{{ route('admin.agents.index') }}" class="text-sm text-brand-600 hover:text-brand-700">← All agents</a>
 
     <x-glass-card>
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-bold text-strong">{{ $agent->business_name }}</h2>
-                <p class="text-sm text-muted">{{ $agent->user->name }} · {{ $agent->user->email }}</p>
-                <p class="text-xs text-faint">{{ $agent->warehouseCountry?->name }} · {{ $agent->warehouse_city }} · Reg #{{ $agent->registration_number ?? '-' }}</p>
+            <div class="flex items-center gap-3">
+                @if ($agent->logo_path)
+                    <img src="{{ asset('storage/'.$agent->logo_path) }}" class="h-12 w-12 rounded-full object-cover" alt="">
+                @else
+                    <span class="grid h-12 w-12 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white">{{ strtoupper(substr($agent->business_name, 0, 2)) }}</span>
+                @endif
+                <div>
+                    <h2 class="flex items-center gap-1.5 text-xl font-bold text-strong">{{ $agent->business_name }} @if ($agent->is_featured)<span class="pill bg-purple-500/15 text-purple-600 text-[10px]">Featured</span>@endif</h2>
+                    <p class="text-sm text-muted">{{ $agent->agent_type->label() }} · {{ $agent->user->name }} · {{ $agent->user->email }}</p>
+                    <p class="text-xs text-faint">{{ $agent->warehouseCountry?->name }} · {{ $agent->warehouse_city }} · Reg #{{ $agent->registration_number ?? '-' }}</p>
+                </div>
             </div>
             <x-status-badge :status="$agent->status" />
         </div>
@@ -23,14 +30,24 @@
     </x-glass-card>
 
     <div class="flex flex-wrap gap-3">
-        @if ($agent->status->value !== 'approved')
-            <form method="POST" action="{{ route('admin.agents.approve', $agent) }}">@csrf<button class="btn btn-success"><x-icon name="check" class="h-4 w-4" /> Approve & list</button></form>
+        @if ($agent->status->value === 'pending')
+            <form method="POST" action="{{ route('admin.agents.approve', $agent) }}">@csrf<button class="btn btn-success"><x-icon name="check" class="h-4 w-4" /> Approve &amp; list</button></form>
+            <form method="POST" action="{{ route('admin.agents.reject', $agent) }}" class="flex gap-2">@csrf
+                <input name="reason" class="field max-w-xs" placeholder="Rejection reason" required>
+                <button class="btn btn-danger">Reject</button>
+            </form>
         @endif
-        <form method="POST" action="{{ route('admin.agents.reject', $agent) }}" class="flex gap-2">@csrf
-            <input name="reason" class="field max-w-xs" placeholder="Rejection reason" required>
-            <button class="btn btn-danger">Reject</button>
-        </form>
-        <form method="POST" action="{{ route('admin.agents.feature', $agent) }}">@csrf<button class="btn btn-ghost"><x-icon name="star" class="h-4 w-4" /> {{ $agent->is_featured ? 'Unfeature' : 'Feature' }}</button></form>
+        @if ($agent->status->value !== 'suspended')
+            <form method="POST" action="{{ route('admin.agents.suspend', $agent) }}" class="flex gap-2" onsubmit="return confirm('Suspend this agent?')">@csrf
+                <input name="reason" class="field max-w-xs" placeholder="Suspension reason" required>
+                <button class="btn btn-ghost text-amber-600"><x-icon name="ban" class="h-4 w-4" /> Suspend</button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('admin.agents.restore', $agent) }}" onsubmit="return confirm('Restore this agent?')">@csrf<button class="btn btn-success"><x-icon name="refresh" class="h-4 w-4" /> Restore</button></form>
+        @endif
+        @if ($agent->status->value === 'approved')
+            <form method="POST" action="{{ route('admin.agents.feature', $agent) }}">@csrf<button class="btn btn-ghost"><x-icon name="star" class="h-4 w-4" /> {{ $agent->is_featured ? 'Unfeature' : 'Feature' }}</button></form>
+        @endif
     </div>
 
     @if ($agent->shippingRates->isNotEmpty())
@@ -41,5 +58,29 @@
             </table></div>
         </x-glass-card>
     @endif
+
+    <x-glass-card id="reviews">
+        <h3 class="font-semibold text-strong">Reviews ({{ $agent->reviews_count }}, ★ {{ number_format((float) $agent->rating, 1) }})</h3>
+        <div class="mt-3 space-y-2">
+            @forelse ($agent->reviews as $r)
+                <div class="rounded-lg surface-2 p-3 text-sm">
+                    <p class="text-body"><span class="font-semibold">{{ $r->user->name ?? 'Unknown' }}</span> · {{ str_repeat('★', $r->rating) }} · <span class="text-faint">{{ $r->created_at->format('M j, Y') }}</span> · <x-status-badge :status="$r->status" class="text-[10px]" /></p>
+                    @if ($r->comment)<p class="text-muted">{{ $r->comment }}</p>@endif
+                </div>
+            @empty
+                <p class="text-sm text-faint">No reviews yet.</p>
+            @endforelse
+        </div>
+    </x-glass-card>
+
+    <x-glass-card>
+        <h3 class="font-semibold text-strong">Internal notes</h3>
+        <p class="text-xs text-faint">Private — never shown to the agent.</p>
+        <form method="POST" action="{{ route('admin.agents.notes', $agent) }}" class="mt-2">
+            @csrf
+            <textarea name="admin_notes" rows="3" class="field">{{ $agent->admin_notes }}</textarea>
+            <button class="btn btn-ghost mt-2 text-sm">Save notes</button>
+        </form>
+    </x-glass-card>
 </div>
 @endsection

@@ -13,7 +13,7 @@
         </select>
         <select name="category" class="field max-w-[180px]">
             <option value="">{{ __('All categories') }}</option>
-            @foreach (['deposit','funding','refund','fee','adjustment'] as $c)<option value="{{ $c }}" @selected(($filters['category'] ?? '')===$c)>{{ ucfirst($c) }}</option>@endforeach
+            @foreach (['deposit','funding','withdrawal','refund','fee','adjustment'] as $c)<option value="{{ $c }}" @selected(($filters['category'] ?? '')===$c)>{{ ucfirst($c) }}</option>@endforeach
         </select>
         <button class="btn btn-primary"><x-icon name="filter" class="h-4 w-4" /> {{ __('Filter') }}</button>
     </form>

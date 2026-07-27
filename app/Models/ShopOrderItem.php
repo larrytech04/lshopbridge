@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\ShopOrderItemStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ShopOrderItem extends Model
 {
@@ -15,6 +17,7 @@ class ShopOrderItem extends Model
             'unit_price' => 'decimal:2',
             'line_total' => 'decimal:2',
             'delivered' => 'array',
+            'status' => ShopOrderItemStatus::class,
         ];
     }
 
@@ -31,5 +34,10 @@ class ShopOrderItem extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ShopVariant::class, 'shop_variant_id');
+    }
+
+    public function esimProvisioning(): HasOne
+    {
+        return $this->hasOne(\App\Models\EsimProvisioning::class);
     }
 }

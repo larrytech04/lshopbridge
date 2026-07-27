@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Http\Controllers\Controller;
 use App\Models\ShopCategory;
 use App\Models\ShopProduct;
+use App\Services\Shop\CategoryNavigationService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -18,6 +19,8 @@ class ShopController extends Controller
     public function category(ShopCategory $category, Request $request): View
     {
         abort_unless($category->is_active, 404);
+        abort_unless($category->isAvailableForCountry(region()['iso'] ?? null), 404);
+        abort_unless($category->isCurrentlyAvailable(), 404);
 
         return $this->storefront($request, $category);
     }
@@ -28,6 +31,7 @@ class ShopController extends Controller
      */
     protected function storefront(Request $request, ?ShopCategory $active): View
     {
+        $categoryNav = app(CategoryNavigationService::class);
         // Resolve which top-level category and (optional) subcategory are active.
         $activeTop = $activeSub = null;
         if ($active) {
@@ -56,6 +60,13 @@ class ShopController extends Controller
                 ->orWhere('summary', 'like', "%{$q}%"));
         }
 
+        $filter = in_array($request->query('filter'), ['deals', 'featured'], true) ? $request->query('filter') : null;
+        match ($filter) {
+            'deals' => $query->where('is_best_deal', true),
+            'featured' => $query->where('is_featured', true),
+            default => null,
+        };
+
         $sort = in_array($request->query('sort'), ['az', 'za'], true) ? $request->query('sort') : 'popular';
         match ($sort) {
             'az' => $query->orderBy('name'),
@@ -65,15 +76,13 @@ class ShopController extends Controller
 
         return view('shop.index', [
             'products' => $query->paginate(12)->withQueryString(),
-            'topCategories' => ShopCategory::active()->topLevel()->with('activeChildren')->get(),
+            'topCategories' => $categoryNav->visibleTopLevel(region()['iso'] ?? null),
             'activeTop' => $activeTop,
             'activeSub' => $activeSub,
             'subcategories' => $activeTop ? $activeTop->activeChildren()->orderBy('sort')->get() : collect(),
             'sort' => $sort,
+            'filter' => $filter,
             'filters' => $request->only('q'),
-            'esimProducts' => $activeTop ? collect() : ShopProduct::active()->where('type', 'esim')
-                ->whereHas('variants', fn ($q) => $q->where('is_active', true))
-                ->with('variants')->orderByDesc('is_featured')->orderByDesc('sales_count')->take(6)->get(),
         ]);
     }
 
@@ -81,10 +90,13 @@ class ShopController extends Controller
     {
         abort_unless($product->is_active, 404);
 
+        $user = auth()->user();
+
         return view('shop.show', [
             'product' => $product->load('category.parent', 'activeVariants'),
             'related' => ShopProduct::active()->where('shop_category_id', $product->shop_category_id)
                 ->where('id', '!=', $product->id)->with('variants')->take(4)->get(),
+            'inWishlist' => $user ? $user->wishlists()->where('shop_product_id', $product->id)->exists() : false,
         ]);
     }
 }

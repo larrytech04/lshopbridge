@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="mx-auto max-w-3xl space-y-6">
-    <a href="{{ route('admin.disputes.index') }}" class="text-sm text-brand-300 hover:text-brand-200">← Disputes</a>
+    <a href="{{ route('admin.disputes.index') }}" class="text-sm text-brand-600 hover:text-brand-700">← Disputes</a>
 
     <x-glass-card>
         <div class="flex items-center justify-between">
@@ -18,7 +18,7 @@
         <div class="mt-4 space-y-3">
             @forelse ($dispute->messages as $m)
                 <div class="rounded-xl p-3 {{ $m->is_staff ? 'bg-brand-600/20' : 'surface' }}">
-                    <p class="text-xs font-semibold {{ $m->is_staff ? 'text-brand-300' : 'text-muted' }}">{{ $m->is_staff ? 'Support' : $m->user->name }} · {{ $m->created_at->diffForHumans() }}</p>
+                    <p class="text-xs font-semibold {{ $m->is_staff ? 'text-brand-600' : 'text-muted' }}">{{ $m->is_staff ? 'Support' : $m->user->name }} · {{ $m->created_at->diffForHumans() }}</p>
                     <p class="mt-1 text-sm text-body">{{ $m->message }}</p>
                 </div>
             @empty

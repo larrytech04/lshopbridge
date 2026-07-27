@@ -27,4 +27,10 @@ interface PaymentProvider
 
     /** Normalise a decoded webhook payload into a WebhookResult. */
     public function parseWebhook(array $payload): WebhookResult;
+
+    /**
+     * Real, non-money-moving credential check (e.g. an auth/token request or a
+     * balance read) — never simulated. Returns ['ok' => bool, 'message' => string].
+     */
+    public function testConnection(): array;
 }

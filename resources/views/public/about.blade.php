@@ -1,5 +1,6 @@
 @extends('layouts.public')
-@section('title', ($page->title ?: __('About us')).' · '.config('platform.name'))
+@section('title', ($page->meta_title ?: $page->title ?: __('About us')).' · '.config('platform.name'))
+@section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($page->excerpt ?: ''), 160))
 
 @php
     $brand = setting('site_name', config('platform.name'));
@@ -11,16 +12,11 @@
         ['num' => 24, 'suffix' => '/7', 'label' => __('Self-service & support')],
         ['num' => 100, 'suffix' => '%', 'label' => __('Secure & encrypted')],
     ];
-    $pillars = [
-        ['Yuan--Streamline-Plump.png', __('Fund China wallets'), __('Top up Alipay, WeChat Pay, UnionPay and QQ in minutes, paid with MoMo, bank, card or crypto.')],
-        ['Shop-Sign-Bag--Streamline-Ultimate.png', __('Digital shop'), __('Gift cards, eSIMs, mobile top-ups, bills, flights & stays, delivered to your account instantly.')],
-        ['Delivery-Package-Give--Streamline-Freehand.png', __('Verified agents'), __('Trusted procurement & freight partners in China, rated by real buyers, to ship your goods home.')],
-    ];
     $values = [
-        ['shield', __('Bank-grade security'), __('KYC tiers, encrypted documents and automatic fraud screening on every transaction.')],
-        ['bolt', __('Built for speed'), __('Automated, webhook-confirmed payments trigger instant payouts and delivery.')],
-        ['chart', __('Radical transparency'), __('See the exact rate and fee before you confirm. No hidden charges, ever.')],
-        ['heart', __('Human support'), __('Real people on chat, WhatsApp and email whenever you need a hand.')],
+        ['Vpn-Shield--Streamline-Ultimate.png', __('Bank-grade security'), __('KYC tiers, encrypted documents and automatic fraud screening on every transaction.'), 'emerald'],
+        ['Cashless-Payment-Cad-Top-Up-Wallet-Add--Streamline-Ultimate.png', __('Built for speed'), __('Automated, webhook-confirmed payments trigger instant payouts and delivery.'), 'amber'],
+        ['Pricing-Consumption--Streamline-Carbon.svg', __('Radical transparency'), __('See the exact rate and fee before you confirm. No hidden charges, ever.'), 'sky'],
+        ['Headphones-Customer-Support-Human-1--Streamline-Ultimate.png', __('Human support'), __('Real people on chat, WhatsApp and email whenever you need a hand.'), 'rose'],
     ];
     $steps = [
         [__('Create your account'), __('Sign up free and verify your identity to unlock funding and higher limits.')],
@@ -118,39 +114,40 @@
     </div>
 </section>
 
-{{-- What we do --}}
-<section class="w-full surface border-y border-app">
-    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+{{-- Values, video band with glass cards --}}
+<section class="leopard relative w-full overflow-hidden bg-slate-900">
+    {{-- Source clip is portrait; rotated 90deg and over-scaled so the landscape band is always fully covered --}}
+    <video class="absolute left-1/2 top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover opacity-40" src="{{ asset('assets/'.rawurlencode('about vid.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
+    <div class="pointer-events-none absolute inset-0 bg-slate-900/70"></div>
+    <div class="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-20 -right-10 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl"></div>
+    <div class="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-bold text-strong sm:text-4xl">{{ __('What we do') }}</h2>
-            <p class="mt-3 text-body">{{ __('Everything you need to buy from and pay into China, in one place.') }}</p>
+            <h2 class="text-3xl font-bold text-white sm:text-4xl">{{ __('What we stand for') }}</h2>
+            <p class="mt-3 text-white/70">{{ __('The principles behind every feature we build.') }}</p>
         </div>
-        <div class="mt-10 grid gap-6 md:grid-cols-3">
-            @foreach ($pillars as [$icon, $title, $body])
-                <div class="rounded-3xl border border-app card-solid p-7 shadow-sm">
-                    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-slate-500/12 text-brand-600"><x-img-icon :name="$icon" class="h-7 w-7" /></span>
-                    <h3 class="mt-5 text-lg font-bold text-strong">{{ $title }}</h3>
-                    <p class="mt-2 text-sm text-muted">{{ $body }}</p>
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($values as [$icon, $title, $body, $tint])
+                @php
+                    // Literal, complete class strings per tint (not interpolated) so
+                    // Tailwind's build-time scanner can find and generate them, same
+                    // convention as components/guide-icon.blade.php.
+                    [$glow, $badge, $iconColor, $ring] = match ($tint) {
+                        'emerald' => ['bg-emerald-400/20', 'bg-emerald-400/15', 'text-emerald-300', 'ring-emerald-400/25'],
+                        'amber' => ['bg-amber-400/20', 'bg-amber-400/15', 'text-amber-300', 'ring-amber-400/25'],
+                        'sky' => ['bg-sky-400/20', 'bg-sky-400/15', 'text-sky-300', 'ring-sky-400/25'],
+                        'rose' => ['bg-rose-400/20', 'bg-rose-400/15', 'text-rose-300', 'ring-rose-400/25'],
+                        default => ['bg-white/20', 'bg-white/15', 'text-white', 'ring-white/25'],
+                    };
+                @endphp
+                <div class="glass glass-hover group relative overflow-hidden rounded-3xl p-6">
+                    <span class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full {{ $glow }} blur-2xl transition-opacity group-hover:opacity-80"></span>
+                    <span class="relative grid h-14 w-14 place-items-center rounded-2xl {{ $badge }} {{ $iconColor }} ring-1 {{ $ring }}"><x-img-icon :name="$icon" class="h-6 w-6" /></span>
+                    <h3 class="relative mt-5 font-bold text-white">{{ $title }}</h3>
+                    <p class="relative mt-2 text-sm leading-relaxed text-white/70">{{ $body }}</p>
                 </div>
             @endforeach
         </div>
-    </div>
-</section>
-
-{{-- Values --}}
-<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-    <div class="mx-auto max-w-2xl text-center">
-        <h2 class="text-3xl font-bold text-strong sm:text-4xl">{{ __('What we stand for') }}</h2>
-        <p class="mt-3 text-body">{{ __('The principles behind every feature we build.') }}</p>
-    </div>
-    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        @foreach ($values as [$icon, $title, $body])
-            <div class="rounded-3xl border border-app card-solid p-6 shadow-sm">
-                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-slate-500/12 text-brand-600"><x-icon :name="$icon" class="h-6 w-6" /></span>
-                <h3 class="mt-4 font-bold text-strong">{{ $title }}</h3>
-                <p class="mt-1.5 text-sm text-muted">{{ $body }}</p>
-            </div>
-        @endforeach
     </div>
 </section>
 

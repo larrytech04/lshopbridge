@@ -18,6 +18,7 @@ class WebhookEvent extends Model
             'headers' => 'array',
             'payload' => 'array',
             'processed_at' => 'datetime',
+            'last_retried_at' => 'datetime',
         ];
     }
 

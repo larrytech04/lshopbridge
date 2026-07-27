@@ -12,7 +12,7 @@
         ['Home', route('home'), 'House-Chimney-1--Streamline-Ultimate.png', 'flex'],
         ['Fund Alipay', route('public.fund'), 'Trading-Currency-Exchange--Streamline-Ultimate.png', 'flex'],
         ['Shop', route('shop.index'), 'Shop-Sign-Bag--Streamline-Ultimate.png', 'flex'],
-        ['eSIM', route('shop.category', 'esims'), 'Sim-Card-2--Streamline-Ultimate.png', 'flex'],
+        ['eSIM', \Illuminate\Support\Facades\Route::has('esim.index') ? route('esim.index') : route('shop.category', 'esims'), 'Sim-Card-2--Streamline-Ultimate.png', 'flex'],
         ['Gift Cards', route('shop.category', 'gift-cards'), 'Gift-Rectangle-With-Bow--Streamline-Ultimate.png', 'hidden sm:flex'],
         ['Guides', route('guides.index'), 'Study-Book--Streamline-Ultimate.png', 'hidden sm:flex'],
         ['About', route('pages.show', 'about'), 'Information-Desk-Question-Help--Streamline-Ultimate.png', 'hidden md:flex'],
@@ -99,6 +99,7 @@
                 @auth
                     <a href="{{ route('dashboard') }}" class="grid h-9 w-9 place-items-center rounded-xl border border-app surface text-muted hover:text-strong"><x-img-icon name="User-Story--Streamline-Ultimate.png" class="h-5 w-5" /></a>
                 @else
+                    <a href="{{ route('login') }}" aria-label="{{ __('Log in') }}" class="grid h-9 w-9 place-items-center rounded-xl border border-app surface text-muted hover:text-strong sm:hidden"><x-icon name="user-circle" class="h-5 w-5" /></a>
                     <a href="{{ route('login') }}" class="hidden rounded-full border border-app surface px-4 py-2 text-sm font-semibold text-strong sm:block">{{ __('Log in') }}</a>
                     <a href="{{ route('register') }}" class="btn btn-primary hidden sm:inline-flex">{{ __('Get started') }}</a>
                 @endauth

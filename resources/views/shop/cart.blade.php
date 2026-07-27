@@ -18,7 +18,7 @@
             <div class="space-y-3 lg:col-span-2">
                 @foreach ($lines as $line)
                     @php $v = $line['variant']; $p = $v->product;
-                        $icon = ['giftcard'=>'giftcard','esim'=>'sim','vpn'=>'shield','gaming'=>'gamepad','streaming'=>'play'][$p->type] ?? 'bag'; @endphp
+                        $icon = ['giftcard'=>'giftcard','esim'=>'sim','vpn'=>'shield','gaming'=>'gamepad','streaming'=>'play'][$p->type->value] ?? 'bag'; @endphp
                     <div class="glass flex items-center gap-4 rounded-2xl p-4">
                         <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl surface text-brand-400"><x-icon :name="$icon" class="h-6 w-6" /></span>
                         <div class="min-w-0 flex-1">

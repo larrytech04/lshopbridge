@@ -104,6 +104,8 @@
             <x-icon name="clock" class="h-3.5 w-3.5 shrink-0" />
             {{ __('Typical response time: a few hours for high priority, within 1-2 days otherwise.') }}
         </p>
+
+        <x-discord-card class="mt-4" />
     </div>
 </div>
 @endsection

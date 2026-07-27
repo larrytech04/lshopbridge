@@ -27,7 +27,7 @@
         @php
             $meAvatar = $user->avatar_path
                 ? Storage::url($user->avatar_path)
-                : ($user->avatar_url ?: 'https://api.dicebear.com/9.x/avataaars/svg?seed='.urlencode($user->name));
+                : ($user->avatar_url ?: local_avatar($user->name));
         @endphp
         @php
             $greetName = __('Hi :name', ['name' => \Illuminate\Support\Str::before($user->name, ' ')]);
@@ -73,6 +73,37 @@
                 <x-icon name="shield" class="h-6 w-6 text-amber-400" />
                 <p class="flex-1 text-sm text-body">{{ __('Verify your phone to unlock funding and higher limits.') }}</p>
                 <a href="{{ route('verification.index') }}" class="btn btn-primary">{{ __('Verify now') }}</a>
+            </div>
+        @endif
+
+        {{-- Attention cards: every card here is driven by a real signal from NavigationBadgeService
+             (no permanent/decorative cards) — the section itself disappears when nothing needs attention. --}}
+        @php
+            // Literal Tailwind classes only — $card['color'] is one of a small
+            // fixed set chosen below, never interpolated directly into a class.
+            $attentionColor = fn (string $c) => match ($c) {
+                'rose' => ['border' => 'border-l-rose-400/60', 'icon' => 'text-rose-500'],
+                'amber' => ['border' => 'border-l-amber-400/60', 'icon' => 'text-amber-500'],
+                'sky' => ['border' => 'border-l-sky-400/60', 'icon' => 'text-sky-500'],
+                default => ['border' => 'border-l-emerald-400/60', 'icon' => 'text-emerald-500'],
+            };
+            $attentionCards = collect([
+                $navBadges['security_alert'] ?? false ? ['icon' => 'shield', 'color' => 'rose', 'text' => __('A security alert needs your attention.'), 'action' => __('Review'), 'url' => route('security.index')] : null,
+                ($navBadges['support_awaiting_you'] ?? 0) > 0 ? ['icon' => 'mail', 'color' => 'amber', 'text' => __(':count support ticket(s) awaiting your reply.', ['count' => $navBadges['support_awaiting_you']]), 'action' => __('View'), 'url' => route('disputes.index')] : null,
+                ($navBadges['shipping_requests_new_update'] ?? 0) > 0 && \Illuminate\Support\Facades\Route::has('shipping-requests.index') ? ['icon' => 'truck', 'color' => 'sky', 'text' => __(':count shipping request(s) have new updates.', ['count' => $navBadges['shipping_requests_new_update']]), 'action' => __('View'), 'url' => route('shipping-requests.index')] : null,
+                $navBadges['referral_reward_available'] ?? false ? ['icon' => 'users', 'color' => 'emerald', 'text' => __('You have referral rewards available.'), 'action' => __('Claim'), 'url' => route('referrals.index')] : null,
+            ])->filter()->values();
+        @endphp
+        @if ($attentionCards->isNotEmpty())
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach ($attentionCards as $card)
+                    @php $colorClasses = $attentionColor($card['color']); @endphp
+                    <div class="card-solid flex items-center gap-3 rounded-2xl border border-app border-l-4 p-4 shadow-sm {{ $colorClasses['border'] }}">
+                        <x-icon :name="$card['icon']" class="h-5 w-5 shrink-0 {{ $colorClasses['icon'] }}" />
+                        <p class="min-w-0 flex-1 truncate text-sm text-body">{{ $card['text'] }}</p>
+                        <a href="{{ $card['url'] }}" class="shrink-0 text-sm font-semibold text-brand-500 hover:text-brand-400">{{ $card['action'] }}</a>
+                    </div>
+                @endforeach
             </div>
         @endif
 
@@ -316,4 +347,6 @@
         </div>
     </div>
 @endif
+
+@include('partials.esim-carousel', ['esimProducts' => $esimProducts, 'transparent' => true])
 @endsection

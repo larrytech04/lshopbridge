@@ -12,8 +12,13 @@
         <div class="glass rounded-2xl p-5">
             <div class="flex items-start justify-between gap-3">
                 <div>
-                    <p class="font-medium text-strong">{{ $review->user->name }} → {{ $review->agent->business_name }}</p>
-                    <p class="text-amber-300">@for($i=0;$i<$review->rating;$i++)★@endfor</p>
+                    <p class="font-medium text-strong">
+                        {{ $review->reviewerName() }} → {{ $review->agent->business_name }}
+                        @if ($review->is_guest)
+                            <span class="pill bg-amber-500/15 text-amber-600 text-[10px] font-bold uppercase">Unverified · guest</span>
+                        @endif
+                    </p>
+                    <p class="text-amber-600">@for($i=0;$i<$review->rating;$i++)★@endfor</p>
                     @if ($review->comment)<p class="mt-1 text-sm text-muted">{{ $review->comment }}</p>@endif
                 </div>
                 @if ($review->status === 'pending')

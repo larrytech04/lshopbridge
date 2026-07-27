@@ -139,7 +139,7 @@
         <div class="mt-4 space-y-3">
             @forelse ($reviews as $review)
                 <div class="rounded-xl border border-app p-4">
-                    <div class="flex items-center justify-between"><span class="font-medium text-strong">{{ $review->user->name }}</span><span class="text-amber-400">@for($i=0;$i<$review->rating;$i++)★@endfor</span></div>
+                    <div class="flex items-center justify-between"><span class="font-medium text-strong">{{ $review->reviewerName() }}</span><span class="text-amber-400">@for($i=0;$i<$review->rating;$i++)★@endfor</span></div>
                     @if ($review->comment)<p class="mt-1 text-sm text-muted">{{ __($review->comment) }}</p>@endif
                 </div>
             @empty

@@ -55,8 +55,9 @@
     </div>
     <label class="flex items-start gap-2 text-sm text-body">
         <input type="checkbox" name="terms" value="1" required class="mt-0.5 rounded border-app surface-2 text-brand-500">
-        <span>{{ __('I agree to the') }} <a href="{{ route('pages.show', 'terms') }}" class="text-brand-300">{{ __('Terms') }}</a>.</span>
+        <span>{{ __('I agree to the') }} <a href="{{ route('legal.show', 'terms') }}" target="_blank" class="text-brand-300">{{ __('Terms') }}</a>.</span>
     </label>
+    <x-turnstile action="agent_registration" />
     <button type="submit" class="btn btn-primary w-full">{{ __('Create agent account') }} <x-icon name="arrow-right" class="h-4 w-4" /></button>
 </form>
 

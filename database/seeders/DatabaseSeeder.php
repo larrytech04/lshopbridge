@@ -18,7 +18,10 @@ class DatabaseSeeder extends Seeder
             ContentSeeder::class,
             GuideSeeder::class,
             ShopSeeder::class,
+            EsimDeviceSeeder::class,
             DemoUserSeeder::class,
+            KycDecisionTemplateSeeder::class,
+            KycVerificationSeeder::class,
         ]);
     }
 }

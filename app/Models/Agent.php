@@ -3,14 +3,19 @@
 namespace App\Models;
 
 use App\Enums\AgentStatus;
+use App\Enums\AgentType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Agent extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $guarded = [];
 
     protected function casts(): array
@@ -19,9 +24,12 @@ class Agent extends Model
             'cities' => 'array',
             'shipping_methods' => 'array',
             'status' => AgentStatus::class,
+            'agent_type' => AgentType::class,
             'rating' => 'decimal:2',
             'is_featured' => 'boolean',
             'verified_at' => 'datetime',
+            'featured_from' => 'date',
+            'featured_until' => 'date',
         ];
     }
 
@@ -67,9 +75,21 @@ class Agent extends Model
         return $this->hasMany(AgentLead::class);
     }
 
+    public function shippingQuotes(): HasMany
+    {
+        return $this->hasMany(ShippingQuote::class);
+    }
+
     public function scopeApproved($query)
     {
         return $query->where('status', AgentStatus::Approved->value);
+    }
+
+    public function scopeFeaturedActive($query)
+    {
+        return $query->where('is_featured', true)
+            ->where(fn ($q) => $q->whereNull('featured_from')->orWhereDate('featured_from', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('featured_until')->orWhereDate('featured_until', '>=', now()));
     }
 
     public function getRouteKeyName(): string
@@ -84,5 +104,14 @@ class Agent extends Model
             'rating' => round((float) $approved->avg('rating'), 2),
             'reviews_count' => $approved->count(),
         ]);
+    }
+
+    public function successRate(): ?float
+    {
+        $completed = $this->leads()->where('status', 'completed')->count();
+        $closed = $this->leads()->where('status', 'closed')->count();
+        $total = $completed + $closed;
+
+        return $total > 0 ? round(($completed / $total) * 100, 1) : null;
     }
 }

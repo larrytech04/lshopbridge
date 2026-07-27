@@ -17,7 +17,7 @@ class ShopSeeder extends Seeder
         $top = [
             ['gift-cards', 'Gift Cards', 'giftcard', 'brand', 'Amazon, Apple, Steam & more'],
             ['mobile-topup', 'Mobile top up & data', 'signal', 'accent', 'Airtime & data for any network'],
-            ['esims', 'eSIMs', 'sim', 'emerald', 'Instant data in 190+ countries'],
+            ['esims', 'eSIMs', 'sim', 'emerald', 'Instant travel data, no physical SIM'],
             ['bill-payments', 'Bill payments', 'receipt', 'violet', 'Pay utilities, TV & internet'],
             ['flights', 'Flights', 'plane', 'rose', 'Book flights worldwide'],
             ['stays', 'Stays', 'bed', 'amber', 'Hotels & stays, paid instantly'],
@@ -88,7 +88,7 @@ class ShopSeeder extends Seeder
             ['esims', 'China Travel eSIM', 'LshopBridge eSIM', 'esim', 'China', 'Stay connected across mainland China.', true, true, [
                 ['1GB · 7 days', 4500, null, '1GB', 7], ['5GB · 30 days', 14500, 16000, '5GB', 30], ['10GB · 30 days', 24500, null, '10GB', 30],
             ]],
-            ['esims', 'Global eSIM (130+ countries)', 'LshopBridge eSIM', 'esim', 'Global', 'One eSIM for worldwide travel.', true, false, [
+            ['esims', 'Global eSIM', 'LshopBridge eSIM', 'esim', 'Global', 'One eSIM for worldwide travel.', true, false, [
                 ['3GB · 30 days', 16500, null, '3GB', 30], ['10GB · 30 days', 39000, null, '10GB', 30],
             ]],
             ['esims', 'USA eSIM', 'LshopBridge eSIM', 'esim', 'United States', 'High-speed 5G data in the USA.', false, false, [
@@ -132,6 +132,15 @@ class ShopSeeder extends Seeder
                     'description' => $summary.' Delivered instantly to your account and email after payment.',
                     'redeem_instructions' => 'Your code/credential is shown on the order page and emailed to you. Redeem it in the official '.$brand.' app or website.',
                     'sales_count' => random_int(20, 1200),
+                    // Only real, known coverage is recorded here — a "Global" plan's exact
+                    // country list isn't confirmed for these demo listings, so it's left
+                    // unset rather than inventing a count (spec: no fake destination counts).
+                    ...match ($name) {
+                        'China Travel eSIM' => ['esim_scope' => 'local', 'esim_coverage_countries' => ['CN']],
+                        'USA eSIM' => ['esim_scope' => 'local', 'esim_coverage_countries' => ['US']],
+                        'Global eSIM' => ['esim_scope' => 'global', 'esim_coverage_countries' => null],
+                        default => [],
+                    },
                 ],
             );
 
@@ -147,6 +156,10 @@ class ShopSeeder extends Seeder
                         'stock' => null,
                         'is_active' => true,
                         'sort' => $sort,
+                        // Directly reflects the variant's own name ("Unlimited · 15 days") —
+                        // not an assumption. Network/hotspot/voice support are left unset
+                        // for these demo plans until a real provider integration confirms them.
+                        'is_unlimited_data' => $type === 'esim' && str_contains($v[3] ?? '', 'Unlimited'),
                     ],
                 );
 

@@ -49,6 +49,16 @@ class AlipayFundingProvider implements FundingProvider
         throw new \RuntimeException('Alipay funding live mode is not configured. Wire the payout partner API in AlipayFundingProvider::submit().');
     }
 
+    /** No payout partner API is wired yet (see submit()), so live mode is honestly reported as untestable. */
+    public function testConnection(): array
+    {
+        if ($this->isSandbox()) {
+            return ['ok' => true, 'message' => 'Sandbox mode active, no live credentials to test.'];
+        }
+
+        return ['ok' => false, 'message' => 'Live connection testing is not implemented for this provider yet — no payout partner API is wired.'];
+    }
+
     private function simulate(FundingRequest $request): FundingResult
     {
         // Deterministic-ish sandbox behaviour: a tiny fraction route to manual
