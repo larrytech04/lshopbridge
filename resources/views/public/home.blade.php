@@ -23,11 +23,6 @@
 
 {{-- HERO --}}
 <section data-hero class="leopard relative mx-auto max-w-none px-4 pt-6 sm:px-6 lg:pt-10">
-    {{-- Mobile/tablet: same graphic used as a faint background layer instead of a foreground card --}}
-    <div class="pointer-events-none absolute inset-x-0 top-20 z-0 flex justify-end overflow-hidden opacity-20 sm:top-24 lg:hidden" aria-hidden="true">
-        <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt="" class="h-56 w-auto sm:h-72" loading="lazy">
-    </div>
-
     <div class="animate-fade-up relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
         @php
             // Built from fragments so the line breaks differ by viewport (both 3 lines):
@@ -57,6 +52,11 @@
             <a href="{{ route('shop.index') }}" class="glass inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-2xl px-4 py-2.5 text-sm font-semibold text-body transition duration-300 hover:-translate-y-0.5 hover:text-strong sm:gap-2 sm:px-6 sm:py-3 sm:text-base">
                 <x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-4 w-4 sm:h-5 sm:w-5" /> {{ __('Browse the shop') }}
             </a>
+        </div>
+
+        {{-- Mobile/tablet: same target graphic used on desktop, in the ring video's old spot --}}
+        <div class="relative z-0 mx-auto mt-8 w-32 sm:mt-10 sm:w-40 lg:hidden">
+            <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt="" class="h-auto w-full" loading="lazy">
         </div>
     </div>
 
