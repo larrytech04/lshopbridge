@@ -62,10 +62,10 @@
                 <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt=""
                      class="h-auto w-full select-none" draggable="false" @contextmenu.prevent
                      style="-webkit-touch-callout: none;" loading="lazy">
-                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-orange-600 transition-all duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
-                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-teal-600 transition-all delay-75 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 67%; left: 68%; right: 11%;">{{ __('Digital shop') }}</span>
-                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-slate-700 transition-all delay-150 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
-                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-sky-600 transition-all delay-200 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 87.5%; left: 68%; right: 11%;">{{ __('Secure & fast') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-1 text-center text-[5px] font-bold leading-none text-orange-600 transition-all duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-1 text-center text-[5px] font-bold leading-none text-teal-600 transition-all delay-75 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 67%; left: 68%; right: 11%;">{{ __('Digital shop') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-1 text-center text-[5px] font-bold leading-none text-slate-700 transition-all delay-150 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-1 text-center text-[5px] font-bold leading-none text-sky-600 transition-all delay-200 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 87.5%; left: 68%; right: 11%;">{{ __('Secure & fast') }}</span>
             </div>
         </div>
     </div>
