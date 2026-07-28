@@ -54,9 +54,19 @@
             </a>
         </div>
 
-        {{-- Mobile/tablet: same target graphic used on desktop, in the ring video's old spot --}}
-        <div class="relative z-0 mx-auto mt-8 w-32 sm:mt-10 sm:w-40 lg:hidden">
-            <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt="" class="h-auto w-full" loading="lazy">
+        {{-- Mobile/tablet: same target graphic used on desktop, in the ring video's old spot.
+             Tap to reveal the labels (no hover on touch), same copy/positions as desktop. --}}
+        <div class="relative z-0 mx-auto mt-8 w-56 cursor-pointer sm:mt-10 sm:w-64 lg:hidden"
+             x-data="{ open: false }" @click="open = !open">
+            <div class="relative transition-transform duration-500 ease-out" :class="open ? '-translate-y-1 scale-105' : ''">
+                <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt=""
+                     class="h-auto w-full select-none" draggable="false" @contextmenu.prevent
+                     style="-webkit-touch-callout: none;" loading="lazy">
+                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-orange-600 transition-all duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-teal-600 transition-all delay-75 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 67%; left: 68%; right: 11%;">{{ __('Digital shop') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-slate-700 transition-all delay-150 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
+                <span class="absolute -translate-y-1/2 scale-75 px-2 text-center text-[9px] font-bold leading-tight text-sky-600 transition-all delay-200 duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 87.5%; left: 68%; right: 11%;">{{ __('Secure & fast') }}</span>
+            </div>
         </div>
     </div>
 
@@ -66,7 +76,8 @@
     <div class="group absolute bottom-0 right-0 hidden lg:block lg:w-[420px] xl:w-[480px]">
         <div class="relative transition-transform duration-500 ease-out group-hover:-translate-y-2 group-hover:scale-105">
             <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt=""
-                 class="h-auto w-full" loading="lazy">
+                 class="h-auto w-full select-none" draggable="false" @contextmenu.prevent
+                 style="-webkit-touch-callout: none;" loading="lazy">
             <span class="delay-100 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-orange-600 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
             <span class="delay-200 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-teal-600 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 67%; left: 68%; right: 11%;">{{ __('Digital shop') }}</span>
             <span class="delay-300 absolute -translate-y-1/2 scale-75 px-2 text-center text-[11px] font-bold leading-tight text-slate-700 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" style="top: 77.2%; left: 68%; right: 11%;">{{ __('Verified agents') }}</span>
