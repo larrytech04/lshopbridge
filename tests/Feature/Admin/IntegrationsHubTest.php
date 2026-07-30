@@ -30,4 +30,26 @@ class IntegrationsHubTest extends TestCase
         $response->assertSeeText('Discord critical alerts');
         $response->assertSeeText('Geo-IP / VPN detection');
     }
+
+    public function test_saving_general_integrations_persists_both_toggles(): void
+    {
+        $this->actingAs($this->admin())->put(route('admin.integrations.general'), [
+            'google_login_enabled' => '1',
+            'turnstile_enabled' => '1',
+        ]);
+
+        $this->assertTrue((bool) setting('google_login_enabled'));
+        $this->assertTrue((bool) setting('turnstile_enabled'));
+    }
+
+    public function test_unchecking_both_toggles_saves_them_as_false(): void
+    {
+        app(\App\Services\Settings\SettingsService::class)->set('google_login_enabled', '1', 'bool', 'integrations');
+        app(\App\Services\Settings\SettingsService::class)->set('turnstile_enabled', '1', 'bool', 'integrations');
+
+        $this->actingAs($this->admin())->put(route('admin.integrations.general'), []);
+
+        $this->assertFalse((bool) setting('google_login_enabled'));
+        $this->assertFalse((bool) setting('turnstile_enabled'));
+    }
 }

@@ -169,7 +169,6 @@
             <div class="mt-4 space-y-3">
                 @foreach ([
                     'bot_protection_enabled' => ['Bot protection enabled', 'Master switch — turning this off disables every layer below.', true],
-                    'turnstile_enabled' => ['Cloudflare Turnstile enabled', 'Requires TURNSTILE_SITE_KEY / TURNSTILE_SECRET_KEY in .env.', false],
                     'honeypot_enabled' => ['Honeypot enabled', 'Invisible trap field with a rotating name.', true],
                     'form_timing_protection_enabled' => ['Form timing protection', 'Signed, expiring render-to-submit timing token.', true],
                     'duplicate_detection_enabled' => ['Duplicate detection', 'Fingerprints repeated or replayed payloads.', true],
@@ -209,7 +208,7 @@
 
             <div class="mt-5 border-t border-app pt-4">
                 <p class="text-sm font-semibold text-strong">Cloudflare Turnstile keys</p>
-                <p class="mt-1 text-xs text-faint">Keys live in <code class="surface px-1">.env</code>, never in the database — the secret is never shown once set.</p>
+                <p class="mt-1 text-xs text-faint">Keys live in <code class="surface px-1">.env</code>, never in the database — the secret is never shown once set. Turn it on or off from <a href="{{ route('admin.integrations.index') }}" class="text-brand-400 hover:underline">Integrations</a>.</p>
                 <dl class="mt-3 grid gap-3 sm:grid-cols-2 text-sm">
                     <div><dt class="text-xs text-faint">Site key (public)</dt><dd class="font-mono text-xs text-body">{{ config('services.turnstile.site_key') ?: 'Not set' }}</dd></div>
                     <div>

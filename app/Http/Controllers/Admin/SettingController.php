@@ -64,7 +64,10 @@ class SettingController extends Controller
             'require_admin_mfa' => 'bool',
             // Forms & bot protection
             'bot_protection_enabled' => 'bool',
-            'turnstile_enabled' => 'bool',
+            // turnstile_enabled itself is NOT here — it's owned by the Integrations
+            // page (admin.integrations.general) alone. Having two forms write the
+            // same key meant saving THIS page (which never renders that checkbox)
+            // silently reset it, since an absent checkbox reads as false.
             'turnstile_appearance_mode' => 'string',
             'honeypot_enabled' => 'bool',
             'form_timing_protection_enabled' => 'bool',
@@ -104,7 +107,7 @@ class SettingController extends Controller
         // A critical protection layer being switched off deserves an alert —
         // "The bot-protection configuration changes" / "rate-limiting
         // protection is disabled" requirements.
-        $watchedKeys = ['bot_protection_enabled', 'rate_limiting_enabled', 'turnstile_enabled', 'honeypot_enabled'];
+        $watchedKeys = ['bot_protection_enabled', 'rate_limiting_enabled', 'honeypot_enabled'];
         $wasEnabled = collect($watchedKeys)->mapWithKeys(fn ($key) => [$key => (bool) setting($key, true)]);
 
         foreach ($schema as $key => $type) {

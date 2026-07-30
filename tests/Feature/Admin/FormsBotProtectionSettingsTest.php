@@ -86,16 +86,29 @@ class FormsBotProtectionSettingsTest extends TestCase
     {
         config(['services.discord.webhook_url' => 'https://discord.example/webhook']);
         Http::fake();
-        // Seed all four watched keys as already off, so the payload (which
+        // Seed all three watched keys as already off, so the payload (which
         // leaves every checkbox unchecked) represents "staying off" for all
-        // of them, not a fresh true->false transition on the other three.
-        foreach (['bot_protection_enabled', 'rate_limiting_enabled', 'turnstile_enabled', 'honeypot_enabled'] as $key) {
+        // of them, not a fresh true->false transition on the other two.
+        foreach (['bot_protection_enabled', 'rate_limiting_enabled', 'honeypot_enabled'] as $key) {
             Setting::create(['key' => $key, 'value' => '0', 'type' => 'bool', 'group' => 'general']);
         }
 
         $this->actingAs($this->admin())->put(route('admin.settings.update'), $this->baseSettingsPayload());
 
         Http::assertNothingSent();
+    }
+
+    public function test_saving_the_settings_page_never_touches_turnstile_enabled(): void
+    {
+        // turnstile_enabled is owned exclusively by the Integrations page. This
+        // form doesn't render that checkbox at all, so it must never be able
+        // to flip the value — regression test for the bug where saving ANY
+        // unrelated setting here silently reset it back to off.
+        Setting::create(['key' => 'turnstile_enabled', 'value' => '1', 'type' => 'bool', 'group' => 'integrations']);
+
+        $this->actingAs($this->admin())->put(route('admin.settings.update'), $this->baseSettingsPayload());
+
+        $this->assertTrue((bool) setting('turnstile_enabled'));
     }
 
     public function test_turnstile_secret_status_is_shown_without_ever_printing_the_secret_value(): void
