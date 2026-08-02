@@ -343,13 +343,132 @@ Alpine.data('counter', (target = 0, duration = 1600, decimals = 0) => ({
     },
 }));
 
-Alpine.data('feeCalculator', (opts = {}) => ({
-    amount: opts.amount ?? 0, rate: opts.rate ?? 1, feePercent: opts.feePercent ?? 0, feeFixed: opts.feeFixed ?? 0,
-    baseCurrency: opts.baseCurrency ?? 'XAF', targetCurrency: opts.targetCurrency ?? 'CNY',
-    get fee() { return Math.max(0, (Number(this.amount) * Number(this.feePercent)) / 100 + Number(this.feeFixed)); },
-    get total() { return Number(this.amount) + this.fee; },
-    get receives() { return Number(this.amount) * Number(this.rate); },
-    money(v, c) { return Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ' + c; },
+// Funding calculator: every figure (rate, margin, fee, total) comes from the
+// same backend quote the real funding request will use — this component
+// only formats and debounces, it never computes money itself.
+Alpine.data('fundingQuote', (opts = {}) => ({
+    amount: opts.amount ?? 0,
+    appType: opts.appType ?? null,
+    baseCurrency: opts.baseCurrency ?? 'XAF',
+    targetCurrency: opts.targetCurrency ?? 'CNY',
+    quoteUrl: opts.quoteUrl,
+    quote: opts.initialQuote ?? null,
+    wallets: opts.wallets ?? {},
+    loading: false,
+    error: null,
+    _timer: null,
+    init() {
+        this.$watch('amount', () => this.debounced());
+        this.$watch('appType', () => this.debounced());
+    },
+    debounced() {
+        clearTimeout(this._timer);
+        this._timer = setTimeout(() => this.fetchQuote(), 400);
+    },
+    async fetchQuote() {
+        const amt = Number(this.amount);
+        if (!amt || amt <= 0) { this.quote = null; this.error = null; return; }
+
+        this.loading = true;
+        this.error = null;
+        try {
+            const res = await fetch(this.quoteUrl, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amt, app_type: this.appType }),
+            });
+            if (!res.ok) throw new Error('quote_failed');
+            this.quote = await res.json();
+        } catch (e) {
+            this.error = 'unavailable';
+        } finally {
+            this.loading = false;
+        }
+    },
+    money(v, c) { return Number(v || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ' + (c ?? ''); },
+    rateLabel() {
+        if (!this.quote?.exchange_rate) return '';
+        const r = Number(this.quote.exchange_rate);
+        return `1 ${this.baseCurrency} = ${r.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} ${this.targetCurrency}`;
+    },
+    rateAgo() {
+        if (!this.quote?.rate_updated_at) return null;
+        const when = new Date(this.quote.rate_updated_at);
+        const mins = Math.max(0, Math.round((Date.now() - when.getTime()) / 60000));
+        if (mins < 1) return 'just now';
+        if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+        if (mins < 24 * 60) {
+            const hours = Math.round(mins / 60);
+            return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+        }
+        // Beyond a day, an absolute timestamp reads more honestly than a
+        // large, alarming-looking relative count (e.g. "428 hours ago").
+        return when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    },
+}));
+
+/* ---------------------------------------------------------- Help Center */
+// Every FAQ is loaded once (the corpus is small); search/category filtering
+// happens entirely client-side, so results are genuinely instant with no
+// network round-trip and no debounce-to-server complexity to build.
+Alpine.data('helpCenter', (opts = {}) => ({
+    query: '',
+    activeCategory: 'all',
+    faqs: opts.faqs ?? [],
+    openId: null,
+    highlighted: -1,
+    init() {
+        this.$watch('query', () => { this.highlighted = -1; });
+        window.addEventListener('keydown', (e) => {
+            const tag = document.activeElement?.tagName;
+            const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                this.$refs.searchInput?.focus();
+            } else if (e.key === '/' && !typing) {
+                e.preventDefault();
+                this.$refs.searchInput?.focus();
+            }
+        });
+    },
+    get isSearching() { return this.query.trim().length >= 2; },
+    get filtered() {
+        const q = this.query.trim().toLowerCase();
+        let list = this.faqs;
+        if (!this.isSearching && this.activeCategory !== 'all') {
+            list = list.filter((f) => f.category === this.activeCategory);
+        }
+        if (this.isSearching) {
+            list = list.filter((f) =>
+                f.question.toLowerCase().includes(q) ||
+                f.answer.toLowerCase().includes(q) ||
+                f.categoryLabel.toLowerCase().includes(q));
+        }
+        return list;
+    },
+    get resultCountLabel() {
+        const n = this.filtered.length;
+        return `${n} help result${n === 1 ? '' : 's'} found`;
+    },
+    selectCategory(cat) {
+        this.activeCategory = cat;
+        this.query = '';
+    },
+    toggle(id) {
+        this.openId = this.openId === id ? null : id;
+    },
+    onArrow(dir) {
+        const max = this.filtered.length - 1;
+        if (max < 0) return;
+        this.highlighted = Math.min(max, Math.max(0, this.highlighted + dir));
+        this.$nextTick(() => {
+            document.getElementById('help-result-' + this.highlighted)?.scrollIntoView({ block: 'nearest' });
+        });
+    },
+    onEnter() {
+        const item = this.filtered[this.highlighted];
+        if (item) this.toggle(item.id);
+    },
 }));
 
 /* ------------------------------------------------------- Bottom dock */
@@ -1003,10 +1122,20 @@ Alpine.data('financialWaveChart', (points = [], currency = 'XAF') => ({
     points,
     currency,
     hover: null,
+    // Real rendered px per viewBox unit. 1 when the SVG's width attribute
+    // matches its viewBox (the admin chart's fixed-width, horizontally
+    // scrollable version) — but a fluid `w-full` SVG (no width attribute,
+    // e.g. the dashboard's Transactions chart) stretches its viewBox to fill
+    // whatever the container's actual width is, so point x's (in viewBox
+    // units) and mouse x's (in real px) need this to convert between them.
+    scale: 1,
 
-    nearestTo(clientX, rect) {
+    nearestTo(clientX, svgEl) {
         if (!this.points.length) return;
-        const x = clientX - rect.left;
+        const rect = svgEl.getBoundingClientRect();
+        const vbWidth = svgEl.viewBox && svgEl.viewBox.baseVal.width;
+        this.scale = vbWidth ? rect.width / vbWidth : 1;
+        const x = (clientX - rect.left) / this.scale;
         let nearest = 0;
         let best = Infinity;
         this.points.forEach((p, i) => {
@@ -1017,20 +1146,20 @@ Alpine.data('financialWaveChart', (points = [], currency = 'XAF') => ({
     },
 
     handleMove(event) {
-        this.nearestTo(event.clientX, event.currentTarget.getBoundingClientRect());
+        this.nearestTo(event.clientX, event.currentTarget);
     },
 
     handleTouch(event) {
         const touch = event.touches[0];
         if (!touch) return;
-        this.nearestTo(touch.clientX, event.currentTarget.getBoundingClientRect());
+        this.nearestTo(touch.clientX, event.currentTarget);
     },
 
     clear() { this.hover = null; },
 
     get active() { return this.hover === null ? null : this.points[this.hover]; },
 
-    get activeX() { return this.active ? this.active.x : 0; },
+    get activeX() { return this.active ? this.active.x * this.scale : 0; },
 
     fmt(v) { return Number(v || 0).toLocaleString(); },
 }));

@@ -38,6 +38,36 @@
 @keyframes pulseGlow { 0%,100% { opacity:.5; transform:scale(1);} 50% { opacity:.9; transform:scale(1.05);} }
 @keyframes fadeUp { from { opacity:0; transform:translateY(22px);} to { opacity:1; transform:translateY(0);} }
 
+/* "Trusted reviews" carousel icon — small animated testimonial illustration
+   (two people + review cards + stars), replacing that item's old two-icon
+   hover-crossfade. */
+@keyframes tst-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes tst-twinkle { 0%,100% { opacity: .25; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes tst-sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes tst-talk { 0%,20%,100% { transform: scaleY(1); } 10% { transform: scaleY(2.4); } }
+@keyframes tst-wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+@keyframes tst-peek { 0%,100% { transform: translateX(0px); } 50% { transform: translateX(4px); } }
+@keyframes tst-brow { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-1.5px); } }
+@keyframes tst-dashdraw { 0% { stroke-dashoffset: 60; } 60%,100% { stroke-dashoffset: 0; } }
+@keyframes gift-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes gift-sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes gift-wiggle { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+@keyframes gift-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@keyframes fund-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes fund-sway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes fund-pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: .7; } }
+@keyframes fund-flow { 0% { stroke-dashoffset: 36; } 100% { stroke-dashoffset: 0; } }
+@keyframes vpn-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes vpn-risebar { 0%,100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+@keyframes vpn-flow { 0% { stroke-dashoffset: 13; opacity: 0; } 20% { opacity: 1; } 85% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes vpn-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes market-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes market-sway { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+@keyframes market-twinkle { 0%,100% { opacity: .35; transform: scale(.75); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes countries-bob { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-6px); } }
+@keyframes countries-frame { 0% { opacity: 1; } 4.1667% { opacity: 1; } 4.2% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes countries-ping { 0% { transform: scale(0.4); opacity: 0.8; } 100% { transform: scale(2.2); opacity: 0; } }
+
 /* ============================================================== THEMES */
 /* Default = LIGHT (matches the storefront reference). html.dark / html.night override. */
 :root {
@@ -259,12 +289,13 @@ html.night {
         border: 1px solid color-mix(in srgb, #64748b 40%, transparent);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+        clip-path: circle(50%);
     }
-    /* On dark / extra-dark, lift the fill to a whitish-pink so the red icons
+    /* On dark / extra-dark, lift the fill to white so the red icons
        stand out against the near-black background. */
     html.dark .icon-orb, html.night .icon-orb {
-        background: rgba(245, 235, 237, 0.96);
-        border-color: color-mix(in srgb, var(--color-brand-500) 55%, transparent);
+        background: color-mix(in srgb, #ffffff 96%, transparent);
+        border-color: color-mix(in srgb, #71717a 50%, transparent);
     }
 
     /* Payment / crypto logo marquee — round badges scrolling left, edges faded. */

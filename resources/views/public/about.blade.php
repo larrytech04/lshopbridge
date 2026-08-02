@@ -170,30 +170,32 @@
                 [__('Fund a China wallet'), $steps],
                 [__('Shop digital products'), $shopStepsAbout],
             ];
-            // [placement classes, mirrored (number on the right, text right-aligned)], staggered so they hug the curve
+            // [placement classes, mirrored (number on the right, text right-aligned)], staggered so they hug the curve.
+            // Kicks in at xl: (not lg:) — at 1024-1279px each journey column is too narrow for two
+            // 224px-wide corner boxes to clear each other, and their numerals collide (e.g. "01"/"03" overlap).
             $miniPos = [
-                ['lg:absolute lg:left-0 lg:top-[2%] lg:w-56', true],       // 01, upper-left
-                ['lg:absolute lg:left-[5%] lg:bottom-[5%] lg:w-56', true], // 02, lower-left, tucked in
-                ['lg:absolute lg:right-[5%] lg:top-[5%] lg:w-56', false],  // 03, upper-right, tucked in
-                ['lg:absolute lg:right-0 lg:bottom-[2%] lg:w-56', false],  // 04, lower-right
+                ['xl:absolute xl:left-0 xl:top-[2%] xl:w-56', true],       // 01, upper-left
+                ['xl:absolute xl:left-[5%] xl:bottom-[5%] xl:w-56', true], // 02, lower-left, tucked in
+                ['xl:absolute xl:right-[5%] xl:top-[5%] xl:w-56', false],  // 03, upper-right, tucked in
+                ['xl:absolute xl:right-0 xl:bottom-[2%] xl:w-56', false],  // 04, lower-right
             ];
         @endphp
         <div class="mt-12 grid gap-16 lg:grid-cols-2 lg:gap-10">
             @foreach ($journeys as [$jTitle, $jSteps])
                 <div>
                     <h3 class="text-center text-lg font-bold text-strong">{{ $jTitle }}</h3>
-                    <div class="relative mx-auto mt-6 lg:h-[28rem]">
+                    <div class="relative mx-auto mt-6 xl:h-[28rem]">
                         {{-- Floating loop with hanging shadow (dead-centre on desktop) --}}
-                        <div class="mx-auto text-center lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
+                        <div class="mx-auto text-center xl:absolute xl:inset-x-0 xl:top-1/2 xl:-translate-y-1/2">
                             <img src="{{ asset('assets/'.rawurlencode('how it works aboutpg.png')) }}" alt="{{ $jTitle }}"
                                  class="img-float mx-auto h-44 w-auto sm:h-52 lg:h-48" loading="lazy">
                             <div class="float-shadow mx-auto mt-4"></div>
                         </div>
 
                         {{-- Steps positioned around the loop --}}
-                        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:mt-0 lg:block">
+                        <div class="mt-8 grid gap-6 sm:grid-cols-2 xl:mt-0 xl:block">
                             @foreach ($jSteps as $i => [$title, $body])
-                                <div class="{{ $miniPos[$i][0] }} flex items-start gap-2.5 {{ $miniPos[$i][1] ? 'lg:flex-row-reverse lg:text-right' : '' }}">
+                                <div class="{{ $miniPos[$i][0] }} flex items-start gap-2.5 {{ $miniPos[$i][1] ? 'xl:flex-row-reverse xl:text-right' : '' }}">
                                     <span class="shrink-0 text-3xl font-black leading-none tracking-tight text-brand-600">0{{ $i + 1 }}</span>
                                     <div>
                                         <h4 class="text-sm font-bold text-strong">{{ $title }}</h4>

@@ -46,7 +46,8 @@ class RateService
      *
      * @return array{base_currency:string, quote_currency:string, source_amount:float,
      *   base_rate:float, effective_rate:float, base_conversion:float,
-     *   margin_amount:float, additional_fee:float, delivered_amount:float}
+     *   margin_amount:float, additional_fee:float, delivered_amount:float,
+     *   rate_updated_at:?string, rate_available:bool}
      */
     public function quote(float $amount, ?string $base = null, ?string $quote = null, float $additionalFee = 0): array
     {
@@ -72,6 +73,8 @@ class RateService
             'margin_amount' => round($baseConversion - ($amount * $effectiveRate), 8),
             'additional_fee' => $additionalFee,
             'delivered_amount' => round($deliveredAmount, 2),
+            'rate_updated_at' => ($due?->updated_at ?? $row?->updated_at)?->toIso8601String(),
+            'rate_available' => $due !== null || $row !== null,
         ];
     }
 

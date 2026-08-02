@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @php
         $__title = trim($__env->yieldContent('title')) ?: setting('site_name', config('platform.name')).', '.config('platform.tagline');
         $__description = trim($__env->yieldContent('meta_description')) ?: config('platform.tagline');

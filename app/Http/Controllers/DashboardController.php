@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $user = $request->user();
         $wallet = $user->primaryWallet();
 
-        // 7-day inflow vs outflow series for the transactions graph.
+        // 7-day inflow vs outflow vs order-spend series for the transactions graph.
         $txSeries = collect(range(6, 0))->map(function ($i) use ($user) {
             $day = now()->subDays($i);
             return [
@@ -24,6 +24,7 @@ class DashboardController extends Controller
                 'date' => $day->format('M j'),
                 'credit' => (float) $user->walletTransactions()->where('type', 'credit')->whereDate('created_at', $day->toDateString())->sum('amount'),
                 'debit' => (float) $user->walletTransactions()->where('type', 'debit')->whereDate('created_at', $day->toDateString())->sum('amount'),
+                'orders' => (float) $user->shopOrders()->whereIn('status', ['paid', 'fulfilled'])->whereDate('created_at', $day->toDateString())->sum('total'),
             ];
         });
 
@@ -32,6 +33,7 @@ class DashboardController extends Controller
             'txSeries' => $txSeries,
             'txInflow' => (float) $txSeries->sum('credit'),
             'txOutflow' => (float) $txSeries->sum('debit'),
+            'txOrders' => (float) $txSeries->sum('orders'),
             'user' => $user,
             'wallet' => $wallet,
             'recentDeposits' => $user->deposits()->latest()->take(5)->get(),

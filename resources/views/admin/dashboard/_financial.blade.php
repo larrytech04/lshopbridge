@@ -1,7 +1,7 @@
 {{-- Financial Performance Center: combined chart + supporting breakdowns. --}}
 <x-glass-card solid>
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h3 class="font-semibold text-strong">Financial performance · {{ $period['label'] }}</h3>
+        <h3 class="font-semibold text-strong">Financial performance · {{ $financialSeries['rangeLabel'] }}</h3>
         <form method="GET" class="flex items-center gap-2">
             @foreach (request()->except('granularity') as $k => $v)<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endforeach
             <select name="granularity" onchange="this.form.requestSubmit()" class="field !py-1 text-xs">
@@ -13,9 +13,9 @@
     </div>
     <div class="mt-3 flex items-center gap-3 text-xs">
         <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-emerald-500"></span><span class="text-muted">Deposits</span></span>
-        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-brand-500"></span><span class="text-muted">Funding</span></span>
-        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-accent-500"></span><span class="text-muted">Sales</span></span>
-        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-rose-500"></span><span class="text-muted">Refunds</span></span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-red-500"></span><span class="text-muted">Funding</span></span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-blue-500"></span><span class="text-muted">Sales</span></span>
+        <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-sm bg-orange-500"></span><span class="text-muted">Refunds</span></span>
     </div>
 
     @php
@@ -36,37 +36,22 @@
         $xFor = fn (int $i) => $n <= 1 ? $chartWidth / 2 : $i * $pointWidth + $pointWidth / 2;
         $yFor = fn (float $v) => $chartHeight - $padBottom - ($v / $max) * $plotHeight;
 
-        $seriesColors = ['deposits' => '#10b981', 'funding' => '#bf1f39', 'sales' => '#e25c74', 'refunds' => '#f43f5e'];
+        // Order here is also SVG paint order (later = on top) — sales (blue)
+        // comes after refunds (orange) so it wins where the two lines cross.
+        $seriesColors = ['deposits' => '#10b981', 'funding' => '#ef4444', 'refunds' => '#f97316', 'sales' => '#3b82f6'];
 
-        // Catmull-Rom -> cubic Bezier smoothing: turns the point-to-point zig-zag
-        // into one flowing curve through every value, i.e. a "wave" line instead
-        // of straight segments (and, before this, instead of bars entirely).
-        $smoothPath = function (array $pts): string {
-            $count = count($pts);
-            if ($count === 0) return '';
-            if ($count === 1) return sprintf('M %F %F L %F %F', $pts[0][0], $pts[0][1], $pts[0][0], $pts[0][1]);
-            $d = sprintf('M %F %F ', $pts[0][0], $pts[0][1]);
-            for ($i = 0; $i < $count - 1; $i++) {
-                $p0 = $pts[$i - 1] ?? $pts[$i];
-                $p1 = $pts[$i];
-                $p2 = $pts[$i + 1];
-                $p3 = $pts[$i + 2] ?? $p2;
-                $cp1x = $p1[0] + ($p2[0] - $p0[0]) / 6;
-                $cp1y = $p1[1] + ($p2[1] - $p0[1]) / 6;
-                $cp2x = $p2[0] - ($p3[0] - $p1[0]) / 6;
-                $cp2y = $p2[1] - ($p3[1] - $p1[1]) / 6;
-                $d .= sprintf('C %F %F, %F %F, %F %F ', $cp1x, $cp1y, $cp2x, $cp2y, $p2[0], $p2[1]);
-            }
-            return $d;
-        };
-
+        // Monotone cubic interpolation (App\Support\SmoothWavePath): a real
+        // flowing "wave" through every value that, unlike a plain Catmull-Rom
+        // spline, can never overshoot past a point's neighbours — a sharp
+        // spike flanked by near-zero days no longer dips the curve below the
+        // baseline on either side of it.
         $paths = [];
         foreach ($seriesColors as $key => $color) {
             $pts = [];
             foreach ($rawPoints as $i => $d) {
                 $pts[] = [$xFor($i), $yFor((float) $d[$key])];
             }
-            $paths[$key] = $smoothPath($pts);
+            $paths[$key] = \App\Support\SmoothWavePath::build($pts);
         }
 
         $chartPoints = collect($rawPoints)->map(fn ($d, $i) => [
@@ -83,10 +68,27 @@
     <div class="no-scrollbar relative mt-5 overflow-x-auto" x-data="financialWaveChart(@js($chartPoints), '{{ $currency }}')">
         <svg width="{{ $chartWidth }}" height="{{ $chartHeight }}" viewBox="0 0 {{ $chartWidth }} {{ $chartHeight }}" class="h-52 max-w-none touch-none"
              @mousemove="handleMove($event)" @mouseleave="clear()" @touchstart.passive="handleTouch($event)" @touchmove.passive="handleTouch($event)">
+            <defs>
+                <filter id="financial-wave-glow" x="-20%" y="-75%" width="140%" height="250%">
+                    <feGaussianBlur stdDeviation="4.5" />
+                </filter>
+                {{-- Clips the glow's blur halo to the plot area so it never bleeds below the baseline. --}}
+                <clipPath id="financial-wave-plot">
+                    <rect x="0" y="0" width="{{ $chartWidth }}" height="{{ $baselineY }}" />
+                </clipPath>
+            </defs>
+
             <line x1="0" y1="{{ $baselineY }}" x2="{{ $chartWidth }}" y2="{{ $baselineY }}" stroke="var(--border)" stroke-width="1" />
 
             <line x-show="hover !== null" x-cloak :x1="activeX" :x2="activeX" y1="0" y2="{{ $baselineY }}"
                   stroke="var(--border)" stroke-width="1.5" stroke-dasharray="3,3" />
+
+            {{-- Blurred glow duplicate, clipped to the plot area, sitting behind the crisp line. --}}
+            <g clip-path="url(#financial-wave-plot)" filter="url(#financial-wave-glow)" opacity="0.55">
+                @foreach ($paths as $key => $d)
+                    <path d="{{ $d }}" fill="none" stroke="{{ $seriesColors[$key] }}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                @endforeach
+            </g>
 
             @foreach ($paths as $key => $d)
                 <path d="{{ $d }}" fill="none" stroke="{{ $seriesColors[$key] }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -110,9 +112,9 @@
              style="min-width: 9rem;" x-show="active" x-cloak :style="{ left: activeX + 'px' }">
             <p class="mb-1 font-semibold text-strong" x-text="active ? active.label : ''"></p>
             <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>Deposits</span><span class="font-semibold text-strong" x-text="active ? fmt(active.deposits) + ' {{ $currency }}' : ''"></span></div>
-            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>Funding</span><span class="font-semibold text-strong" x-text="active ? fmt(active.funding) + ' CNY' : ''"></span></div>
-            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500"></span>Sales</span><span class="font-semibold text-strong" x-text="active ? fmt(active.sales) + ' {{ $currency }}' : ''"></span></div>
-            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500"></span>Refunds</span><span class="font-semibold text-strong" x-text="active ? fmt(active.refunds) + ' {{ $currency }}' : ''"></span></div>
+            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>Funding</span><span class="font-semibold text-strong" x-text="active ? fmt(active.funding) + ' CNY' : ''"></span></div>
+            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"></span>Sales</span><span class="font-semibold text-strong" x-text="active ? fmt(active.sales) + ' {{ $currency }}' : ''"></span></div>
+            <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500"></span>Refunds</span><span class="font-semibold text-strong" x-text="active ? fmt(active.refunds) + ' {{ $currency }}' : ''"></span></div>
         </div>
 
         <div class="no-scrollbar mt-1 flex" style="width: {{ $chartWidth }}px">

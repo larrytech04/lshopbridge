@@ -58,7 +58,8 @@ class FundingService
     {
         $base = config('platform.base_currency', 'XAF');
         $target = config('platform.target_currency', 'CNY');
-        $rate = $this->rates->rate($base, $target);
+        $rateQuote = $this->rates->quote($amount, $base, $target);
+        $rate = $rateQuote['effective_rate'];
         $breakdown = $this->fees->quote($amount, 'funding', $appType, $user);
         $fee = (float) $breakdown['calculated_fee'];
 
@@ -70,6 +71,10 @@ class FundingService
             'fee_snapshot' => $breakdown,
             'total_charged' => round($amount + $fee, 2),
             'exchange_rate' => $rate,
+            'base_rate' => $rateQuote['base_rate'],
+            'margin_amount' => $rateQuote['margin_amount'],
+            'rate_updated_at' => $rateQuote['rate_updated_at'],
+            'rate_available' => $rateQuote['rate_available'],
             'target_amount' => round($amount * $rate, 2),
             'target_currency' => $target,
         ];

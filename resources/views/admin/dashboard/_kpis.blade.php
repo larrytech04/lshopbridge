@@ -28,9 +28,9 @@
                             </div>
                             <div class="relative grid h-10 w-10 shrink-0 place-items-center" aria-label="{{ $deltaText }} {{ __('vs previous') }}">
                                 <svg viewBox="0 0 40 40" class="h-10 w-10 -rotate-90">
-                                    <circle cx="20" cy="20" r="{{ $ringR }}" fill="none" stroke="var(--surface-2)" stroke-width="3" />
+                                    <circle cx="20" cy="20" r="{{ $ringR }}" fill="none" stroke="color-mix(in srgb, {{ $row['tint'] }} 25%, transparent)" stroke-width="4.5" />
                                     @if ($ringColor)
-                                        <circle cx="20" cy="20" r="{{ $ringR }}" fill="none" stroke="{{ $ringColor }}" stroke-width="3" stroke-linecap="round"
+                                        <circle cx="20" cy="20" r="{{ $ringR }}" fill="none" stroke="{{ $ringColor }}" stroke-width="4.5" stroke-linecap="round"
                                                 stroke-dasharray="{{ $ringCirc }}" stroke-dashoffset="{{ $ringOffset }}" />
                                     @endif
                                 </svg>

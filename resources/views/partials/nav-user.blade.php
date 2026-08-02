@@ -167,9 +167,7 @@
     </button>
     <div x-show="open || sbc" x-collapse data-nav-items>
         <x-nav-link :href="route('learning.index')" img="Online-Learning-School-1--Streamline-Ultimate.png" :active="request()->routeIs('learning.*')">{{ __('Learning Center') }}</x-nav-link>
-        @if (\Illuminate\Support\Facades\Route::has('help.index'))
-            <x-nav-link :href="route('help.index')" icon="help" :active="request()->routeIs('help.*')">{{ __('Help Center') }}</x-nav-link>
-        @endif
+        <x-nav-link :href="route('public.faqs')" icon="help" :active="request()->routeIs('public.faqs')">{{ __('Help Center') }}</x-nav-link>
         <x-nav-link :href="route('disputes.index')" img="Headphones-Customer-Support-Human-1--Streamline-Ultimate.png" :active="request()->routeIs('disputes.*')">
             {{ __('Support Tickets') }}
             @if (($navBadges['support_awaiting_you'] ?? 0) > 0)

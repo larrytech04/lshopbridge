@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\AppType;
+use App\Enums\BeneficiaryStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ChinaWalletType;
 use App\Models\Fee;
 use App\Models\Faq;
 use App\Models\Page;
 use App\Models\PaymentMethod;
 use App\Models\ProcessStep;
 use App\Services\Content\LegalContentRenderer;
+use App\Services\Funding\FundingService;
 use App\Services\Funding\RateService;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -33,10 +38,35 @@ class PageController extends Controller
 
     public function fundAlipay(RateService $rates): View
     {
+        $user = request()->user();
+        $defaultAmount = (float) setting('funding_calculator_default_amount', 100000);
+
+        $wallets = ChinaWalletType::active()
+            ->whereIn('code', array_column(AppType::cases(), 'value'))
+            ->get();
+
+        $defaultWalletCode = $wallets->first()?->code;
+        $quote = app(FundingService::class)->quote($defaultAmount, $defaultWalletCode, $user);
+
+        $eligibility = null;
+        if ($user) {
+            $eligibility = [
+                'kyc_level' => (int) $user->kyc_level,
+                'kyc_ok' => (int) $user->kyc_level >= 1,
+                'has_approved_beneficiary' => $user->beneficiaryAccounts()->where('status', BeneficiaryStatus::Approved)->exists(),
+            ];
+        }
+
         return view('public.fund-alipay', [
             'rate' => $rates->rate(),
+            'quote' => $quote,
+            'defaultAmount' => $defaultAmount,
+            'defaultWalletCode' => $defaultWalletCode,
             'apps' => config('funding.apps'),
+            'wallets' => $wallets,
             'methods' => PaymentMethod::active()->get(),
+            'steps' => ProcessStep::group('fund_step')->active()->get(),
+            'eligibility' => $eligibility,
         ]);
     }
 
@@ -57,8 +87,29 @@ class PageController extends Controller
 
     public function faqs(): View
     {
+        $faqs = Faq::published()->get();
+
+        $categoryMeta = [
+            'funding' => ['label' => __('China Wallet Funding'), 'icon' => 'swap'],
+            'payments' => ['label' => __('Payments'), 'icon' => 'card'],
+            'security' => ['label' => __('Security'), 'icon' => 'shield'],
+            'account' => ['label' => __('Account'), 'icon' => 'user'],
+            'marketplace' => ['label' => __('Marketplace'), 'icon' => 'bag'],
+        ];
+
+        $categories = $faqs->groupBy('category')->map(function ($items, $key) use ($categoryMeta) {
+            return [
+                'key' => $key,
+                'label' => $categoryMeta[$key]['label'] ?? Str::headline($key),
+                'icon' => $categoryMeta[$key]['icon'] ?? 'help',
+                'count' => $items->count(),
+            ];
+        })->sortBy('label')->values();
+
         return view('public.faqs', [
-            'faqs' => Faq::published()->get()->groupBy('category'),
+            'faqs' => $faqs,
+            'categories' => $categories,
+            'faqsByCategory' => $faqs->groupBy('category'),
         ]);
     }
 

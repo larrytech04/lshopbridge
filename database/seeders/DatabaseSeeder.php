@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             KycLevelSeeder::class,
             RateFeeSeeder::class,
             PaymentSeeder::class,
+            ChinaWalletTypeSeeder::class,
             RiskRuleSeeder::class,
             SettingSeeder::class,
             ContentSeeder::class,

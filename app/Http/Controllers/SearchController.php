@@ -85,7 +85,7 @@ class SearchController extends Controller
             ['icon' => 'truck', 'title' => __('Shipping Requests'), 'description' => __('Get competing quotes from agents'), 'route' => 'shipping-requests.index'],
             ['icon' => 'search', 'title' => __('Track Shipment'), 'description' => __('Look up a shipment by reference'), 'route' => 'shipments.track'],
             ['icon' => 'book', 'title' => __('Learning Center'), 'description' => __('China buying guides'), 'route' => 'learning.index'],
-            ['icon' => 'help', 'title' => __('Help Center'), 'description' => __('Search frequently asked questions'), 'route' => 'help.index'],
+            ['icon' => 'help', 'title' => __('Help Center'), 'description' => __('Search frequently asked questions'), 'route' => 'public.faqs'],
             ['icon' => 'bell', 'title' => __('Notifications'), 'description' => __('Recent alerts'), 'route' => 'notifications.index'],
             ['icon' => 'user', 'title' => __('Profile'), 'description' => __('Account information'), 'route' => 'profile.edit'],
             ['icon' => 'users', 'title' => __('Referrals & Rewards'), 'description' => __('Invite friends, earn rewards'), 'route' => 'referrals.index'],

@@ -8,7 +8,7 @@
     use Illuminate\Support\Facades\Route;
 
     $support = array_filter([
-        Route::has('help.index') ? ['label' => __('Help Center'), 'href' => route('help.index')] : null,
+        ['label' => __('Help Center'), 'href' => route('public.faqs')],
         Route::has('disputes.index') ? ['label' => __('Create Support Ticket'), 'href' => route('disputes.index')] : null,
         auth()->check() && Route::has('security.index') ? ['label' => __('Security Center'), 'href' => route('security.index')] : null,
         ['label' => __('Contact Us'), 'href' => route('contact')],

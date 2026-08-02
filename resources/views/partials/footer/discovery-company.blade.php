@@ -10,7 +10,7 @@
         Route::has('pages.show') ? ['label' => __('About LshopBridge'), 'href' => route('pages.show', 'about')] : null,
         Route::has('learning.index') ? ['label' => __('Learning Center'), 'href' => route('learning.index')] : null,
         Route::has('public.faqs') ? ['label' => __('FAQs'), 'href' => route('public.faqs')] : null,
-        Route::has('referral.create') ? ['label' => __('Become an Agent'), 'href' => route('referral.create')] : null,
+        Route::has('register.agent') ? ['label' => __('Become an Agent'), 'href' => route('register.agent')] : null,
     ]);
 @endphp
 <div class="lg:col-span-2">

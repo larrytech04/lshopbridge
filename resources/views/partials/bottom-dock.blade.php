@@ -1,4 +1,8 @@
-<div x-data="appDock()" x-on:open-mobile-menu.window="menu = true" x-on:close-dock-menu.window="menu = false" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
+<div x-data="appDock()" x-on:open-mobile-menu.window="menu = true" x-on:close-dock-menu.window="menu = false" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(0.375rem,env(safe-area-inset-bottom))] lg:hidden">
+    {{-- Thin frosted strip filling the gap between the dock and the screen edge,
+         so whatever scrolls beneath is blurred rather than sharply visible. --}}
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-0 backdrop-blur-md" style="height: max(0.375rem, env(safe-area-inset-bottom));"></div>
+
     {{-- Slide-up menu sheet --}}
     <div x-show="menu" x-cloak @click="menu=false" class="pointer-events-auto fixed inset-0 bg-black/40" x-transition.opacity></div>
     <div x-show="menu" x-cloak
@@ -48,7 +52,7 @@
                 ],
                 __('Help & Learning') => [
                     [route('learning.index'), __('Learning Center'), 'Online-Learning-School-1--Streamline-Ultimate.png', null, '#F59E0B'],
-                    ...(\Illuminate\Support\Facades\Route::has('help.index') ? [[route('help.index'), __('Help Center'), null, 'help', '#0EA5E9']] : []),
+                    [route('public.faqs'), __('Help Center'), null, 'help', '#0EA5E9'],
                     [route('disputes.index'), __('Support Tickets'), 'Headphones-Customer-Support-Human-1--Streamline-Ultimate.png', null, '#EF4444'],
                     ...(\Illuminate\Support\Facades\Route::has('refunds.index') ? [[route('refunds.index'), __('Disputes & Refunds'), null, 'refresh', '#EA580C']] : []),
                 ],
@@ -105,7 +109,7 @@
             : (request()->routeIs('funding.create') ? 2
             : (request()->routeIs('shop.*', 'cart.*') ? 3 : 0));
     @endphp
-    <nav class="app-dock pointer-events-auto relative mx-3 flex w-[calc(100%-1.5rem)] max-w-xl items-center justify-between gap-1 rounded-full px-2 py-2"
+    <nav class="app-dock pointer-events-auto relative z-10 mx-3 flex w-[calc(100%-1.5rem)] max-w-xl items-center justify-between gap-1 rounded-full px-2 py-2"
          data-active="{{ $activeDock }}">
         <span data-dock-indicator class="dock-indicator"></span>
         <a data-dock-slot href="{{ $home }}" class="dock-item {{ request()->routeIs('dashboard','home') ? 'dock-item-active' : '' }}"><x-img-icon name="House-Chimney-1--Streamline-Ultimate.png" class="h-5 w-5" /> {{ __('Home') }}</a>

@@ -17,7 +17,6 @@
         ['Mobile top up', 'Cashless-Payment-Cad-Top-Up-Wallet-Add--Streamline-Ultimate.png', route('shop.category', 'mobile-topup'), '#14B8A6'],
         ['More', 'plus', route('shop.index'), '#3B82F6'],
     ];
-    $maxBar = max(1, $txSeries->max(fn ($d) => max($d['credit'], $d['debit'])));
 @endphp
 
 @section('content')
@@ -107,8 +106,36 @@
             </div>
         @endif
 
-        {{-- Wallet hero --}}
-        <x-wallet-balance-card :wallet="$wallet" />
+        {{-- Wallet hero + recent transactions, side by side on desktop --}}
+        <div class="grid gap-6 lg:grid-cols-2 lg:items-start">
+            <x-wallet-balance-card :wallet="$wallet" />
+
+            <div class="card-solid rounded-3xl border border-app p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold text-strong">{{ __('Recent transactions') }}</h3>
+                    <a href="{{ route('transactions.index') }}" class="rounded-full border border-app px-2.5 py-0.5 text-[11px] font-semibold text-body transition hover:text-strong">{{ __('View all') }}</a>
+                </div>
+                <div class="mt-3 space-y-2.5">
+                    @forelse ($transactions->take(2) as $t)
+                        <div class="flex items-center justify-between gap-2.5">
+                            <div class="flex min-w-0 items-center gap-2.5">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ $t->type === 'credit' ? 'bg-emerald-500/12 text-emerald-500' : 'bg-rose-500/12 text-rose-500' }}"><x-icon :name="$t->type === 'credit' ? 'arrow-up' : 'arrow-right'" class="h-4 w-4 {{ $t->type === 'credit' ? '' : 'rotate-45' }}" /></span>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-strong">{{ \Illuminate\Support\Str::limit($t->description ?: ucfirst($t->category), 18) }}</p>
+                                    <p class="text-xs text-muted">{{ disp($t->amount) }}</p>
+                                </div>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                <span class="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 {{ $t->type === 'credit' ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30' : 'bg-rose-500/10 text-rose-600 ring-rose-500/30' }}">{{ $t->type === 'credit' ? __('In') : __('Out') }}</span>
+                                <p class="mt-0.5 text-[11px] text-faint">{{ $t->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="py-5 text-center text-sm text-muted">{{ __('No transactions yet.') }}</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
 
         {{-- Quick actions --}}
         <div class="card-solid rounded-3xl border border-app p-4 shadow-sm sm:p-6">
@@ -155,55 +182,101 @@
             </div>
         </div>
 
-        {{-- Recent transactions --}}
-        <div class="card-solid rounded-3xl border border-app p-4 shadow-sm">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-strong">{{ __('Recent transactions') }}</h3>
-                <a href="{{ route('transactions.index') }}" class="rounded-full border border-app px-2.5 py-0.5 text-[11px] font-semibold text-body transition hover:text-strong">{{ __('View all') }}</a>
-            </div>
-            <div class="mt-3 space-y-2.5">
-                @forelse ($transactions->take(3) as $t)
-                    <div class="flex items-center justify-between gap-2.5">
-                        <div class="flex min-w-0 items-center gap-2.5">
-                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ $t->type === 'credit' ? 'bg-emerald-500/12 text-emerald-500' : 'bg-rose-500/12 text-rose-500' }}"><x-icon :name="$t->type === 'credit' ? 'arrow-up' : 'arrow-right'" class="h-4 w-4 {{ $t->type === 'credit' ? '' : 'rotate-45' }}" /></span>
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-semibold text-strong">{{ \Illuminate\Support\Str::limit($t->description ?: ucfirst($t->category), 18) }}</p>
-                                <p class="text-xs text-muted">{{ disp($t->amount) }}</p>
-                            </div>
-                        </div>
-                        <div class="shrink-0 text-right">
-                            <span class="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 {{ $t->type === 'credit' ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30' : 'bg-rose-500/10 text-rose-600 ring-rose-500/30' }}">{{ $t->type === 'credit' ? __('In') : __('Out') }}</span>
-                            <p class="mt-0.5 text-[11px] text-faint">{{ $t->created_at->diffForHumans() }}</p>
-                        </div>
-                    </div>
-                @empty
-                    <p class="py-5 text-center text-sm text-muted">{{ __('No transactions yet.') }}</p>
-                @endforelse
-            </div>
-        </div>
-
         {{-- Transactions graph --}}
         <div class="rounded-3xl border border-app p-6">
-            <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div>
                     <h3 class="font-semibold text-strong">{{ __('Transactions') }}</h3>
-                    <p class="text-sm text-muted">{{ __('Inflow vs outflow · last 7 days') }}</p>
+                    <p class="text-sm text-muted">{{ __('In vs out vs orders · last 7 days') }}</p>
                 </div>
-                <div class="flex items-center gap-4 text-sm">
-                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span><span class="text-muted">{{ __('In') }}</span> <span class="font-semibold text-strong">{{ disp($txInflow) }}</span></span>
-                    <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span><span class="text-muted">{{ __('Out') }}</span> <span class="font-semibold text-strong">{{ disp($txOutflow) }}</span></span>
+                <div class="flex items-center gap-2.5 text-xs sm:gap-4 sm:text-sm">
+                    <span class="flex items-center gap-1 sm:gap-1.5"><span class="h-2 w-2 shrink-0 rounded-full bg-emerald-500 sm:h-2.5 sm:w-2.5"></span><span class="text-muted">{{ __('In') }}</span> <span class="font-semibold text-strong">{{ disp($txInflow) }}</span></span>
+                    <span class="flex items-center gap-1 sm:gap-1.5"><span class="h-2 w-2 shrink-0 rounded-full bg-red-500 sm:h-2.5 sm:w-2.5"></span><span class="text-muted">{{ __('Out') }}</span> <span class="font-semibold text-strong">{{ disp($txOutflow) }}</span></span>
+                    <span class="flex items-center gap-1 sm:gap-1.5"><span class="h-2 w-2 shrink-0 rounded-full bg-blue-500 sm:h-2.5 sm:w-2.5"></span><span class="text-muted">{{ __('Orders') }}</span> <span class="font-semibold text-strong">{{ disp($txOrders) }}</span></span>
                 </div>
             </div>
-            <div class="mt-6 flex h-48 items-stretch gap-2 sm:gap-4">
-                @foreach ($txSeries as $d)
-                    <div class="group flex flex-1 flex-col items-center gap-2">
-                        <div class="flex w-full min-h-0 flex-1 items-end justify-center gap-1">
-                            <div class="w-1/2 max-w-3 rounded-t-md bg-emerald-500 transition-all duration-500" style="height: {{ max(2, ($d['credit'] / $maxBar) * 100) }}%" title="{{ __('In') }} {{ disp($d['credit']) }} · {{ $d['date'] }}"></div>
-                            <div class="w-1/2 max-w-3 rounded-t-md bg-rose-500 transition-all duration-500" style="height: {{ max(2, ($d['debit'] / $maxBar) * 100) }}%" title="{{ __('Out') }} {{ disp($d['debit']) }} · {{ $d['date'] }}"></div>
-                        </div>
-                        <span class="text-xs text-faint">{{ $d['label'] }}</span>
-                    </div>
-                @endforeach
+
+            @php
+                $twN = count($txSeries);
+                $twPointWidth = 56;
+                $twChartWidth = max($twN * $twPointWidth, 200);
+                $twChartHeight = 176;
+                $twPadBottom = 6;
+                $twPlotHeight = $twChartHeight - $twPadBottom;
+                $twMax = max(1, $txSeries->flatMap(fn ($d) => [$d['credit'], $d['debit'], $d['orders']])->max());
+
+                $twXFor = fn (int $i) => $twN <= 1 ? $twChartWidth / 2 : $i * $twPointWidth + $twPointWidth / 2;
+                $twYFor = fn (float $v) => $twChartHeight - $twPadBottom - ($v / $twMax) * $twPlotHeight;
+
+                // Paint order = legend/z-order (later wins where lines cross): credit, debit, orders.
+                $twColors = ['credit' => '#10b981', 'debit' => '#ef4444', 'orders' => '#3b82f6'];
+
+                $twPaths = [];
+                foreach ($twColors as $key => $color) {
+                    $pts = [];
+                    foreach ($txSeries as $i => $d) {
+                        $pts[] = [$twXFor($i), $twYFor((float) $d[$key])];
+                    }
+                    $twPaths[$key] = \App\Support\SmoothWavePath::build($pts);
+                }
+
+                $twChartPoints = $txSeries->map(fn ($d, $i) => [
+                    'label' => $d['date'], 'x' => $twXFor($i),
+                    'yCredit' => $twYFor((float) $d['credit']), 'creditDisp' => disp($d['credit']),
+                    'yDebit' => $twYFor((float) $d['debit']), 'debitDisp' => disp($d['debit']),
+                    'yOrders' => $twYFor((float) $d['orders']), 'ordersDisp' => disp($d['orders']),
+                ])->values();
+
+                $twBaselineY = $twChartHeight - $twPadBottom;
+            @endphp
+
+            <div class="relative mt-5" x-data="financialWaveChart(@js($twChartPoints), '')">
+                <svg viewBox="0 0 {{ $twChartWidth }} {{ $twChartHeight }}" preserveAspectRatio="none" class="h-44 w-full touch-none"
+                     @mousemove="handleMove($event)" @mouseleave="clear()" @touchstart.passive="handleTouch($event)" @touchmove.passive="handleTouch($event)">
+                    <defs>
+                        <filter id="tx-wave-glow" x="-20%" y="-75%" width="140%" height="250%">
+                            <feGaussianBlur stdDeviation="4" />
+                        </filter>
+                        <clipPath id="tx-wave-plot">
+                            <rect x="0" y="0" width="{{ $twChartWidth }}" height="{{ $twBaselineY }}" />
+                        </clipPath>
+                    </defs>
+
+                    <line x1="0" y1="{{ $twBaselineY }}" x2="{{ $twChartWidth }}" y2="{{ $twBaselineY }}" stroke="var(--border)" stroke-width="1" />
+
+                    <line x-show="hover !== null" x-cloak :x1="activeX" :x2="activeX" y1="0" y2="{{ $twBaselineY }}"
+                          stroke="var(--border)" stroke-width="1.5" stroke-dasharray="3,3" />
+
+                    <g clip-path="url(#tx-wave-plot)" filter="url(#tx-wave-glow)" opacity="0.55">
+                        @foreach ($twPaths as $key => $d)
+                            <path d="{{ $d }}" fill="none" stroke="{{ $twColors[$key] }}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        @endforeach
+                    </g>
+
+                    @foreach ($twPaths as $key => $d)
+                        <path d="{{ $d }}" fill="none" stroke="{{ $twColors[$key] }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    @endforeach
+
+                    <g x-show="active" x-cloak>
+                        <circle :cx="activeX" :cy="active ? active.yCredit : 0" r="3.5" fill="{{ $twColors['credit'] }}" stroke="var(--glass-strong-bg)" stroke-width="1.5" />
+                        <circle :cx="activeX" :cy="active ? active.yDebit : 0" r="3.5" fill="{{ $twColors['debit'] }}" stroke="var(--glass-strong-bg)" stroke-width="1.5" />
+                        <circle :cx="activeX" :cy="active ? active.yOrders : 0" r="3.5" fill="{{ $twColors['orders'] }}" stroke="var(--glass-strong-bg)" stroke-width="1.5" />
+                    </g>
+                </svg>
+
+                <div class="glass-strong pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-xl px-3 py-2 text-[11px] shadow-lg"
+                     style="min-width: 8rem;" x-show="active" x-cloak :style="{ left: activeX + 'px' }">
+                    <p class="mb-1 font-semibold text-strong" x-text="active ? active.label : ''"></p>
+                    <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>{{ __('In') }}</span><span class="font-semibold text-strong" x-text="active ? active.creditDisp : ''"></span></div>
+                    <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>{{ __('Out') }}</span><span class="font-semibold text-strong" x-text="active ? active.debitDisp : ''"></span></div>
+                    <div class="flex items-center justify-between gap-3"><span class="flex items-center gap-1.5 text-muted"><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"></span>{{ __('Orders') }}</span><span class="font-semibold text-strong" x-text="active ? active.ordersDisp : ''"></span></div>
+                </div>
+
+                <div class="mt-1 flex">
+                    @foreach ($txSeries as $d)
+                        <span class="flex-1 text-center text-[11px] text-faint">{{ $d['label'] }}</span>
+                    @endforeach
+                </div>
             </div>
         </div>
 

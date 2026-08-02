@@ -29,7 +29,7 @@
                     </select>
                 </div>
             </div>
-            <div><label class="label">{{ __('Subject') }}</label><input name="subject" value="{{ old('subject') }}" required class="field"></div>
+            <div><label class="label">{{ __('Subject') }}</label><input name="subject" value="{{ old('subject', request('subject')) }}" required class="field"></div>
             <div><label class="label">{{ __('Describe your issue') }}</label><textarea name="description" rows="6" required class="field">{{ old('description') }}</textarea></div>
             <div>
                 <label class="label">{{ __('Attachment (optional)') }}</label>

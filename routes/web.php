@@ -20,7 +20,6 @@ use App\Http\Controllers\Public\CalculatorController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\NewsletterController;
 use App\Http\Controllers\Public\GuestSupportController;
-use App\Http\Controllers\Public\ReferralLeadController;
 
 // Digital shop
 use App\Http\Controllers\Shop\ShopController;
@@ -52,7 +51,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\SavedPaymentMethodController;
-use App\Http\Controllers\HelpCenterController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\ShippingRequestController;
@@ -124,7 +122,7 @@ Route::get('/fund-alipay', [PageController::class, 'fundAlipay'])->name('public.
 Route::get('/payment-methods', [PageController::class, 'paymentMethods'])->name('public.payment-methods');
 Route::get('/fees', [PageController::class, 'fees'])->name('public.fees');
 Route::get('/faqs', [PageController::class, 'faqs'])->name('public.faqs');
-Route::post('/calculator', [CalculatorController::class, 'quote'])->name('calculator');
+Route::post('/calculator', [CalculatorController::class, 'quote'])->middleware('throttle:30,1')->name('calculator');
 
 Route::get('/china-guide', [PublicGuideController::class, 'index'])->name('guides.index');
 Route::get('/china-guide/{guide:slug}', [PublicGuideController::class, 'show'])->name('guides.show');
@@ -150,9 +148,6 @@ Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'uns
 
 Route::get('/support/guest', [GuestSupportController::class, 'create'])->name('support.guest.create');
 Route::post('/support/guest', [GuestSupportController::class, 'store'])->name('support.guest.store');
-
-Route::get('/become-an-agent/interest', [ReferralLeadController::class, 'create'])->name('referral.create');
-Route::post('/become-an-agent/interest', [ReferralLeadController::class, 'store'])->name('referral.store');
 
 // Language + country selectors (apply site-wide via session/user)
 Route::get('/locale/{locale}', [\App\Http\Controllers\LocalizationController::class, 'setLocale'])->name('locale.set');
@@ -315,9 +310,6 @@ Route::middleware('auth')->group(function () {
     // Learning center (in dashboard)
     Route::get('/learn', [LearningController::class, 'index'])->name('learning.index');
     Route::get('/learn/{guide:slug}', [LearningController::class, 'show'])->name('learning.show');
-
-    // Help center (searchable FAQs, in-app)
-    Route::get('/help', [HelpCenterController::class, 'index'])->name('help.index');
 
     // Customer-initiated refund requests
     Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');

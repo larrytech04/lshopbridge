@@ -239,40 +239,58 @@ class DashboardReportService
     public function financialSeries(array $p): array
     {
         $granularity = request()->query('granularity', 'daily');
-        $from = $p['from']->copy();
-        $to = $p['to']->copy();
+        $now = now();
+
+        // Weekly/monthly need a meaningfully longer lookback than whatever the
+        // separate top-level Period filter happens to be set to elsewhere on
+        // this page — otherwise picking "Monthly" while Period="Last 30 days"
+        // can only ever produce a single, useless bucket (no line to draw).
+        // Each granularity gets its own natural window, bucketed on real
+        // calendar boundaries — not generic 7/30-day chunks that drift away
+        // from actual week/month lines and mislabel accordingly.
+        [$from, $to, $rangeLabel] = match ($granularity) {
+            'weekly' => [$now->copy()->subWeeks(11)->startOfWeek(), $now->copy()->endOfDay(), 'Last 12 weeks'],
+            'monthly' => [$now->copy()->subMonthsNoOverflow(11)->startOfMonth(), $now->copy()->endOfDay(), 'Last 12 months'],
+            default => [$p['from']->copy(), $p['to']->copy(), $p['label']],
+        };
 
         $points = [];
         $cursor = $from->copy();
-        $step = match ($granularity) { 'weekly' => 7, 'monthly' => 30, default => 1 };
-        $format = match ($granularity) { 'weekly' => 'M j', 'monthly' => 'M Y', default => 'M j' };
 
         while ($cursor->lte($to) && count($points) < 60) {
-            $segEnd = $cursor->copy()->addDays($step - 1)->min($to);
+            $segEnd = match ($granularity) {
+                'weekly' => $cursor->copy()->endOfWeek()->min($to),
+                'monthly' => $cursor->copy()->endOfMonth()->min($to),
+                default => $cursor->copy()->min($to),
+            };
             $points[] = [
-                'label' => $cursor->format($format),
+                'label' => $cursor->format($granularity === 'monthly' ? 'M Y' : 'M j'),
                 'deposits' => (float) Deposit::whereBetween('created_at', [$cursor, $segEnd->copy()->endOfDay()])->where('status', 'confirmed')->sum('net_amount'),
                 'funding' => (float) FundingRequest::whereBetween('created_at', [$cursor, $segEnd->copy()->endOfDay()])->where('status', 'funding_successful')->sum('target_amount'),
                 'sales' => (float) ShopOrder::whereBetween('created_at', [$cursor, $segEnd->copy()->endOfDay()])->whereIn('status', ['paid', 'fulfilled'])->sum('total'),
                 'refunds' => (float) ShopOrder::whereBetween('created_at', [$cursor, $segEnd->copy()->endOfDay()])->where('status', 'refunded')->sum('total'),
             ];
-            $cursor->addDays($step);
+            $cursor = match ($granularity) {
+                'weekly' => $cursor->copy()->addWeek(),
+                'monthly' => $cursor->copy()->addMonthNoOverflow(),
+                default => $cursor->copy()->addDay(),
+            };
         }
 
         $depositsByMethod = DB::table('deposits')
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'deposits.payment_method_id')
             ->where('deposits.status', 'confirmed')
-            ->whereBetween('deposits.created_at', [$p['from'], $p['to']])
+            ->whereBetween('deposits.created_at', [$from, $to])
             ->select(DB::raw("COALESCE(payment_methods.name, 'Unknown') as name"), DB::raw('SUM(deposits.net_amount) as total'))
             ->groupBy('name')->orderByDesc('total')->get();
 
         $fundingByWallet = FundingRequest::where('status', 'funding_successful')
-            ->whereBetween('created_at', [$p['from'], $p['to']])
+            ->whereBetween('created_at', [$from, $to])
             ->select('app_type', DB::raw('SUM(target_amount) as total'))
             ->groupBy('app_type')->get()
             ->map(fn ($r) => ['app_type' => $r->app_type->label(), 'total' => (float) $r->total]);
 
-        return ['granularity' => $granularity, 'points' => $points, 'depositsByMethod' => $depositsByMethod, 'fundingByWallet' => $fundingByWallet];
+        return ['granularity' => $granularity, 'points' => $points, 'rangeLabel' => $rangeLabel, 'depositsByMethod' => $depositsByMethod, 'fundingByWallet' => $fundingByWallet];
     }
 
     /* -------------------------------------------------- Reconciliation */
