@@ -3,17 +3,25 @@
 namespace App\Notifications;
 
 use App\Models\ShopOrderItem;
-use Illuminate\Notifications\Messages\MailMessage;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Notification;
 
 /** Ops alert: a paid eSIM order has no live provider to auto-fulfil it and needs staff action. */
 class EsimPendingProvisioning extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(public ShopOrderItem $item) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if ($this->wantsBroadcast($notifiable)) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toArray(object $notifiable): array

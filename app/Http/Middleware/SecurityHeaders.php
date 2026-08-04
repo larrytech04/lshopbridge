@@ -45,13 +45,21 @@ class SecurityHeaders
         // which silently broke it once already (fails closed with a caught
         // rejection, so it degraded gracefully rather than erroring, but the
         // feature stopped working).
+        // Real-time notifications connect to the Reverb WebSocket server, whose
+        // host/port/scheme are whatever REVERB_* is set to (localhost:8080 in
+        // dev, the production domain/port once deployed) — read from the same
+        // env vars Echo's own connection config is built from, so this never
+        // drifts out of sync with the actual server it's allowed to reach.
+        $reverbScheme = env('REVERB_SCHEME', 'https') === 'https' ? 'wss' : 'ws';
+        $reverbConnect = "{$reverbScheme}://".env('REVERB_HOST', 'localhost').':'.env('REVERB_PORT', 8080);
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self' data:",
             "img-src 'self' data: blob: https:",
-            "connect-src 'self' https://www.google-analytics.com https://ipapi.co",
+            "connect-src 'self' https://www.google-analytics.com https://ipapi.co {$reverbConnect}",
             "frame-src 'self' https://challenges.cloudflare.com",
             "object-src 'none'",
             "base-uri 'self'",

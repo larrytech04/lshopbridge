@@ -4,11 +4,14 @@ namespace App\Notifications;
 
 use App\Enums\KycDecisionType;
 use App\Models\KycVerification;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class KycReviewed extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(
         public KycVerification $kyc,
         public bool $approved,
@@ -18,7 +21,17 @@ class KycReviewed extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        if ($this->wantsMail($notifiable)) {
+            $channels[] = 'mail';
+        }
+
+        if ($this->wantsBroadcast($notifiable)) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

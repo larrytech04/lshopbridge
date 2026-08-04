@@ -23,6 +23,8 @@
         "alpinejs": "^3.14.1",
         "flag-icons": "^7.5.0",
         "gsap": "^3.15.0",
+        "laravel-echo": "^2.4.0",
+        "pusher-js": "^8.6.0",
         "tom-select": "^2.6.1"
     }
 }

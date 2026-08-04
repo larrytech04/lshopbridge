@@ -16,6 +16,13 @@ class DashboardController extends Controller
         $user = $request->user();
         $wallet = $user->primaryWallet();
 
+        // Most users only ever hold their base-currency wallet, but anyone who's
+        // funded or been paid in another currency has a second Wallet row that
+        // never surfaced anywhere before — list every wallet, base currency first,
+        // so the balance card can be swiped to reveal the rest.
+        $baseCurrency = config('platform.base_currency', 'XAF');
+        $wallets = $user->wallets()->get()->sortByDesc(fn ($w) => $w->currency === $baseCurrency)->values();
+
         // 7-day inflow vs outflow vs order-spend series for the transactions graph.
         $txSeries = collect(range(6, 0))->map(function ($i) use ($user) {
             $day = now()->subDays($i);
@@ -36,6 +43,7 @@ class DashboardController extends Controller
             'txOrders' => (float) $txSeries->sum('orders'),
             'user' => $user,
             'wallet' => $wallet,
+            'wallets' => $wallets,
             'recentDeposits' => $user->deposits()->latest()->take(5)->get(),
             'recentFunding' => $user->fundingRequests()->latest()->take(5)->get(),
             'transactions' => $wallet->transactions()->take(6)->get(),

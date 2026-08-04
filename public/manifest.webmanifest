@@ -1,0 +1,16 @@
+{
+    "name": "LshopBridge",
+    "short_name": "LshopBridge",
+    "description": "Fund Alipay, WeChat Pay & China wallets, shop gift cards and eSIMs, and track every order from your phone.",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#141a29",
+    "theme_color": "#9c0f26",
+    "orientation": "portrait-primary",
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}

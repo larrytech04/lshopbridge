@@ -3,16 +3,29 @@
 namespace App\Notifications;
 
 use App\Models\Deposit;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class DepositRejected extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(public Deposit $deposit, public string $reason) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        if ($this->wantsMail($notifiable, 'notify_wallet_activity')) {
+            $channels[] = 'mail';
+        }
+
+        if ($this->wantsBroadcast($notifiable, 'notify_wallet_activity')) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

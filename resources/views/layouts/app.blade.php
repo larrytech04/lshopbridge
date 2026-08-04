@@ -144,57 +144,69 @@
 
                 <x-theme-toggle bare />
 
-                <div x-data="{ open: false }" class="relative">
+                <div x-data="notificationBell({
+                        userId: {{ $user->id }},
+                        unread: {{ $unread }},
+                        items: @js($user->notifications()->take(6)->get()->map(fn ($n) => [
+                            'id' => $n->id,
+                            'title' => $n->data['title'] ?? 'Notification',
+                            'message' => $n->data['message'] ?? '',
+                            'url' => $n->data['url'] ?? '#',
+                            'unread' => is_null($n->read_at),
+                            'time' => $n->created_at->diffForHumans(),
+                        ])),
+                    })" class="relative">
                     <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="{{ __('Notifications') }}" class="relative grid h-9 w-9 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong">
                         <x-icon name="bell" class="h-5 w-5" />
-                        @if ($unread)<span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{{ $unread > 9 ? '9+' : $unread }}</span>@endif
+                        <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread" style="display:none" class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white"></span>
                     </button>
                     <div x-show="open" @click.outside="open = false" x-transition style="display:none" class="card-solid absolute right-0 mt-2 w-80 rounded-2xl border border-app p-2 shadow-lg">
                         <div class="flex items-center justify-between px-3 py-2">
                             <span class="flex items-center gap-2 text-sm font-semibold text-strong">
                                 {{ __('Notifications') }}
-                                @if ($unread)<span class="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white">{{ $unread }} {{ __('new') }}</span>@endif
+                                <span x-show="unread > 0" x-text="unread + ' {{ __('new') }}'" style="display:none" class="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white"></span>
                             </span>
                             <a href="{{ route('notifications.index') }}" class="text-xs font-semibold text-brand-400">{{ __('View all') }}</a>
                         </div>
                         <div class="max-h-80 space-y-1 overflow-y-auto">
-                            @forelse ($user->notifications()->take(6)->get() as $n)
-                                @php $isUnread = is_null($n->read_at); @endphp
-                                <a href="{{ $n->data['url'] ?? '#' }}" class="flex items-start gap-2.5 rounded-xl px-3 py-2 hover:surface">
-                                    <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full {{ $isUnread ? 'bg-brand-600 text-white' : 'surface-2 text-muted' }}"><x-icon name="bell" class="h-4 w-4" /></span>
+                            <template x-for="n in items" :key="n.id">
+                                <a :href="n.url" class="flex items-start gap-2.5 rounded-xl px-3 py-2 hover:surface">
+                                    <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full" :class="n.unread ? 'bg-brand-600 text-white' : 'surface-2 text-muted'"><x-icon name="bell" class="h-4 w-4" /></span>
                                     <span class="min-w-0 flex-1">
-                                        <span class="flex items-center gap-1.5"><span class="truncate text-sm font-medium text-strong">{{ $n->data['title'] ?? 'Notification' }}</span>@if ($isUnread)<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>@endif</span>
-                                        <span class="block truncate text-xs text-muted">{{ \Illuminate\Support\Str::limit($n->data['message'] ?? '', 70) }}</span>
-                                        <span class="block text-[11px] text-faint">{{ $n->created_at->diffForHumans() }}</span>
+                                        <span class="flex items-center gap-1.5"><span class="truncate text-sm font-medium text-strong" x-text="n.title"></span><span x-show="n.unread" style="display:none" class="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span></span>
+                                        <span class="block truncate text-xs text-muted" x-text="n.message"></span>
+                                        <span class="block text-[11px] text-faint" x-text="n.time"></span>
                                     </span>
                                 </a>
-                            @empty
-                                <p class="px-3 py-6 text-center text-sm text-faint">{{ __('You\'re all caught up.') }}</p>
-                            @endforelse
+                            </template>
+                            <p x-show="items.length === 0" class="px-3 py-6 text-center text-sm text-faint">{{ __('You\'re all caught up.') }}</p>
                         </div>
-                        @if ($unread)
-                            <form method="POST" action="{{ route('notifications.readAll') }}" class="border-t border-app pt-2">
-                                @csrf
-                                <button class="w-full rounded-full bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Mark all read') }}</button>
-                            </form>
-                        @endif
+                        <form method="POST" action="{{ route('notifications.readAll') }}" x-show="unread > 0" style="display:none" class="border-t border-app pt-2" @submit="unread = 0; items.forEach(n => n.unread = false)">
+                            @csrf
+                            <button class="w-full rounded-full bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Mark all read') }}</button>
+                        </form>
                     </div>
                 </div>
 
                 <div x-data="{ open: false }" class="relative hidden sm:block"
                      @mouseenter="open = true" @mouseleave="open = false">
-                    <button @click="open = !open" aria-label="{{ __('Account') }}" class="block rounded-full transition hover:scale-105">
-                        <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-9 w-9 rounded-full object-cover" />
+                    <button @click="open = !open" aria-label="{{ __('Account') }}" class="relative block rounded-full transition hover:scale-105">
+                        <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-9 w-9 rounded-full object-cover ring-2 ring-app" />
+                        @if ((int) $user->kyc_level >= 2)
+                            <x-verified-tick class="absolute -bottom-1 -right-1 h-3.5 w-3.5" />
+                        @endif
                     </button>
                     <div x-show="open" @click.outside="open = false" x-transition style="display:none" class="card-solid absolute right-0 mt-2 w-64 rounded-2xl border border-app p-2 shadow-lg">
                         <div class="flex items-center gap-3 border-b border-app px-3 py-2.5">
-                            <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-10 w-10 shrink-0 rounded-full object-cover" />
+                            <div class="relative shrink-0">
+                                <img src="{{ $hdrAvatar }}" alt="{{ $user->name }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-app" />
+                                @if ((int) $user->kyc_level >= 2)
+                                    <x-verified-tick class="absolute -bottom-1 -right-1 h-4 w-4" />
+                                @endif
+                            </div>
                             <div class="min-w-0">
                                 <p class="flex items-center gap-1.5 truncate text-sm font-semibold text-strong">
                                     {{ $user->name }}
-                                    @if ($user->kyc_status === \App\Enums\KycStatus::Approved)
-                                        <span title="{{ __('Identity verified') }}"><x-icon name="check-circle" class="h-3.5 w-3.5 shrink-0 text-emerald-500" /></span>
-                                    @endif
                                 </p>
                                 <p class="truncate text-xs text-muted">{{ $user->email }}</p>
                             </div>

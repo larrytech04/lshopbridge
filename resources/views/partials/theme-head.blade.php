@@ -16,7 +16,20 @@
 
 {{-- Favicon (admin-managed, falls back to the logo) --}}
 <link rel="icon" href="{{ site_favicon() }}">
-<link rel="apple-touch-icon" href="{{ site_favicon() }}">
+<link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
+
+{{-- Installable web app (manifest + iOS home-screen meta) --}}
+<link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+<meta name="theme-color" content="#9c0f26">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="{{ config('platform.name') }}">
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {}));
+    }
+</script>
 
 {{-- Search-engine site verification --}}
 @if ($gv = setting('google_site_verification'))<meta name="google-site-verification" content="{{ $gv }}">@endif

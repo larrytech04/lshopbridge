@@ -78,7 +78,8 @@
          only the middle row (logo/search/actions) collapses; the menu row stays visible.
          Scrolling up brings the middle row back. --}}
     <div data-autohide-header class="relative z-40 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(16px);"
-         x-data="{ mobileSearch: false }">
+         x-data="{ mobileSearch: false }"
+         @keydown.window="if (($event.ctrlKey || $event.metaKey) && $event.key.toLowerCase() === 'k') { $event.preventDefault(); $refs.headerSearchInput?.focus(); }">
         <div class="header-mid">
         <div class="mx-auto flex max-w-none items-center gap-3 px-4 py-3 sm:px-6">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center">
@@ -88,7 +89,7 @@
             {{-- Command search --}}
             <form action="{{ route('shop.index') }}" method="GET" class="relative mx-auto hidden w-full max-w-xl md:block">
                 <x-icon name="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
-                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search brands, categories, countries…') }}"
+                <input x-ref="headerSearchInput" name="q" value="{{ request('q') }}" placeholder="{{ __('Search brands, categories, countries…') }}"
                        class="field !rounded-full pl-11 pr-16">
                 <kbd class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-app px-1.5 py-0.5 text-[10px] text-faint">{{ __('Ctrl K') }}</kbd>
             </form>

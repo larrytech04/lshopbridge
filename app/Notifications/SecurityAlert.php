@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Notifications\Channels\SmsChannel;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -19,6 +20,8 @@ use Illuminate\Notifications\Notification;
  */
 class SecurityAlert extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(
         public string $title,
         public string $message,
@@ -30,9 +33,13 @@ class SecurityAlert extends Notification
     {
         $channels = ['database'];
 
-        if ($notifiable->preferences['notify_security_alerts'] ?? true) {
+        if ($this->wantsMail($notifiable, 'notify_security_alerts')) {
             $channels[] = 'mail';
             $channels[] = SmsChannel::class;
+        }
+
+        if ($this->wantsBroadcast($notifiable, 'notify_security_alerts')) {
+            $channels[] = 'broadcast';
         }
 
         return $channels;

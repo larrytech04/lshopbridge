@@ -24,6 +24,7 @@
             <div class="flex flex-col gap-4">
                 @include('partials.footer.trust-rail')
                 @include('partials.footer.payment-strip')
+                @include('partials.footer.install-webapp')
             </div>
         </div>
     </div>

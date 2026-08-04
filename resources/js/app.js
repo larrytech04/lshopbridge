@@ -471,6 +471,46 @@ Alpine.data('helpCenter', (opts = {}) => ({
     },
 }));
 
+/* -------------------------------------------------------- Install app */
+// Chrome/Edge (desktop and Android) fire `beforeinstallprompt`, which we
+// capture and replay on click — that's the real one-tap install. Neither
+// iOS Safari nor some Android browser/version combos ever fire it (no
+// programmatic install API, or the criteria/timing didn't line up), so on
+// those we fall back to showing the manual "how to add it yourself" steps
+// for whichever platform the visitor is actually on. Once running
+// standalone (already installed), the box hides itself.
+Alpine.data('installApp', () => ({
+    deferredPrompt: null,
+    canInstall: false,
+    isIOS: false,
+    isAndroid: false,
+    isStandalone: false,
+    showSteps: false,
+    init() {
+        this.isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+        this.isAndroid = /android/i.test(navigator.userAgent);
+        this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            this.canInstall = true;
+        });
+        window.addEventListener('appinstalled', () => { this.isStandalone = true; });
+    },
+    get show() { return !this.isStandalone && (this.canInstall || this.isIOS || this.isAndroid); },
+    async promptInstall() {
+        if (this.deferredPrompt) {
+            this.deferredPrompt.prompt();
+            await this.deferredPrompt.userChoice;
+            this.deferredPrompt = null;
+            this.canInstall = false;
+            return;
+        }
+        // No native prompt available (iOS, or Android without the event) — show manual steps.
+        this.showSteps = true;
+    },
+}));
+
 /* ------------------------------------------------------- Bottom dock */
 // Slim glass dock with an iOS-style highlight that slides between tabs —
 // it eases from the previously-active tab to the current one on each load,
@@ -802,6 +842,10 @@ Alpine.data('commandPalette', (tabs, mostUsed) => ({
         return list.flatMap((g) => g.items);
     },
     onGlobalKey(e) {
+        // Opening/closing the palette (mod+/, mod+k, esc) is handled by the
+        // real ShortcutManager registry (resources/js/shortcuts.js) dispatching
+        // open-command-palette/close-overlays — this only needs to handle
+        // navigation *within* an already-open palette.
         if (!this.open) return;
         const items = this.flatList();
         if (e.key === 'ArrowDown') { e.preventDefault(); this.selectedIndex = Math.min(items.length - 1, this.selectedIndex + 1); }
@@ -1210,6 +1254,30 @@ Alpine.data('esimCompatibilityChecker', (routes, brands) => ({
         } finally {
             this.checking = false;
         }
+    },
+}));
+
+Alpine.data('notificationBell', ({ userId, unread, items }) => ({
+    open: false,
+    unread,
+    items,
+
+    init() {
+        if (! window.Echo || ! userId) return;
+
+        window.Echo.private(`App.Models.User.${userId}`).notification((n) => {
+            this.items.unshift({
+                id: n.id,
+                title: n.title ?? 'Notification',
+                message: n.message ?? '',
+                url: n.url ?? '#',
+                unread: true,
+                time: 'Just now',
+            });
+            if (this.items.length > 6) this.items.pop();
+            this.unread++;
+            Alpine.store('toast').push(n.title ?? 'New notification');
+        });
     },
 }));
 

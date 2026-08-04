@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\EsimProvisioning;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -15,11 +16,23 @@ use Illuminate\Notifications\Notification;
  */
 class EsimReadyToInstall extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(public EsimProvisioning $provisioning) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        if ($this->wantsMail($notifiable, 'notify_order_updates')) {
+            $channels[] = 'mail';
+        }
+
+        if ($this->wantsBroadcast($notifiable, 'notify_order_updates')) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

@@ -3,16 +3,29 @@
 namespace App\Notifications;
 
 use App\Models\Agent;
+use App\Notifications\Concerns\ChecksNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class AgentVerified extends Notification
 {
+    use ChecksNotificationPreferences;
+
     public function __construct(public Agent $agent, public bool $approved, public ?string $reason = null) {}
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        if ($this->wantsMail($notifiable)) {
+            $channels[] = 'mail';
+        }
+
+        if ($this->wantsBroadcast($notifiable)) {
+            $channels[] = 'broadcast';
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

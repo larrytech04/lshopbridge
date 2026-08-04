@@ -1,9 +1,20 @@
-@props(['wallet'])
+@props(['wallet', 'native' => false])
 
 @php
-    $dc = display_currency();
-    $balVal = $wallet->availableBalance() * ($dc['rate'] ?? 1);
-    $lockedVal = (float) $wallet->locked_balance * ($dc['rate'] ?? 1);
+    // Native mode shows the wallet's own currency as-is (used for every wallet
+    // beyond the primary one in the balance carousel) — converting a USD wallet's
+    // balance into the visitor's display currency and labelling it "XAF" would
+    // misreport the actual amount held, not just reformat it.
+    if ($native) {
+        $curMeta = config("platform.currencies.{$wallet->currency}", ['symbol' => $wallet->currency, 'rate' => 1, 'decimals' => 2]);
+        $dc = ['code' => $wallet->currency, 'symbol' => $curMeta['symbol'], 'decimals' => $curMeta['decimals']];
+        $balVal = $wallet->availableBalance();
+        $lockedVal = (float) $wallet->locked_balance;
+    } else {
+        $dc = display_currency();
+        $balVal = $wallet->availableBalance() * ($dc['rate'] ?? 1);
+        $lockedVal = (float) $wallet->locked_balance * ($dc['rate'] ?? 1);
+    }
     $curColors = [
         'XAF' => '#840a20', 'NGN' => '#047857', 'GHS' => '#b45309', 'KES' => '#0f766e',
         'USD' => '#334155', 'EUR' => '#6d28d9', 'CNY' => '#c2410c',

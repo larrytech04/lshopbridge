@@ -41,8 +41,11 @@
             <div class="min-w-0" x-data="typeGreet(@js($greetName), @js($greetPhrases))" x-init="start()">
                 {{-- Profile pic, figure, "Hi Dev | ..." in one row --}}
                 <div class="flex items-center gap-1">
-                    <a href="{{ route('profile.edit') }}" class="shrink-0 sm:hidden">
-                        <img src="{{ $meAvatar }}" alt="{{ $user->name }}" class="h-11 w-11 rounded-full object-cover" />
+                    <a href="{{ route('profile.edit') }}" class="relative shrink-0 self-start sm:hidden">
+                        <img src="{{ $meAvatar }}" alt="{{ $user->name }}" class="h-11 w-11 rounded-full object-cover ring-2 ring-app" />
+                        @if ((int) $user->kyc_level >= 2)
+                            <x-verified-tick class="absolute -bottom-1 -right-1 h-4 w-4" />
+                        @endif
                     </a>
                     {{-- Full figure (clean image, nothing to crop around), desktop/tablet only.
                          Nudged down so the pointing hand lines up with the "Hi :name" text. --}}
@@ -106,82 +109,110 @@
             </div>
         @endif
 
-        {{-- Wallet hero + recent transactions, side by side on desktop --}}
+        {{-- Wallet hero + recent transactions sit side by side on desktop; on mobile every
+             section here stacks in a different order so "Recent transactions" lands
+             directly above the graph instead of right under the balance card. --}}
         <div class="grid gap-6 lg:grid-cols-2 lg:items-start">
-            <x-wallet-balance-card :wallet="$wallet" />
+            <div class="order-1 min-w-0 lg:order-1">
+                @if ($wallets->count() > 1)
+                    <div x-data="{ active: 0 }">
+                        <div class="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
+                             @scroll="active = Math.round($el.scrollLeft / $el.clientWidth)">
+                            @foreach ($wallets as $w)
+                                <div class="w-full shrink-0 snap-center">
+                                    <x-wallet-balance-card :wallet="$w" :native="! $loop->first" />
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-2 flex items-center justify-center gap-1.5">
+                            @foreach ($wallets as $i => $w)
+                                <span class="h-1.5 rounded-full transition-all" :class="active === {{ $i }} ? 'w-4 bg-brand-500' : 'w-1.5 bg-slate-300'"></span>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <x-wallet-balance-card :wallet="$wallet" />
+                @endif
+            </div>
 
-            <div class="card-solid rounded-3xl border border-app p-4 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-base font-bold text-strong">{{ __('Recent transactions') }}</h3>
-                    <a href="{{ route('transactions.index') }}" class="rounded-full border border-app px-2.5 py-0.5 text-[11px] font-semibold text-body transition hover:text-strong">{{ __('View all') }}</a>
+            <div class="order-2 min-w-0 lg:order-3 lg:col-span-2">
+                {{-- Quick actions --}}
+                <div class="card-solid rounded-3xl border border-app p-4 shadow-sm sm:p-6">
+                    <div class="flex items-center justify-between"><h3 class="font-semibold text-strong">{{ __('Quick actions') }}</h3><a href="{{ route('shop.index') }}" class="text-sm text-brand-400 hover:text-brand-300">{{ __('All') }}</a></div>
+                    <div class="mt-5 grid grid-cols-4 gap-x-2 gap-y-4 sm:grid-cols-8 sm:gap-4">
+                        @foreach ($quick as [$label, $icon, $url, $color])
+                            @if ($label === 'More')
+                                <button type="button" @click="window.dispatchEvent(new CustomEvent('open-mobile-menu'))" class="group flex flex-col items-center gap-2 text-center">
+                                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-sm transition group-hover:-translate-y-1 sm:h-14 sm:w-14" style="background: {{ $color }}">
+                                        @if (str_ends_with($icon, '.png'))<x-img-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@else<x-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@endif
+                                    </span>
+                                    <span class="line-clamp-2 text-[11px] font-medium leading-tight text-body sm:text-xs">{{ __($label) }}</span>
+                                </button>
+                            @else
+                                <a href="{{ $url }}" class="group flex flex-col items-center gap-2 text-center">
+                                    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-sm transition group-hover:-translate-y-1 sm:h-14 sm:w-14" style="background: {{ $color }}">
+                                        @if (str_ends_with($icon, '.png'))<x-img-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@else<x-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@endif
+                                    </span>
+                                    <span class="line-clamp-2 text-[11px] font-medium leading-tight text-body sm:text-xs">{{ __($label) }}</span>
+                                </a>
+                            @endif
+                        @endforeach
+                    </div>
                 </div>
-                <div class="mt-3 space-y-2.5">
-                    @forelse ($transactions->take(2) as $t)
-                        <div class="flex items-center justify-between gap-2.5">
-                            <div class="flex min-w-0 items-center gap-2.5">
-                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ $t->type === 'credit' ? 'bg-emerald-500/12 text-emerald-500' : 'bg-rose-500/12 text-rose-500' }}"><x-icon :name="$t->type === 'credit' ? 'arrow-up' : 'arrow-right'" class="h-4 w-4 {{ $t->type === 'credit' ? '' : 'rotate-45' }}" /></span>
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-strong">{{ \Illuminate\Support\Str::limit($t->description ?: ucfirst($t->category), 18) }}</p>
-                                    <p class="text-xs text-muted">{{ disp($t->amount) }}</p>
+            </div>
+
+            <div class="order-3 min-w-0 lg:order-4 lg:col-span-2">
+                {{-- Accepted payment methods (same marquee as the homepage), open, no card box --}}
+                <div>
+                    <div class="flex flex-wrap items-end justify-between gap-4">
+                        <h3 class="font-semibold text-strong">{{ __('Accepted payment methods') }}</h3>
+                        <a href="{{ route('public.payment-methods') }}" class="text-sm font-semibold text-brand-400 hover:text-brand-300">{{ __('All methods') }} →</a>
+                    </div>
+                    @php $allPay = collect(config('payments.accepted'))->collapse(); @endphp
+                    <div class="pay-marquee mt-4">
+                        <div class="pay-marquee__track">
+                            @for ($d = 0; $d < 2; $d++)
+                                @foreach ($allPay as [$key, $name])
+                                    <div class="flex w-16 shrink-0 flex-col items-center gap-2" @if($d) aria-hidden="true" @endif>
+                                        <x-pay-icon :name="$key" class="h-12 w-12 shadow-sm" />
+                                        <span class="whitespace-nowrap text-center text-[10px] font-semibold text-muted">{{ __($name) }}</span>
+                                    </div>
+                                @endforeach
+                            @endfor
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-4 min-w-0 lg:order-2">
+                <div class="card-solid rounded-3xl border border-app p-4 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-base font-bold text-strong">{{ __('Recent transactions') }}</h3>
+                        <a href="{{ route('transactions.index') }}" class="rounded-full border border-app px-2.5 py-0.5 text-[11px] font-semibold text-body transition hover:text-strong">{{ __('View all') }}</a>
+                    </div>
+                    <div class="mt-3 space-y-2.5">
+                        @forelse ($transactions->take(2) as $t)
+                            <div class="flex items-center justify-between gap-2.5">
+                                <div class="flex min-w-0 items-center gap-2.5">
+                                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg {{ $t->type === 'credit' ? 'bg-emerald-500/12 text-emerald-500' : 'bg-rose-500/12 text-rose-500' }}"><x-icon :name="$t->type === 'credit' ? 'arrow-up' : 'arrow-right'" class="h-4 w-4 {{ $t->type === 'credit' ? '' : 'rotate-45' }}" /></span>
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold text-strong">{{ \Illuminate\Support\Str::limit($t->description ?: ucfirst($t->category), 18) }}</p>
+                                        <p class="text-xs text-muted">{{ disp($t->amount) }}</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 text-right">
+                                    <span class="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 {{ $t->type === 'credit' ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30' : 'bg-rose-500/10 text-rose-600 ring-rose-500/30' }}">{{ $t->type === 'credit' ? __('In') : __('Out') }}</span>
+                                    <p class="mt-0.5 text-[11px] text-faint">{{ $t->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
-                            <div class="shrink-0 text-right">
-                                <span class="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 {{ $t->type === 'credit' ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/30' : 'bg-rose-500/10 text-rose-600 ring-rose-500/30' }}">{{ $t->type === 'credit' ? __('In') : __('Out') }}</span>
-                                <p class="mt-0.5 text-[11px] text-faint">{{ $t->created_at->diffForHumans() }}</p>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="py-5 text-center text-sm text-muted">{{ __('No transactions yet.') }}</p>
-                    @endforelse
+                        @empty
+                            <p class="py-5 text-center text-sm text-muted">{{ __('No transactions yet.') }}</p>
+                        @endforelse
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Quick actions --}}
-        <div class="card-solid rounded-3xl border border-app p-4 shadow-sm sm:p-6">
-            <div class="flex items-center justify-between"><h3 class="font-semibold text-strong">{{ __('Quick actions') }}</h3><a href="{{ route('shop.index') }}" class="text-sm text-brand-400 hover:text-brand-300">{{ __('All') }}</a></div>
-            <div class="mt-5 grid grid-cols-4 gap-x-2 gap-y-4 sm:grid-cols-8 sm:gap-4">
-                @foreach ($quick as [$label, $icon, $url, $color])
-                    @if ($label === 'More')
-                        <button type="button" @click="window.dispatchEvent(new CustomEvent('open-mobile-menu'))" class="group flex flex-col items-center gap-2 text-center">
-                            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-sm transition group-hover:-translate-y-1 sm:h-14 sm:w-14" style="background: {{ $color }}">
-                                @if (str_ends_with($icon, '.png'))<x-img-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@else<x-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@endif
-                            </span>
-                            <span class="line-clamp-2 text-[11px] font-medium leading-tight text-body sm:text-xs">{{ __($label) }}</span>
-                        </button>
-                    @else
-                        <a href="{{ $url }}" class="group flex flex-col items-center gap-2 text-center">
-                            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-sm transition group-hover:-translate-y-1 sm:h-14 sm:w-14" style="background: {{ $color }}">
-                                @if (str_ends_with($icon, '.png'))<x-img-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@else<x-icon :name="$icon" class="h-5 w-5 sm:h-6 sm:w-6" />@endif
-                            </span>
-                            <span class="line-clamp-2 text-[11px] font-medium leading-tight text-body sm:text-xs">{{ __($label) }}</span>
-                        </a>
-                    @endif
-                @endforeach
-            </div>
-        </div>
-
-        {{-- Accepted payment methods (same marquee as the homepage), open, no card box --}}
-        <div>
-            <div class="flex flex-wrap items-end justify-between gap-4">
-                <h3 class="font-semibold text-strong">{{ __('Accepted payment methods') }}</h3>
-                <a href="{{ route('public.payment-methods') }}" class="text-sm font-semibold text-brand-400 hover:text-brand-300">{{ __('All methods') }} →</a>
-            </div>
-            @php $allPay = collect(config('payments.accepted'))->collapse(); @endphp
-            <div class="pay-marquee mt-4">
-                <div class="pay-marquee__track">
-                    @for ($d = 0; $d < 2; $d++)
-                        @foreach ($allPay as [$key, $name])
-                            <div class="flex w-16 shrink-0 flex-col items-center gap-2" @if($d) aria-hidden="true" @endif>
-                                <x-pay-icon :name="$key" class="h-12 w-12 shadow-sm" />
-                                <span class="whitespace-nowrap text-center text-[10px] font-semibold text-muted">{{ __($name) }}</span>
-                            </div>
-                        @endforeach
-                    @endfor
-                </div>
-            </div>
-        </div>
-
+            <div class="order-5 min-w-0 lg:order-5 lg:col-span-2">
         {{-- Transactions graph --}}
         <div class="rounded-3xl border border-app p-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
@@ -277,6 +308,8 @@
                         <span class="flex-1 text-center text-[11px] text-faint">{{ $d['label'] }}</span>
                     @endforeach
                 </div>
+            </div>
+        </div>
             </div>
         </div>
 

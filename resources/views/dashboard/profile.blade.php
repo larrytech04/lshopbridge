@@ -14,23 +14,23 @@
     </div>
 
     {{-- Personal information --}}
-    <div>
+    <div x-data="{ editing: {{ $errors->any() ? 'true' : 'false' }} }">
         <h2 class="mb-3 text-sm font-semibold text-strong">{{ __('Personal Information') }}</h2>
         <div class="card-solid rounded-3xl border border-app p-6 shadow-sm">
             <div class="flex flex-wrap items-start gap-4">
                 <div>
                     <div class="relative h-16 w-16">
                         @if ($user->avatar_path)
-                            <img src="{{ Storage::url($user->avatar_path) }}" class="h-16 w-16 rounded-full object-cover" alt="{{ $user->name }}">
+                            <img src="{{ Storage::url($user->avatar_path) }}" class="h-16 w-16 rounded-full object-cover ring-2 ring-app" alt="{{ $user->name }}">
                         @else
-                            <div class="grid h-16 w-16 place-items-center rounded-full bg-brand-600 text-xl font-bold text-white">{{ Str::upper(Str::substr($user->name, 0, 1)) }}</div>
+                            <div class="grid h-16 w-16 place-items-center rounded-full bg-brand-600 text-xl font-bold text-white ring-2 ring-app">{{ Str::upper(Str::substr($user->name, 0, 1)) }}</div>
                         @endif
                         <label class="absolute -bottom-1 -right-1 grid h-7 w-7 cursor-pointer place-items-center rounded-full bg-brand-600 text-white ring-2 ring-app" style="ring-color: var(--bg);">
                             <x-icon name="upload" class="h-3.5 w-3.5" />
                             <input type="file" name="avatar" form="profile-form" accept="image/*" class="sr-only" onchange="this.form.requestSubmit()">
                         </label>
                     </div>
-                    <button type="submit" form="profile-form" class="btn btn-ghost mt-3 !px-3 !py-1.5 text-xs">{{ __('Edit profile') }}</button>
+                    <button type="button" @click="editing = true" x-show="! editing" class="btn btn-ghost mt-3 !px-3 !py-1.5 text-xs">{{ __('Edit profile') }}</button>
                     @if ($user->avatar_path)
                         <form method="POST" action="{{ route('profile.photo.remove') }}" class="mt-1">
                             @csrf @method('DELETE')
@@ -39,17 +39,34 @@
                     @endif
                 </div>
                 <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
                         <span class="text-lg font-bold text-strong">{{ $user->name }}</span>
-                        @if ($user->email_verified_at)
-                            <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-500 ring-1 ring-emerald-400/30">{{ __('Email verified') }}</span>
+                        @if ((int) $user->kyc_level >= 2)
+                            <x-verified-tick class="h-5 w-5" />
                         @endif
                     </div>
                     <p class="mt-1 text-sm text-muted">{{ __('Member since :date', ['date' => $user->created_at->format('F Y')]) }}</p>
                 </div>
             </div>
 
-            <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 divide-y divide-app border-t border-app">
+            {{-- Read-only view: every field the edit form below covers, so "Edit profile" toggles the same data into an editable state instead of duplicating a separate summary. --}}
+            <div x-show="! editing" class="mt-6 divide-y divide-app border-t border-app">
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Full name') }}</p><p class="mt-1 text-sm text-strong">{{ $user->name }}</p></div>
+                <div class="flex items-center justify-between py-3">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Email address') }}</p>
+                        <p class="mt-1 truncate text-sm text-strong">{{ $user->email }}</p>
+                    </div>
+                    <span class="shrink-0 rounded-full {{ $user->email_verified_at ? 'bg-emerald-500/15 text-emerald-500 ring-emerald-400/30' : 'bg-amber-500/15 text-amber-500 ring-amber-400/30' }} px-2.5 py-1 text-[10px] font-bold uppercase ring-1">{{ $user->email_verified_at ? __('Verified') : __('Unverified') }}</span>
+                </div>
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Phone number') }}</p><p class="mt-1 text-sm text-strong">{{ $user->phone ?: __('Not set') }}</p></div>
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Gender') }}</p><p class="mt-1 text-sm text-strong">{{ $user->gender ? __(ucfirst($user->gender)) : __('Not set') }}</p></div>
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Country') }}</p><p class="mt-1 text-sm text-strong">{{ $user->country?->name ?? __('Not set') }}</p></div>
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('City') }}</p><p class="mt-1 text-sm text-strong">{{ $user->city ?: __('Not set') }}</p></div>
+                <div class="py-3"><p class="text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Address') }}</p><p class="mt-1 text-sm text-strong">{{ $user->address ?: __('Not set') }}</p></div>
+            </div>
+
+            <form id="profile-form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" x-show="editing" x-cloak class="mt-6 divide-y divide-app border-t border-app">
                 @csrf @method('PUT')
                 <div class="py-3">
                     <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Full name') }}</label>
@@ -89,7 +106,10 @@
                     <label class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-faint">{{ __('Address') }}</label>
                     <input name="address" value="{{ old('address', $user->address) }}" placeholder="{{ __('Not set') }}" class="w-full bg-transparent text-sm text-strong placeholder:italic placeholder:text-faint focus:outline-none">
                 </div>
-                <div class="pt-4"><button class="btn btn-primary">{{ __('Save changes') }}</button></div>
+                <div class="flex items-center gap-2 pt-4">
+                    <button class="btn btn-primary">{{ __('Save changes') }}</button>
+                    <button type="button" @click="editing = false" class="btn btn-ghost">{{ __('Cancel') }}</button>
+                </div>
             </form>
         </div>
     </div>
