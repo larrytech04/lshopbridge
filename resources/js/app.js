@@ -525,7 +525,7 @@ Alpine.data('appDock', () => ({
         if (!ind || !nav || !slots.length) return;
 
         const n = slots.length;
-        const active = Math.min(n - 1, Math.max(0, parseInt(nav.dataset.active ?? '0', 10) || 0));
+        let active = Math.min(n - 1, Math.max(0, parseInt(nav.dataset.active ?? '0', 10) || 0));
         const EASE = 'transform .5s cubic-bezier(.34,1.4,.5,1), width .5s cubic-bezier(.34,1.4,.5,1)';
 
         const place = (i, animate) => {
@@ -548,8 +548,68 @@ Alpine.data('appDock', () => ({
         // Only the Menu button (last slot) doesn't navigate, so move it on toggle.
         this.$watch('menu', (open) => place(open ? n - 1 : active, true));
         window.addEventListener('resize', () => place(active, false));
+
+        // Warm the destination up the moment a finger/cursor touches a tab —
+        // by the time the tap actually registers (~100-150ms later) the page
+        // is usually already in flight, so the real navigation lands closer
+        // to instant instead of starting cold on click.
+        const prefetched = new Set();
+        const warm = (href) => {
+            if (!href || prefetched.has(href)) return;
+            prefetched.add(href);
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            document.head.appendChild(link);
+        };
+        // Swap the page in-place instead of a full browser navigation: the
+        // indicator slides the instant a tab is tapped, then the new <main>
+        // (already warmed by the prefetch above) drops in via a soft
+        // crossfade rather than a hard white-flash reload. Any failure
+        // (offline, non-2xx, no <main> found) falls back to a normal link
+        // click so nothing is ever left in a broken half-navigated state.
+        const swapPage = async (url, index) => {
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) throw new Error(`bad status ${res.status}`);
+            const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+            const newMain = doc.querySelector('main');
+            const oldMain = document.querySelector('main');
+            if (!newMain || !oldMain) throw new Error('missing <main>');
+
+            const apply = () => {
+                document.title = doc.title;
+                oldMain.replaceWith(newMain);
+                window.Alpine.initTree(newMain);
+                window.scrollTo(0, 0);
+            };
+            if (document.startViewTransition) {
+                await document.startViewTransition(apply).finished;
+            } else {
+                apply();
+            }
+            history.pushState({}, '', url);
+            sessionStorage.setItem('pb-dock', String(index));
+            active = index; // so re-closing the Menu sheet returns to THIS tab, not the page's original one
+        };
+
+        slots.forEach((el, i) => {
+            if (el.tagName !== 'A' || !el.href) return;
+            el.addEventListener('touchstart', () => warm(el.href), { passive: true });
+            el.addEventListener('mousedown', () => warm(el.href));
+            el.addEventListener('click', (e) => {
+                if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                const url = el.href;
+                e.preventDefault();
+                this.menu = false; // tapping any other tab dismisses an open Menu sheet
+                if (url === location.href) return;
+                place(i, true);
+                swapPage(url, i).catch(() => { location.href = url; });
+            });
+        });
     },
 }));
+
+window.addEventListener('popstate', () => location.reload());
 
 /* ------------------------------------------------- Services carousel */
 // Auto-rotating service explainer: the active item expands to show its

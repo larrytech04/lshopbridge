@@ -1,7 +1,7 @@
-<div x-data="appDock()" x-on:open-mobile-menu.window="menu = true" x-on:close-dock-menu.window="menu = false" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(0.375rem,env(safe-area-inset-bottom))] lg:hidden">
+<div x-data="appDock()" x-on:open-mobile-menu.window="menu = true" x-on:close-dock-menu.window="menu = false" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[max(0.625rem,env(safe-area-inset-bottom))] lg:hidden">
     {{-- Thin frosted strip filling the gap between the dock and the screen edge,
          so whatever scrolls beneath is blurred rather than sharply visible. --}}
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-0 backdrop-blur-md" style="height: max(0.375rem, env(safe-area-inset-bottom));"></div>
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-0 backdrop-blur-md" style="height: max(0.625rem, env(safe-area-inset-bottom));"></div>
 
     {{-- Slide-up menu sheet --}}
     <div x-show="menu" x-cloak @click="menu=false" class="pointer-events-auto fixed inset-0 bg-black/40" x-transition.opacity></div>
@@ -112,10 +112,10 @@
     <nav class="app-dock pointer-events-auto relative z-10 mx-3 flex w-[calc(100%-1.5rem)] max-w-xl items-center justify-between gap-1 rounded-full px-2 py-2"
          data-active="{{ $activeDock }}">
         <span data-dock-indicator class="dock-indicator"></span>
-        <a data-dock-slot href="{{ $home }}" class="dock-item {{ request()->routeIs('dashboard','home') ? 'dock-item-active' : '' }}"><x-img-icon name="House-Chimney-1--Streamline-Ultimate.png" class="h-5 w-5" /> {{ __('Home') }}</a>
-        <a data-dock-slot href="{{ $wallet }}" class="dock-item {{ request()->routeIs('wallet.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Money-Wallet-1--Streamline-Ultimate.png" class="h-5 w-5" /> {{ __('Wallet') }}</a>
-        <a data-dock-slot href="{{ $fund }}" class="dock-item {{ request()->routeIs('funding.create') ? 'dock-item-active' : '' }}"><x-img-icon name="Currency-Sign-Colon-Bag--Streamline-Ultimate.png" class="h-5 w-5" /> {{ __('Fund') }}</a>
-        <a data-dock-slot href="{{ route('shop.index') }}" class="dock-item {{ request()->routeIs('shop.*','cart.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-5 w-5" /> {{ __('Marketplace') }}</a>
-        <button data-dock-slot @click="menu=!menu" class="dock-item" :class="menu ? 'dock-item-active' : ''"><x-img-icon name="menu.png" class="h-5 w-5" /> {{ __('Menu') }}</button>
+        <a data-dock-slot href="{{ $home }}" class="dock-item {{ request()->routeIs('dashboard','home') ? 'dock-item-active' : '' }}"><x-img-icon name="House-Chimney-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Home') }}</a>
+        <a data-dock-slot href="{{ $wallet }}" class="dock-item {{ request()->routeIs('wallet.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Money-Wallet-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Wallet') }}</a>
+        <a data-dock-slot href="{{ $fund }}" class="dock-item {{ request()->routeIs('funding.create') ? 'dock-item-active' : '' }}"><x-img-icon name="Currency-Sign-Colon-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Fund') }}</a>
+        <a data-dock-slot href="{{ route('shop.index') }}" class="dock-item {{ request()->routeIs('shop.*','cart.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Marketplace') }}</a>
+        <button data-dock-slot @click="menu=!menu" class="dock-item" :class="menu ? 'dock-item-active' : ''"><x-img-icon name="menu.png" class="h-6 w-6" /> {{ __('Menu') }}</button>
     </nav>
 </div>
