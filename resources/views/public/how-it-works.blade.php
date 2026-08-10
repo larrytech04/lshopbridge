@@ -17,11 +17,20 @@
     </nav>
 </div>
 
-{{-- Hero --}}
-<section class="mx-auto max-w-3xl px-4 pb-4 pt-10 text-center sm:px-6">
-    <span class="pill surface border border-app text-body"><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span> {{ __('The full journey') }}</span>
-    <h1 class="mt-5 text-4xl font-extrabold tracking-tight text-strong sm:text-5xl">{{ __('How :brand works', ['brand' => $brand]) }}</h1>
-    <p class="mx-auto mt-4 max-w-2xl text-lg text-body">{{ __('From your local Mobile Money to a funded China wallet, and instant digital products delivered to your account. Fully automated, secure and transparent.') }}</p>
+{{-- Hero: short, full-width video background, same pattern as the China Buying Academy banner --}}
+<section class="pt-6">
+    <div class="relative w-full overflow-hidden bg-brand-900 p-6 text-white sm:p-8">
+        {{-- Scaled up and anchored to the left edge to crop the small expand-icon
+             overlay baked into the bottom-right of the source clip out of view. --}}
+        <video class="absolute inset-0 h-full w-full origin-left scale-[1.2] object-cover" src="{{ asset('assets/'.rawurlencode('how it works hero.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-900/85 to-brand-900/40"></div>
+        <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-accent-500/20 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="relative z-10 mx-auto max-w-2xl text-center">
+            <h1 class="text-2xl font-extrabold text-white sm:text-3xl">{{ __('How :brand works', ['brand' => $brand]) }}</h1>
+            <p class="mt-2 text-sm text-white/80 sm:text-base">{{ __('From your local Mobile Money to a funded China wallet, and instant digital products delivered to your account. Fully automated, secure and transparent.') }}</p>
+        </div>
+    </div>
 </section>
 
 {{-- Journey 1: Funding a China wallet --}}

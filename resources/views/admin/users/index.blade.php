@@ -165,12 +165,18 @@
                                 <td class="sticky left-10 z-10 cursor-pointer px-3 py-3" style="background: var(--surface-1);" @click="toggleExpand({{ $u->id }})">
                                     <div class="flex items-center gap-2.5">
                                         <div class="relative shrink-0">
-                                            <span class="grid h-9 w-9 place-items-center rounded-full bg-brand-600 text-xs font-bold text-white">{{ $u->initials() }}</span>
+                                            @if ($u->avatar_path)
+                                                <img src="{{ Storage::url($u->avatar_path) }}" alt="{{ $u->name }}" class="h-9 w-9 rounded-full object-cover">
+                                            @elseif ($u->avatar_url)
+                                                <img src="{{ $u->avatar_url }}" alt="{{ $u->name }}" class="h-9 w-9 rounded-full object-cover">
+                                            @else
+                                                <span class="grid h-9 w-9 place-items-center rounded-full bg-brand-600 text-xs font-bold text-white">{{ $u->initials() }}</span>
+                                            @endif
                                             <span class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white {{ $dotColor }}"></span>
                                         </div>
                                         <div class="min-w-0">
                                             <p class="flex items-center gap-1 truncate font-medium text-strong">{{ $u->name }}
-                                                @if ($u->isKycApproved())<x-verified-tick class="h-3.5 w-3.5 shrink-0" />@endif
+                                                @if ((int) $u->kyc_level >= 2)<x-verified-tick class="h-3.5 w-3.5 shrink-0" />@endif
                                                 @if ($tier === 'Gold')<span class="pill bg-amber-500/15 text-amber-600 text-[9px]">VIP</span>@endif
                                                 @if ($u->role->value === 'agent')<span class="pill bg-sky-500/15 text-sky-600 text-[9px]">Agent</span>@endif
                                                 @if (in_array($u->role->value, ['admin','super_admin']))<span class="pill bg-slate-500/15 text-slate-600 text-[9px]">Admin</span>@endif

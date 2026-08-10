@@ -115,13 +115,14 @@
 </section>
 
 {{-- Values, video band with glass cards --}}
-<section class="leopard relative w-full overflow-hidden bg-slate-900">
+<section class="leopard relative w-full overflow-hidden bg-brand-900">
     {{-- Source clip is portrait; rotated 90deg and over-scaled so the landscape band is always fully covered --}}
-    <video class="absolute left-1/2 top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover opacity-40" src="{{ asset('assets/'.rawurlencode('about vid.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
-    <div class="pointer-events-none absolute inset-0 bg-slate-900/70"></div>
-    <div class="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
-    <div class="pointer-events-none absolute -bottom-20 -right-10 h-80 w-80 rounded-full bg-sky-400/20 blur-3xl"></div>
-    <div class="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+    <video class="absolute left-[80%] top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover" src="{{ asset('assets/'.rawurlencode('about vid.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
+    {{-- One-sided red overlay, same treatment as the China Buying Academy hero --}}
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-900/85 to-brand-900/40"></div>
+    <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-accent-500/20 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div class="mx-auto max-w-2xl text-center">
             <h2 class="text-3xl font-bold text-white sm:text-4xl">{{ __('What we stand for') }}</h2>
             <p class="mt-3 text-white/70">{{ __('The principles behind every feature we build.') }}</p>

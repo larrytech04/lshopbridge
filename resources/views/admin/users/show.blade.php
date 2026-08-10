@@ -43,13 +43,19 @@
         {{-- Identity row --}}
         <div class="flex flex-wrap items-start gap-4">
             <div class="relative shrink-0">
-                <span class="grid h-16 w-16 place-items-center rounded-2xl bg-brand-600 text-xl font-bold text-white">{{ $user->initials() }}</span>
+                @if ($user->avatar_path)
+                    <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $user->name }}" class="h-16 w-16 rounded-2xl object-cover">
+                @elseif ($user->avatar_url)
+                    <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="h-16 w-16 rounded-2xl object-cover">
+                @else
+                    <span class="grid h-16 w-16 place-items-center rounded-2xl bg-brand-600 text-xl font-bold text-white">{{ $user->initials() }}</span>
+                @endif
                 <span class="absolute -bottom-1 -right-1 h-4 w-4 rounded-full ring-2 ring-white {{ $user->isOnline() ? 'bg-emerald-500' : 'bg-slate-400' }}" title="{{ $user->isOnline() ? 'Online now' : 'Offline' }}"></span>
             </div>
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                     <h2 class="text-xl font-bold text-strong">{{ $user->name }}</h2>
-                    @if ($user->isKycApproved())<x-verified-tick class="h-5 w-5 shrink-0" />@endif
+                    @if ((int) $user->kyc_level >= 2)<x-verified-tick class="h-5 w-5 shrink-0" />@endif
                     @if ($user->country)<x-flag :iso="$user->country->iso2" class="h-4 w-6" />@endif
                     <span class="text-sm text-muted">{{ $user->country->name ?? '—' }}</span>
                 </div>

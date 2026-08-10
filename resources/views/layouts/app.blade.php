@@ -18,6 +18,7 @@
         closeCtx() { this.ctx = null; },
       }"
       @keydown.escape.window="closeCtx()">
+    @include('partials.pull-to-refresh')
     @include('partials.page-skeleton')
 
     @php
