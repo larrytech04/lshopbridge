@@ -520,13 +520,13 @@ html.night {
        the dock's own icons. No saturate() boost — that made colours behind pop
        *through* the glass instead of fading. */
     .app-dock {
-        background: color-mix(in srgb, var(--bg) 94%, transparent);
-        border: 1px solid color-mix(in srgb, var(--text-strong) 10%, transparent);
+        background: var(--glass-strong-bg);
+        border: 1px solid var(--glass-border);
         backdrop-filter: blur(80px);
         -webkit-backdrop-filter: blur(80px);
         box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.20);
     }
-    .dock-item { @apply relative z-10 flex flex-1 flex-col items-center justify-center gap-1 rounded-full px-1 py-1.5 text-[10px] font-medium transition; color: var(--text-body); }
+    .dock-item { @apply relative z-10 flex flex-1 flex-col items-center justify-center gap-1 rounded-full px-1 py-2.5 text-[10px] font-medium transition; color: var(--text-body); }
     .dock-item:hover { color: var(--text-strong); }
     .dock-item-active { color: var(--text-strong); }
     /* WhatsApp/iOS-style pill that glides between tabs (positioned by JS) —

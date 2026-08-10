@@ -82,7 +82,7 @@
 
         <div class="shell-col-main">
         {{-- Top bar --}}
-        <header class="sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6" style="background: var(--header-bg);"
+        <header class="glass-strong sticky top-0 z-30 flex h-16 items-center gap-3 !border-x-0 !border-t-0 px-4 sm:px-6"
                 @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
             {{-- Phone: social trigger (grey circle) + logo; desktop keeps the page title --}}
             <div class="lg:hidden">@include('partials.social-dock', ['circled' => true])</div>

@@ -109,13 +109,18 @@
             : (request()->routeIs('funding.create') ? 2
             : (request()->routeIs('shop.*', 'cart.*') ? 3 : 0));
     @endphp
-    <nav class="app-dock pointer-events-auto relative z-10 mx-3 flex w-[calc(100%-1.5rem)] max-w-xl items-center justify-between gap-1 rounded-full px-2 py-2"
+    {{-- DOM order stays Home/Wallet/Fund/Marketplace/Menu (matches $activeDock's indices
+         and the JS's "last slot = Menu" assumption) — only the visual order changes, via
+         `order-*`, to Home/Fund/Menu/Marketplace/Wallet. The sliding indicator positions
+         itself from each slot's rendered offsetLeft, so it already follows the visual
+         order without any JS changes. --}}
+    <nav class="app-dock pointer-events-auto relative z-10 mx-3 flex w-[calc(100%-1.5rem)] max-w-xl items-center justify-between gap-1 rounded-full px-2 py-2.5"
          data-active="{{ $activeDock }}">
         <span data-dock-indicator class="dock-indicator"></span>
-        <a data-dock-slot href="{{ $home }}" class="dock-item {{ request()->routeIs('dashboard','home') ? 'dock-item-active' : '' }}"><x-img-icon name="House-Chimney-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Home') }}</a>
-        <a data-dock-slot href="{{ $wallet }}" class="dock-item {{ request()->routeIs('wallet.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Money-Wallet-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Wallet') }}</a>
-        <a data-dock-slot href="{{ $fund }}" class="dock-item {{ request()->routeIs('funding.create') ? 'dock-item-active' : '' }}"><x-img-icon name="Currency-Sign-Colon-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Fund') }}</a>
-        <a data-dock-slot href="{{ route('shop.index') }}" class="dock-item {{ request()->routeIs('shop.*','cart.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Marketplace') }}</a>
-        <button data-dock-slot @click="menu=!menu" class="dock-item" :class="menu ? 'dock-item-active' : ''"><x-img-icon name="menu.png" class="h-6 w-6" /> {{ __('Menu') }}</button>
+        <a data-dock-slot href="{{ $home }}" class="dock-item order-1 {{ request()->routeIs('dashboard','home') ? 'dock-item-active' : '' }}"><x-img-icon name="House-Chimney-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Home') }}</a>
+        <a data-dock-slot href="{{ $wallet }}" class="dock-item order-5 {{ request()->routeIs('wallet.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Money-Wallet-1--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Wallet') }}</a>
+        <a data-dock-slot href="{{ $fund }}" class="dock-item order-2 {{ request()->routeIs('funding.create') ? 'dock-item-active' : '' }}"><x-img-icon name="Currency-Sign-Colon-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Fund') }}</a>
+        <a data-dock-slot href="{{ route('shop.index') }}" class="dock-item order-4 {{ request()->routeIs('shop.*','cart.*') ? 'dock-item-active' : '' }}"><x-img-icon name="Shop-Sign-Bag--Streamline-Ultimate.png" class="h-6 w-6" /> {{ __('Marketplace') }}</a>
+        <button data-dock-slot @click="menu=!menu" class="dock-item order-3" :class="menu ? 'dock-item-active' : ''"><x-img-icon name="menu.png" class="h-6 w-6" /> {{ __('Menu') }}</button>
     </nav>
 </div>

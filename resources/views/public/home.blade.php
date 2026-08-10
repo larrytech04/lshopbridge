@@ -91,7 +91,7 @@
          background can't be cleanly keyed via CSS (it overlaps in colour with the ring's
          own highlights), so .hero-vid styles that fallback as a deliberate card instead. --}}
     <div class="pointer-events-none absolute bottom-0 left-0 z-0 hidden lg:block lg:w-[300px] xl:w-[360px]">
-        <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="auto">
+        <video x-data :class="$el.canPlayType('video/webm;codecs=vp9') ? 'hero-vid-alpha' : 'hero-vid'" class="h-auto w-full" autoplay muted loop playsinline preload="metadata">
             <source src="{{ asset('assets/herovid2-alpha.webm') }}" type="video/webm">
             <source src="{{ asset('assets/herovid2.mp4') }}" type="video/mp4">
         </video>

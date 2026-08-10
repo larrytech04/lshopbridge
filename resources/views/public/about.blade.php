@@ -117,7 +117,7 @@
 {{-- Values, video band with glass cards --}}
 <section class="leopard relative w-full overflow-hidden bg-brand-900">
     {{-- Source clip is portrait; rotated 90deg and over-scaled so the landscape band is always fully covered --}}
-    <video class="absolute left-[80%] top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover" src="{{ asset('assets/'.rawurlencode('about vid.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
+    <video class="absolute left-[80%] top-1/2 h-[200%] w-[200%] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover" src="{{ asset('assets/'.rawurlencode('about vid.mp4')) }}" autoplay muted loop playsinline preload="metadata"></video>
     {{-- One-sided red overlay, same treatment as the China Buying Academy hero --}}
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-900/85 to-brand-900/40"></div>
     <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-accent-500/20 blur-3xl"></div>

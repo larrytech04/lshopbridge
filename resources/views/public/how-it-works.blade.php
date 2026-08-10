@@ -22,7 +22,7 @@
     <div class="relative w-full overflow-hidden bg-brand-900 p-6 text-white sm:p-8">
         {{-- Scaled up and anchored to the left edge to crop the small expand-icon
              overlay baked into the bottom-right of the source clip out of view. --}}
-        <video class="absolute inset-0 h-full w-full origin-left scale-[1.2] object-cover" src="{{ asset('assets/'.rawurlencode('how it works hero.mp4')) }}" autoplay muted loop playsinline preload="auto"></video>
+        <video class="absolute inset-0 h-full w-full origin-left scale-[1.2] object-cover" src="{{ asset('assets/'.rawurlencode('how it works hero.mp4')) }}" autoplay muted loop playsinline preload="metadata"></video>
         <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-brand-900 via-brand-900/85 to-brand-900/40"></div>
         <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-accent-500/20 blur-3xl"></div>
         <div class="pointer-events-none absolute -bottom-12 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>

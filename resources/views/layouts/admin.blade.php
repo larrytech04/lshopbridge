@@ -112,7 +112,7 @@
     <div x-show="sidebar" @click="sidebar = false" x-transition.opacity class="fixed inset-0 z-40 bg-black/50 lg:hidden" style="display:none"></div>
 
     <div class="lg:pl-72">
-        <header class="sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6" style="background: var(--header-bg);">
+        <header class="glass-strong sticky top-0 z-30 flex h-16 items-center gap-3 !border-x-0 !border-t-0 px-4 sm:px-6">
             <button @click="sidebar = true" class="rounded-lg p-2 text-muted hover:surface-2 lg:hidden"><x-icon name="menu" class="h-6 w-6" /></button>
             <h1 class="hidden text-base font-semibold text-strong sm:block sm:text-lg">@yield('page-title', 'Overview')</h1>
 
