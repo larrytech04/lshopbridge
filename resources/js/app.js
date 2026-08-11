@@ -209,6 +209,11 @@ function initPageSkeleton() {
         e.preventDefault();
         showThenGo(form.action || window.location.href, () => form.submit());
     });
+
+    // Exposed so other features (pull-to-refresh) can reuse the exact same
+    // "show the matching skeleton, then perform the real navigation" beat
+    // instead of a jarring blank-white location.reload().
+    window.PBSkeleton = { showThenGo };
 }
 document.addEventListener('DOMContentLoaded', initPageSkeleton);
 

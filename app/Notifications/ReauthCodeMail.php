@@ -29,7 +29,7 @@ class ReauthCodeMail extends Notification implements ShouldQueue
             ->greeting("Hi {$notifiable->name},")
             ->subject('Your sign-in code: '.$this->code)
             ->line("You stepped away for a while, so we need to confirm it's still you.")
-            ->line("Your code is: **{$this->code}**")
+            ->line("## {$this->code}")
             ->line("This code expires in {$this->ttlMinutes} minutes.")
             ->line("If you didn't request this, you can ignore this email, your account stays locked until this code is entered.");
     }

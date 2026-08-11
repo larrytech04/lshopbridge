@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ locale_dir() }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('page-title', 'Dashboard') · {{ setting('site_name', config('platform.name')) }}</title>
     @include('partials.theme-head')
@@ -82,7 +82,7 @@
 
         <div class="shell-col-main">
         {{-- Top bar --}}
-        <header class="header-glass sticky top-0 z-30 flex h-16 items-center gap-3 !border-x-0 !border-t-0 px-4 sm:px-6"
+        <header class="header-glass sticky top-0 z-30 flex min-h-16 items-center gap-3 !border-x-0 !border-t-0 px-4 sm:px-6"
                 @mouseenter="edgeHover = true" @mouseleave="edgeHover = false">
             {{-- Phone: social trigger (grey circle) + logo; desktop keeps the page title --}}
             <div class="lg:hidden">@include('partials.social-dock', ['circled' => true])</div>

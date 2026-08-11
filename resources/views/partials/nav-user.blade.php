@@ -1,23 +1,37 @@
 @php
-    // A closed section only hides its items while the sidebar is full-width —
-    // `.sb-mini` forces every [data-nav-items] back open (see app.css) so the
-    // icon-only collapsed rail never depends on a per-section preference.
-    $navSection = function (string $key, string $label) {
-        return ['open' => "localStorage.getItem('pb-sec-{$key}') !== '0'", 'key' => $key, 'label' => $label];
-    };
+    $navLabel = fn (string $key, string $label) => ['key' => $key, 'label' => $label];
+
+    // Accordion: exactly one of these five sections is open at a time.
+    // Whichever one contains the current page is the one that starts open —
+    // no localStorage, no per-section memory, nothing to get out of sync.
+    // Every full page navigation recomputes this fresh from the URL.
+    $sectionRoutePatterns = [
+        'money' => ['wallet.*', 'deposit.*', 'funding.create', 'transactions.*', 'withdrawals.*', 'payment-methods.*'],
+        'shop' => ['shop.*', 'cart.*', 'wishlist.*', 'esim.mine.*'],
+        'china' => ['beneficiaries.*', 'funding.index', 'funding.show', 'marketplace.*', 'shipping-requests.*', 'shipments.track'],
+        'account' => ['profile.edit', 'verification.*', 'security.*', 'notifications.*', 'referrals.*'],
+        'help' => ['learning.*', 'public.faqs', 'disputes.*', 'refunds.*'],
+    ];
+    $activeSection = null;
+    foreach ($sectionRoutePatterns as $sectionKey => $patterns) {
+        if (request()->routeIs(...$patterns)) {
+            $activeSection = $sectionKey;
+            break;
+        }
+    }
 @endphp
 
 <p class="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>{{ __('Overview') }}</p>
 <x-nav-link :href="route('dashboard')" img="House-Chimney-1--Streamline-Ultimate.png" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-nav-link>
 
-@php $s = $navSection('money', __('Money')); @endphp
-<div x-data="{ open: {{ $s['open'] }} }">
-    <button type="button" @click="open = !open; localStorage.setItem('pb-sec-{{ $s['key'] }}', open ? '1' : '0')"
+<div x-data="{ openSection: @js($activeSection) }">
+    @php $s = $navLabel('money', __('Money')); @endphp
+    <button type="button" @click="openSection = (openSection === '{{ $s['key'] }}' ? null : '{{ $s['key'] }}')"
             class="flex w-full items-center justify-between px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>
         <span>{{ $s['label'] }}</span>
-        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="openSection === '{{ $s['key'] }}' ? '' : '-rotate-90'" />
     </button>
-    <div x-show="open || sbc" x-collapse data-nav-items>
+    <div x-show="openSection === '{{ $s['key'] }}' || sbc" x-collapse data-nav-items>
         <x-nav-link :href="route('wallet.index')" img="Money-Wallet-1--Streamline-Ultimate.png" :active="request()->routeIs('wallet.*')">{{ __('Wallet') }}</x-nav-link>
         <x-nav-link :href="route('deposit.index')" img="Saving-Bank-Cash--Streamline-Ultimate.png" :active="request()->routeIs('deposit.*')">{{ __('Deposit') }}</x-nav-link>
         <x-nav-link :href="route('funding.create')" img="Currency-Sign-Colon-Bag--Streamline-Ultimate.png" :active="request()->routeIs('funding.create')">{{ __('Fund China Wallet') }}</x-nav-link>
@@ -29,16 +43,14 @@
             <x-nav-link :href="route('payment-methods.index')" icon="card" :active="request()->routeIs('payment-methods.*')">{{ __('Saved Payment Methods') }}</x-nav-link>
         @endif
     </div>
-</div>
 
-@php $s = $navSection('shop', __('Shop')); @endphp
-<div x-data="{ open: {{ $s['open'] }} }">
-    <button type="button" @click="open = !open; localStorage.setItem('pb-sec-{{ $s['key'] }}', open ? '1' : '0')"
+    @php $s = $navLabel('shop', __('Shop')); @endphp
+    <button type="button" @click="openSection = (openSection === '{{ $s['key'] }}' ? null : '{{ $s['key'] }}')"
             class="flex w-full items-center justify-between px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>
         <span>{{ $s['label'] }}</span>
-        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="openSection === '{{ $s['key'] }}' ? '' : '-rotate-90'" />
     </button>
-    <div x-show="open || sbc" x-collapse data-nav-items>
+    <div x-show="openSection === '{{ $s['key'] }}' || sbc" x-collapse data-nav-items>
         @php
             // Marketplace expands inline (hover on desktop, pinned open while
             // browsing shop routes). Categories come live from
@@ -95,16 +107,14 @@
             <x-nav-link :href="route('esim.mine.index')" icon="sim" :active="request()->routeIs('esim.mine.*')">{{ __('My eSIMs') }}</x-nav-link>
         @endif
     </div>
-</div>
 
-@php $s = $navSection('china', __('China Services')); @endphp
-<div x-data="{ open: {{ $s['open'] }} }">
-    <button type="button" @click="open = !open; localStorage.setItem('pb-sec-{{ $s['key'] }}', open ? '1' : '0')"
+    @php $s = $navLabel('china', __('China Services')); @endphp
+    <button type="button" @click="openSection = (openSection === '{{ $s['key'] }}' ? null : '{{ $s['key'] }}')"
             class="flex w-full items-center justify-between px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>
         <span>{{ $s['label'] }}</span>
-        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="openSection === '{{ $s['key'] }}' ? '' : '-rotate-90'" />
     </button>
-    <div x-show="open || sbc" x-collapse data-nav-items>
+    <div x-show="openSection === '{{ $s['key'] }}' || sbc" x-collapse data-nav-items>
         <x-nav-link :href="route('beneficiaries.index')" img="Crypto-Wallet--Streamline-Ultimate.png" :active="request()->routeIs('beneficiaries.*')">{{ __('My China Wallets') }}</x-nav-link>
         <x-nav-link :href="route('funding.index')" icon="clock" :active="request()->routeIs('funding.index', 'funding.show')">{{ __('Funding History') }}</x-nav-link>
         <x-nav-link :href="route('marketplace.index')" img="Shipment-Package--Streamline-Ultimate.png" :active="request()->routeIs('marketplace.*')">{{ __('Shipping Agents') }}</x-nav-link>
@@ -120,16 +130,14 @@
             <x-nav-link :href="route('shipments.track')" icon="search" :active="request()->routeIs('shipments.track')">{{ __('Track Shipment') }}</x-nav-link>
         @endif
     </div>
-</div>
 
-@php $s = $navSection('account', __('Account')); @endphp
-<div x-data="{ open: {{ $s['open'] }} }">
-    <button type="button" @click="open = !open; localStorage.setItem('pb-sec-{{ $s['key'] }}', open ? '1' : '0')"
+    @php $s = $navLabel('account', __('Account')); @endphp
+    <button type="button" @click="openSection = (openSection === '{{ $s['key'] }}' ? null : '{{ $s['key'] }}')"
             class="flex w-full items-center justify-between px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>
         <span>{{ $s['label'] }}</span>
-        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="openSection === '{{ $s['key'] }}' ? '' : '-rotate-90'" />
     </button>
-    <div x-show="open || sbc" x-collapse data-nav-items>
+    <div x-show="openSection === '{{ $s['key'] }}' || sbc" x-collapse data-nav-items>
         <x-nav-link :href="route('profile.edit')" icon="user" :active="request()->routeIs('profile.edit')">{{ __('Profile') }}</x-nav-link>
         <x-nav-link :href="route('verification.index')" icon="user-circle" :active="request()->routeIs('verification.*')">
             {{ __('Identity Verification') }}
@@ -156,16 +164,14 @@
             @endif
         </x-nav-link>
     </div>
-</div>
 
-@php $s = $navSection('help', __('Help & Learning')); @endphp
-<div x-data="{ open: {{ $s['open'] }} }">
-    <button type="button" @click="open = !open; localStorage.setItem('pb-sec-{{ $s['key'] }}', open ? '1' : '0')"
+    @php $s = $navLabel('help', __('Help & Learning')); @endphp
+    <button type="button" @click="openSection = (openSection === '{{ $s['key'] }}' ? null : '{{ $s['key'] }}')"
             class="flex w-full items-center justify-between px-3 pb-2 pt-4 text-xs font-semibold uppercase tracking-wider text-slate-500" data-nav-section>
         <span>{{ $s['label'] }}</span>
-        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="open ? '' : '-rotate-90'" />
+        <x-icon name="chevron-down" class="h-3 w-3 shrink-0 transition-transform duration-200" ::class="openSection === '{{ $s['key'] }}' ? '' : '-rotate-90'" />
     </button>
-    <div x-show="open || sbc" x-collapse data-nav-items>
+    <div x-show="openSection === '{{ $s['key'] }}' || sbc" x-collapse data-nav-items>
         <x-nav-link :href="route('learning.index')" img="Online-Learning-School-1--Streamline-Ultimate.png" :active="request()->routeIs('learning.*')">{{ __('Learning Center') }}</x-nav-link>
         <x-nav-link :href="route('public.faqs')" icon="help" :active="request()->routeIs('public.faqs')">{{ __('Help Center') }}</x-nav-link>
         <x-nav-link :href="route('disputes.index')" img="Headphones-Customer-Support-Human-1--Streamline-Ultimate.png" :active="request()->routeIs('disputes.*')">

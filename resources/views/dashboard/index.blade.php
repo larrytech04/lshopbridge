@@ -36,6 +36,12 @@
                 __('Funding China wallet today?'), __('Shopping eSIM today?'),
                 __('Funding China wallet today?'), __('Shopping VPN today?'),
             ];
+            // Landing here right after clearing the idle-session re-auth check
+            // (see ReauthController) — typed as the first line instead of a
+            // separate flash banner, which read as redundant next to this.
+            if (session('welcome_back')) {
+                array_unshift($greetPhrases, __('Welcome back!'));
+            }
         @endphp
         <div class="relative z-10 mb-2 sm:-mb-3">
             <div class="min-w-0" x-data="typeGreet(@js($greetName), @js($greetPhrases))" x-init="start()">
