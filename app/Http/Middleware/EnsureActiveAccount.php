@@ -14,11 +14,13 @@ class EnsureActiveAccount
         $user = $request->user();
 
         if ($user && $user->status !== 'active') {
+            $loginRoute = $user->isAdmin() ? 'admin.login' : 'login';
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->withErrors([
+            return redirect()->route($loginRoute)->withErrors([
                 'email' => 'Your account is '.$user->status.'. Please contact support.',
             ]);
         }

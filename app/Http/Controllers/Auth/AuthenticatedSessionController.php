@@ -59,8 +59,23 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->forget('force_login_turnstile');
 
-        RateLimiter::clear($key);
         $user = \App\Models\User::where('email', $credentials['email'])->firstOrFail();
+
+        // Admin/staff accounts can only authenticate at the dedicated admin
+        // login (see AdminSessionController) — never here, even with a
+        // completely correct password. Same generic message and the same
+        // rate-limit/failure bookkeeping as a wrong password, so this page
+        // never confirms an email belongs to an admin account.
+        if ($user->isAdmin()) {
+            RateLimiter::hit($key, 60);
+            $loginSecurity->recordFailure($credentials['email'], $request);
+
+            throw ValidationException::withMessages([
+                'email' => 'These credentials do not match our records.',
+            ]);
+        }
+
+        RateLimiter::clear($key);
 
         if ($user->requiresMfaChallenge()) {
             $request->session()->put('mfa_user_id', $user->id);
@@ -78,7 +93,7 @@ class AuthenticatedSessionController extends Controller
         ])->save();
         $loginSecurity->recordSuccess($user, $request);
 
-        if ($reauth->consumePendingCodeRequirement($request, $user)) {
+        if ($reauth->applyPendingCodeRequirement($request, $user)) {
             return redirect()->route('reauth.email');
         }
 

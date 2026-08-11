@@ -204,6 +204,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
+
+    // Passwordless "welcome back" re-entry after a 30+ minute idle hard
+    // logout (see EnsureSessionNotIdle) — email + emailed code, no password,
+    // reached only via that specific redirect.
+    Route::get('/reauth/welcome-back', [\App\Http\Controllers\Auth\ReauthController::class, 'identify'])->name('reauth.identify');
+    Route::post('/reauth/welcome-back', [\App\Http\Controllers\Auth\ReauthController::class, 'identifySubmit']);
+    Route::get('/reauth/welcome-back/code', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyCode'])->name('reauth.identify.code');
+    Route::post('/reauth/welcome-back/code', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyVerify']);
+    Route::post('/reauth/welcome-back/code/resend', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyResend'])->name('reauth.identify.resend');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
@@ -414,6 +423,16 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 | Admin area
 |--------------------------------------------------------------------------
 */
+// The ONLY place an admin/super_admin account can authenticate — the public
+// /login form explicitly rejects these accounts (see
+// AuthenticatedSessionController::store()). Deliberately at the same secret
+// prefix as the rest of the admin area, so knowing an admin password alone
+// is never enough; the URL is also required.
+Route::middleware('guest')->prefix(config('platform.admin_path'))->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'create'])->name('admin.login');
+    Route::post('/login', [\App\Http\Controllers\Auth\AdminSessionController::class, 'store']);
+});
+
 Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix(config('platform.admin_path'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/widgets', [AdminDashboardController::class, 'updateWidgets'])->name('dashboard.widgets');

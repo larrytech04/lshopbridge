@@ -53,14 +53,23 @@ return Application::configure(basePath: dirname(__DIR__))
         // Lightweight presence heartbeat, used for agent online/offline status.
         $middleware->appendToGroup('web', TouchLastSeen::class);
 
-        // 15+ minutes idle locks the session in place until PIN + emailed code
-        // clear it — see ReauthService.
+        // 5+ minutes idle locks the session in place until PIN + emailed code
+        // clear it, 15+ forces a real logout — see ReauthService.
         $middleware->appendToGroup('web', EnsureSessionNotIdle::class);
 
         // Provider webhooks are verified by signature, not CSRF tokens.
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',
         ]);
+
+        // An unauthenticated visit to an admin-prefixed page must bounce to
+        // the admin login, not the public one — the public form rejects
+        // admin credentials outright (see AuthenticatedSessionController).
+        $middleware->redirectGuestsTo(function ($request) {
+            $adminPath = config('platform.admin_path');
+
+            return $request->is($adminPath, "{$adminPath}/*") ? route('admin.login') : route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -14,12 +14,14 @@ use Illuminate\Support\Str;
 /**
  * Idle-session step-up re-authentication, two tiers:
  *
- *  - 15-30 minutes idle: session stays alive, locked in place until the user
+ *  - 5-15 minutes idle: session stays alive, locked in place until the user
  *    clears a PIN check (if they've set one) and an emailed code.
- *  - 30+ minutes idle: the session is destroyed outright (a real logout) —
- *    signing back in requires the actual password again, and that fresh
- *    login is itself gated on the emailed code (not the PIN, since a
- *    password was just re-proven) before it's usable.
+ *  - 15+ minutes idle: the session is destroyed outright (a real logout) —
+ *    signing back in only needs the account's email plus a fresh emailed
+ *    code (no password) if it's the same browser that was just idle-timed
+ *    out (see ReauthController::identify()); a password-based login is
+ *    still gated on the emailed code too (not the PIN, since a password was
+ *    just re-proven) before it's usable.
  *
  * Session-scoped throughout for the soft lock — each device/tab locks
  * independently, exactly like the PIN itself is per-account rather than
@@ -28,9 +30,9 @@ use Illuminate\Support\Str;
  */
 class ReauthService
 {
-    public const IDLE_MINUTES = 15;
+    public const IDLE_MINUTES = 5;
 
-    public const HARD_LOGOUT_MINUTES = 30;
+    public const HARD_LOGOUT_MINUTES = 15;
 
     private const PENDING_CODE_TTL_HOURS = 2;
 
@@ -82,17 +84,29 @@ class ReauthService
     /** Called right after a fresh login establishes a new session. If this
      *  account was hard-idle-logged-out, arms the same in-place lock at the
      *  email stage (skipping the PIN — a password was just re-proven) so the
-     *  very next request lands on that screen instead of the dashboard. */
-    public function consumePendingCodeRequirement(Request $request, User $user): bool
+     *  very next request lands on that screen instead of the dashboard.
+     *
+     *  Deliberately a peek (Cache::has), not a pull: the flag is only
+     *  cleared once the code is actually verified (see verifyCode()). If it
+     *  were cleared just for showing this screen, logging out before typing
+     *  the code and logging back in would skip the check entirely — a
+     *  password alone would then be enough, defeating the whole point of
+     *  this tier. */
+    public function applyPendingCodeRequirement(Request $request, User $user): bool
     {
-        if (! Cache::pull($this->pendingCodeKey($user))) {
+        if (! Cache::has($this->pendingCodeKey($user))) {
             return false;
         }
 
         $request->session()->put('reauth.locked', true);
         $request->session()->put('reauth.stage', 'email');
         $request->session()->put('reauth.intended', route('dashboard'));
-        $this->sendCode($user);
+
+        // Don't spam a fresh code on every retried login while one already
+        // outstanding is still valid.
+        if (! $user->reauth_code_expires_at || $user->reauth_code_expires_at->isPast()) {
+            $this->sendCode($user);
+        }
 
         return true;
     }
@@ -188,6 +202,10 @@ class ReauthService
         RateLimiter::clear("reauth-pin:{$user->id}");
 
         $user->forceFill(['reauth_code' => null, 'reauth_code_expires_at' => null])->save();
+
+        // Only NOW is the post-hard-logout requirement actually satisfied —
+        // a no-op if this verification wasn't for that (nothing to clear).
+        Cache::forget($this->pendingCodeKey($user));
 
         // 'reauth.intended' is deliberately left for the controller to read via
         // intendedUrl() right after this returns — it's harmless to leave stale,

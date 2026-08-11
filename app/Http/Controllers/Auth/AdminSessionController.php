@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\Security\LoginSecurityService;
+use App\Services\Security\ReauthService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+
+/**
+ * The ONLY place an admin/super_admin account can authenticate. Reachable
+ * exclusively at the secret admin URL prefix (config('platform.admin_path'))
+ * — the public /login form explicitly rejects these accounts (see
+ * AuthenticatedSessionController::store()), so a correct admin password by
+ * itself is never enough to reach the panel; the URL is also required.
+ */
+class AdminSessionController extends Controller
+{
+    public function create(): View
+    {
+        return view('auth.admin-login');
+    }
+
+    public function store(Request $request, LoginSecurityService $loginSecurity, ReauthService $reauth)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        $key = 'admin-login|'.Str::lower($credentials['email']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            throw ValidationException::withMessages([
+                'email' => __('Too many login attempts. Please try again in :seconds seconds.', ['seconds' => RateLimiter::availableIn($key)]),
+            ]);
+        }
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        // One generic error for every failure shape: wrong password, unknown
+        // email, or a perfectly valid password on a non-admin account. This
+        // page never confirms which emails exist or which ones are admin.
+        if (! $user || ! $user->isAdmin() || ! Auth::validate($credentials)) {
+            RateLimiter::hit($key, 60);
+            $loginSecurity->recordFailure($credentials['email'], $request);
+
+            throw ValidationException::withMessages([
+                'email' => __('These credentials do not match our records.'),
+            ]);
+        }
+
+        RateLimiter::clear($key);
+
+        if ($user->requiresMfaChallenge()) {
+            $request->session()->put('mfa_user_id', $user->id);
+            $request->session()->put('mfa_remember', $request->boolean('remember'));
+
+            return redirect()->route('two-factor.challenge');
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
+        $loginSecurity->recordSuccess($user, $request);
+
+        if ($reauth->applyPendingCodeRequirement($request, $user)) {
+            return redirect()->route('reauth.email');
+        }
+
+        return redirect()->intended(route('admin.dashboard'));
+    }
+}

@@ -145,7 +145,7 @@ class TwoFactorChallengeController extends Controller
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         $loginSecurity->recordSuccess($user, $request);
 
-        if ($this->reauth->consumePendingCodeRequirement($request, $user)) {
+        if ($this->reauth->applyPendingCodeRequirement($request, $user)) {
             return redirect()->route('reauth.email');
         }
 

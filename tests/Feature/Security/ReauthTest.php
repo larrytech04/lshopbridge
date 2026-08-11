@@ -30,7 +30,7 @@ class ReauthTest extends TestCase
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
 
         $this->actingAs($user)
-            ->withSession($this->idleSince(16))
+            ->withSession($this->idleSince(6))
             ->get(route('wallet.index'))
             ->assertRedirect(route('reauth.pin'));
     }
@@ -40,7 +40,7 @@ class ReauthTest extends TestCase
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => null]);
 
         $this->actingAs($user)
-            ->withSession($this->idleSince(16))
+            ->withSession($this->idleSince(6))
             ->get(route('wallet.index'))
             ->assertRedirect(route('reauth.email'));
     }
@@ -50,7 +50,7 @@ class ReauthTest extends TestCase
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
 
         $this->actingAs($user)
-            ->withSession($this->idleSince(10))
+            ->withSession($this->idleSince(3))
             ->get(route('wallet.index'))
             ->assertOk();
     }
@@ -58,7 +58,7 @@ class ReauthTest extends TestCase
     public function test_wrong_pin_is_rejected_and_stays_on_the_pin_stage(): void
     {
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('dashboard'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('dashboard'));
 
         $this->post(route('reauth.pin'), ['pin' => '0000'])
             ->assertSessionHasErrors('pin');
@@ -70,7 +70,7 @@ class ReauthTest extends TestCase
     {
         Notification::fake();
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('dashboard'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('dashboard'));
 
         $this->post(route('reauth.pin'), ['pin' => '1234'])
             ->assertRedirect(route('reauth.email'));
@@ -83,7 +83,7 @@ class ReauthTest extends TestCase
     {
         Notification::fake();
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => null]);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('dashboard'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('dashboard'));
         $this->get(route('reauth.email'));
 
         $this->post(route('reauth.email'), ['code' => 'WRONG1'])
@@ -94,7 +94,7 @@ class ReauthTest extends TestCase
     {
         Notification::fake();
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => null]);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('wallet.index'));
         $this->get(route('reauth.email'));
 
         $plaintext = null;
@@ -114,7 +114,7 @@ class ReauthTest extends TestCase
     public function test_logout_remains_reachable_while_locked(): void
     {
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('dashboard'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('dashboard'));
 
         $this->post(route('logout'))->assertRedirect();
         $this->assertGuest();
@@ -123,7 +123,7 @@ class ReauthTest extends TestCase
     public function test_pin_attempts_are_rate_limited(): void
     {
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
-        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('dashboard'));
+        $this->actingAs($user)->withSession($this->idleSince(6))->get(route('dashboard'));
 
         for ($i = 0; $i < 5; $i++) {
             $this->post(route('reauth.pin'), ['pin' => '0000']);
@@ -133,14 +133,14 @@ class ReauthTest extends TestCase
         $this->post(route('reauth.pin'), ['pin' => '0000'])->assertSessionHasErrors('pin');
     }
 
-    public function test_idle_past_thirty_minutes_logs_the_user_out_instead_of_soft_locking(): void
+    public function test_idle_past_fifteen_minutes_logs_the_user_out_instead_of_soft_locking(): void
     {
         $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
 
         $this->actingAs($user)
-            ->withSession($this->idleSince(31))
+            ->withSession($this->idleSince(16))
             ->get(route('wallet.index'))
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('reauth.identify'));
 
         $this->assertGuest();
     }
@@ -154,10 +154,12 @@ class ReauthTest extends TestCase
             'transaction_pin' => '1234',
         ]);
 
-        // Trip the 30-minute hard logout first.
-        $this->actingAs($user)->withSession($this->idleSince(31))->get(route('wallet.index'));
+        // Trip the 15-minute hard logout first.
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
         $this->assertGuest();
 
+        // Bypassing the "welcome back" screen and logging in the classic way
+        // (email + password) must still be gated on the emailed code.
         $response = $this->post('/login', ['email' => $user->email, 'password' => 'password']);
 
         $response->assertRedirect(route('reauth.email'));
@@ -178,7 +180,7 @@ class ReauthTest extends TestCase
             'transaction_pin' => null,
         ]);
 
-        $this->actingAs($user)->withSession($this->idleSince(31))->get(route('wallet.index'));
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
 
         $this->post('/login', ['email' => $user->email, 'password' => 'password'])
             ->assertRedirect(route('reauth.email'));
@@ -196,5 +198,124 @@ class ReauthTest extends TestCase
         $this->post(route('logout'));
         $this->post('/login', ['email' => $user->email, 'password' => 'password'])
             ->assertRedirect(route('dashboard'));
+    }
+
+    public function test_logging_out_of_the_email_stage_without_verifying_does_not_bypass_it(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create([
+            'status' => 'active',
+            'password' => Hash::make('password'),
+            'transaction_pin' => null,
+        ]);
+
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('reauth.email'));
+
+        // Bailing out here (password alone, no code entered) must NOT be a
+        // way to skip the check on the next attempt.
+        $this->post(route('logout'));
+
+        $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('reauth.email'));
+    }
+
+    public function test_welcome_back_screen_is_unreachable_without_a_fresh_hard_logout(): void
+    {
+        $this->get(route('reauth.identify'))->assertRedirect(route('login'));
+    }
+
+    public function test_welcome_back_with_a_known_email_sends_a_code_with_no_password(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create([
+            'status' => 'active',
+            'password' => Hash::make('password'),
+            'transaction_pin' => '1234',
+        ]);
+
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+        $this->assertGuest();
+
+        $this->get(route('reauth.identify'))->assertOk();
+
+        $this->post(route('reauth.identify'), ['email' => $user->email])
+            ->assertRedirect(route('reauth.identify.code'));
+
+        Notification::assertSentTo($user, ReauthCodeMail::class);
+    }
+
+    public function test_welcome_back_with_an_unknown_email_redirects_to_registration(): void
+    {
+        $victim = User::factory()->create([
+            'status' => 'active',
+            'password' => Hash::make('password'),
+            'transaction_pin' => '1234',
+        ]);
+        $this->actingAs($victim)->withSession($this->idleSince(16))->get(route('wallet.index'));
+
+        $this->post(route('reauth.identify'), ['email' => 'nobody-here@example.com'])
+            ->assertRedirect(route('register'));
+    }
+
+    public function test_welcome_back_correct_code_logs_the_user_in_with_no_password(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create([
+            'status' => 'active',
+            'password' => Hash::make('password'),
+            'transaction_pin' => '1234',
+        ]);
+
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+        $this->post(route('reauth.identify'), ['email' => $user->email]);
+
+        $plaintext = null;
+        Notification::assertSentTo($user, ReauthCodeMail::class, function ($notification) use (&$plaintext) {
+            $plaintext = $notification->code;
+
+            return true;
+        });
+
+        $this->post(route('reauth.identify.code'), ['code' => $plaintext])
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_welcome_back_wrong_code_is_rejected(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create([
+            'status' => 'active',
+            'password' => Hash::make('password'),
+            'transaction_pin' => '1234',
+        ]);
+
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+        $this->post(route('reauth.identify'), ['email' => $user->email]);
+
+        $this->post(route('reauth.identify.code'), ['code' => 'WRONG1'])
+            ->assertSessionHasErrors('code');
+
+        $this->assertGuest();
+    }
+
+    public function test_welcome_back_email_attempts_are_rate_limited_per_ip(): void
+    {
+        $user = User::factory()->create(['status' => 'active', 'transaction_pin' => '1234']);
+        $this->actingAs($user)->withSession($this->idleSince(16))->get(route('wallet.index'));
+
+        for ($i = 0; $i < 8; $i++) {
+            $this->post(route('reauth.identify'), ['email' => "nobody-{$i}@example.com"]);
+        }
+
+        // The 9th attempt is throttled even against a real, existing email —
+        // the limiter is per IP, not per email, so sweeping many different
+        // emails doesn't reset the budget.
+        $this->post(route('reauth.identify'), ['email' => $user->email])
+            ->assertSessionHasErrors('email');
     }
 }
