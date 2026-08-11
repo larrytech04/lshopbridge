@@ -35,6 +35,15 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
+        // Every deploy replaces content-hashed asset filenames (old ones are
+        // deleted, not kept alongside). A page HTML document cached by the
+        // browser from before a deploy would reference a CSS/JS filename that
+        // no longer exists, rendering completely unstyled — this only ever
+        // hits actual page responses here (Vite's own hashed asset files are
+        // served straight from public/build, never routed through this
+        // middleware, so their real cache lifetime is untouched).
+        $response->headers->set('Cache-Control', 'no-cache, must-revalidate, private');
+
         // Google sign-in (Socialite) is a full-page redirect, not an embedded
         // widget, so it needs no script-src/frame-src allowance here. Turnstile
         // and the analytics tag are the only third-party scripts actually
@@ -59,7 +68,7 @@ class SecurityHeaders
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self' data:",
             "img-src 'self' data: blob: https:",
-            "connect-src 'self' https://www.google-analytics.com https://ipapi.co {$reverbConnect}",
+            "connect-src 'self' https://www.google-analytics.com https://ipapi.co https://challenges.cloudflare.com {$reverbConnect}",
             "frame-src 'self' https://challenges.cloudflare.com",
             "object-src 'none'",
             "base-uri 'self'",

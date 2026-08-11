@@ -24,22 +24,22 @@
 
 <div class="relative min-w-0" x-data="{ hideBal: localStorage.getItem('pb-hide-bal') === '1' }">
     <div class="relative overflow-hidden rounded-3xl p-4 sm:p-5"
-         style="background: color-mix(in srgb, {{ $balTint }} 8%, #ffffff); color: {{ $balTint }}">
-        <p class="text-[11px] font-bold uppercase tracking-wider">{{ __('Available balance') }}</p>
+         style="background: {{ $balTint }}; color: #fff">
+        <p class="text-[11px] font-bold uppercase tracking-wider opacity-90">{{ __('Available balance') }}</p>
         <div class="mt-1 flex items-center gap-2">
             <p class="min-w-0 truncate text-2xl font-extrabold tracking-tight sm:text-3xl">
-                <span x-show="!hideBal">{{ $dc['symbol'] }} {{ number_format($balVal, $dc['decimals'] ?? 0) }}</span>
+                <span x-show="!hideBal">{{ number_format($balVal, $dc['decimals'] ?? 0) }}</span>
                 <span x-show="hideBal" x-cloak>••••••</span>
             </p>
             <button type="button" @click="hideBal = !hideBal; localStorage.setItem('pb-hide-bal', hideBal ? '1' : '0')"
-                    class="grid h-6 w-6 shrink-0 place-items-center rounded-full transition hover:bg-black/5"
+                    class="grid h-6 w-6 shrink-0 place-items-center rounded-full transition hover:bg-white/15"
                     :aria-label="hideBal ? '{{ __('Show balance') }}' : '{{ __('Hide balance') }}'">
                 <svg x-show="!hideBal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/></svg>
                 <svg x-show="hideBal" x-cloak viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M3 3l18 18M10.7 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4M6.6 6.6C3.8 8.5 2 12 2 12s3.5 7 10 7c1.8 0 3.4-.5 4.8-1.3M9.9 9.9a3 3 0 1 0 4.2 4.2"/></svg>
             </button>
         </div>
         <p class="mt-0.5 text-xs font-medium opacity-90">
-            {{ $dc['code'] }}
+            {{ $dc['symbol'] }} . {{ $dc['code'] }}
             @if ($lockedVal > 0)
                 &middot; {{ __(':amount locked in pending requests', ['amount' => $dc['symbol'].' '.number_format($lockedVal, $dc['decimals'] ?? 0)]) }}
             @endif

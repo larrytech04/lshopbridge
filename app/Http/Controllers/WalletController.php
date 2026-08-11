@@ -13,8 +13,15 @@ class WalletController extends Controller
         $user = $request->user();
         $wallet = $user->primaryWallet();
 
+        // Base-currency wallet first, then any others the user holds (see
+        // DashboardController for the same pattern) — lets the balance card
+        // become a swipeable carousel when there's more than one.
+        $baseCurrency = config('platform.base_currency', 'XAF');
+        $wallets = $user->wallets()->get()->sortByDesc(fn ($w) => $w->currency === $baseCurrency)->values();
+
         return view('dashboard.wallet', [
             'wallet' => $wallet,
+            'wallets' => $wallets,
             'transactions' => $wallet->transactions()->paginate(15),
             'inflow' => $user->walletTransactions()->where('type', 'credit')->sum('amount'),
             'outflow' => $user->walletTransactions()->where('type', 'debit')->sum('amount'),

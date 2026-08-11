@@ -6,27 +6,29 @@
     <x-page-header :title="__('Wallet')" />
 
     <div class="grid gap-4 sm:grid-cols-3">
-        <x-wallet-balance-card :wallet="$wallet" />
-        <div class="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5">
+        <x-wallet-balance-carousel :wallet="$wallet" :wallets="$wallets" />
+        <div class="rounded-2xl bg-emerald-600 p-5 text-white">
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="text-sm text-muted">{{ __('Total in') }}</p>
-                    <p class="mt-2 text-2xl font-bold tracking-tight text-strong">
-                        <span x-data="counter({{ (float) $inflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span> {{ display_currency()['code'] }}
+                    <p class="text-sm opacity-90">{{ __('Total in') }}</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight">
+                        <span x-data="counter({{ (float) $inflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span>
                     </p>
+                    <p class="mt-0.5 text-xs font-medium opacity-90">{{ display_currency()['symbol'] }} . {{ display_currency()['code'] }}</p>
                 </div>
-                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-500 text-white"><x-icon name="deposit" class="h-5 w-5" /></span>
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-emerald-600"><x-icon name="deposit" class="h-5 w-5" /></span>
             </div>
         </div>
-        <div class="rounded-2xl border border-rose-500/25 bg-rose-500/10 p-5">
+        <div class="rounded-2xl bg-rose-600 p-5 text-white">
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="text-sm text-muted">{{ __('Total out') }}</p>
-                    <p class="mt-2 text-2xl font-bold tracking-tight text-strong">
-                        <span x-data="counter({{ (float) $outflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span> {{ display_currency()['code'] }}
+                    <p class="text-sm opacity-90">{{ __('Total out') }}</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight">
+                        <span x-data="counter({{ (float) $outflow * display_currency()['rate'] }}, 1500, {{ display_currency()['decimals'] }})" x-intersect.once="start()" x-text="display">0</span>
                     </p>
+                    <p class="mt-0.5 text-xs font-medium opacity-90">{{ display_currency()['symbol'] }} . {{ display_currency()['code'] }}</p>
                 </div>
-                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-rose-500 text-white"><x-icon name="fund" class="h-5 w-5" /></span>
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-rose-600"><x-icon name="fund" class="h-5 w-5" /></span>
             </div>
         </div>
     </div>
