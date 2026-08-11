@@ -15,6 +15,13 @@ return [
     'name'    => env('APP_NAME', 'LshopBridge'),
     'tagline' => 'Fund Alipay, WeChat Pay & China wallets from anywhere in Africa.',
     'support_email' => 'support@lshopbridge.com',
+
+    // The admin panel's URL prefix — set ADMIN_PATH in .env (never commit the
+    // real value; this repo is public) to something long and unguessable
+    // instead of the default. Route *names* stay 'admin.*' either way, so
+    // every route('admin.x') call across the whole app keeps working
+    // untouched — only the actual URL path changes.
+    'admin_path' => env('ADMIN_PATH', 'admin'),
     // Single source of truth for the release label shown in the admin footer
     // and System Information page. This is a manually maintained label, not
     // derived from git/CI — bump it by hand (or via APP_VERSION) on release.

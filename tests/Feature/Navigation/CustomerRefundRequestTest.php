@@ -84,7 +84,7 @@ class CustomerRefundRequestTest extends TestCase
     public function test_admin_approving_a_pending_request_updates_the_same_row_instead_of_duplicating(): void
     {
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $order = $this->paidOrder($user);
 
         $this->actingAs($user)->post(route('refunds.store'), ['shop_order_id' => $order->id, 'reason' => 'Broken item']);
@@ -102,7 +102,7 @@ class CustomerRefundRequestTest extends TestCase
     public function test_admin_can_reject_a_pending_refund_request(): void
     {
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $order = $this->paidOrder($user);
 
         $this->actingAs($user)->post(route('refunds.store'), ['shop_order_id' => $order->id, 'reason' => 'Changed my mind']);

@@ -4,6 +4,7 @@ use App\Http\Middleware\CheckMaintenanceMode;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureAdminMfa;
 use App\Http\Middleware\EnsureKycLevel;
+use App\Http\Middleware\EnsureSessionNotIdle;
 use App\Http\Middleware\EnsureUserRole;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -51,6 +52,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Lightweight presence heartbeat, used for agent online/offline status.
         $middleware->appendToGroup('web', TouchLastSeen::class);
+
+        // 15+ minutes idle locks the session in place until PIN + emailed code
+        // clear it — see ReauthService.
+        $middleware->appendToGroup('web', EnsureSessionNotIdle::class);
 
         // Provider webhooks are verified by signature, not CSRF tokens.
         $middleware->validateCsrfTokens(except: [

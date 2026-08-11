@@ -76,7 +76,7 @@ class EsimFulfillmentTest extends TestCase
     {
         Notification::fake();
 
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
         $item = $this->esimOrder($user);
 
@@ -104,7 +104,7 @@ class EsimFulfillmentTest extends TestCase
     {
         Notification::fake();
 
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
         $item = $this->esimOrder($user);
 
@@ -129,7 +129,7 @@ class EsimFulfillmentTest extends TestCase
 
     public function test_admin_completion_requires_at_least_one_real_activation_field(): void
     {
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
         $item = $this->esimOrder($user);
 

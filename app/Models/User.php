@@ -26,9 +26,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_disabled_at', 'password_changed_at', 'locale', 'last_login_at', 'last_login_ip',
         'preferences', 'google_id', 'avatar_url', 'shortcuts_enabled', 'shortcut_overrides',
         'transaction_pin', 'transaction_pin_set_at', 'last_seen_at',
+        'reauth_code', 'reauth_code_expires_at', 'reauth_code_sent_at',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'transaction_pin'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'transaction_pin', 'reauth_code'];
 
     protected function casts(): array
     {
@@ -38,10 +39,13 @@ class User extends Authenticatable implements MustVerifyEmail
             'last_login_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'transaction_pin_set_at' => 'datetime',
+            'reauth_code_expires_at' => 'datetime',
+            'reauth_code_sent_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
             'password_changed_at' => 'datetime',
             'transaction_pin' => 'hashed',
+            'reauth_code' => 'hashed',
             'role' => UserRole::class,
             'kyc_status' => KycStatus::class,
             'kyc_level' => 'integer',

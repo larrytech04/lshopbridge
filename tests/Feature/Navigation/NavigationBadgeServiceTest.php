@@ -67,7 +67,7 @@ class NavigationBadgeServiceTest extends TestCase
     public function test_notifications_badge_matches_unread_count(): void
     {
         $user = User::factory()->create();
-        $user->notify(new \App\Notifications\SecurityAlert('New device sign-in', 'A new device just signed in.'));
+        $user->notify(new \App\Notifications\SecurityAlert('New device sign-in', 'A new device just signed in.', requiresReview: true));
 
         $badges = $this->service()->forUser($user->fresh());
 

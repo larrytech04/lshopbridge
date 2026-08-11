@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\Security\LoginSecurityService;
+use App\Services\Security\ReauthService;
 use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    public function store(Request $request, LoginSecurityService $loginSecurity, TurnstileVerificationService $turnstile)
+    public function store(Request $request, LoginSecurityService $loginSecurity, TurnstileVerificationService $turnstile, ReauthService $reauth)
     {
         if ($this->requireTurnstileFor($request) && ! $turnstile->verify($request, 'login')->success) {
             throw ValidationException::withMessages(['email' => 'Please complete the bot-protection challenge.']);
@@ -76,6 +77,10 @@ class AuthenticatedSessionController extends Controller
             'last_login_ip' => $request->ip(),
         ])->save();
         $loginSecurity->recordSuccess($user, $request);
+
+        if ($reauth->consumePendingCodeRequirement($request, $user)) {
+            return redirect()->route('reauth.email');
+        }
 
         return redirect()->intended($this->home($user));
     }

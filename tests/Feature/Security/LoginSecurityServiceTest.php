@@ -132,7 +132,7 @@ class LoginSecurityServiceTest extends TestCase
         Notification::fake();
         Http::fake();
 
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $service = app(LoginSecurityService::class);
         $service->recordSuccess($admin, $this->requestFrom('UA-1'));
 

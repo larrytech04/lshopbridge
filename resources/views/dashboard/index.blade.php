@@ -62,7 +62,6 @@
                         {{-- Small glassy badges, directly under the description, left-aligned,
                              sticky just below the header while scrolling. --}}
                         <div class="sticky top-16 z-20 mt-1.5 flex flex-wrap items-center justify-start gap-1 py-1">
-                            <a href="{{ route('verification.index') }}" class="glass inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong"><x-img-icon name="Recruiting-Employee-Target-Validated-Check-2--Streamline-Ultimate.png" class="h-2.5 w-2.5" /> {{ __($level->name ?? 'Registered') }} · L{{ $user->kyc_level }}</a>
                             <a href="{{ route('home') }}" target="_blank" rel="noopener" class="glass inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong"><x-img-icon name="Ui-Webpage-Bullets--Streamline-Ultimate.png" class="h-2.5 w-2.5" /> {{ __('Visit website') }}</a>
                         </div>
                     </div>
@@ -75,6 +74,14 @@
                 <x-icon name="shield" class="h-6 w-6 text-amber-400" />
                 <p class="flex-1 text-sm text-body">{{ __('Verify your phone to unlock funding and higher limits.') }}</p>
                 <a href="{{ route('verification.index') }}" class="btn btn-primary">{{ __('Verify now') }}</a>
+            </div>
+        @endif
+
+        @if (! $user->hasTransactionPin())
+            <div class="card-solid flex flex-wrap items-center gap-4 rounded-2xl border border-app border-l-4 border-l-rose-400/60 p-4 shadow-sm">
+                <x-icon name="lock" class="h-6 w-6 text-rose-400" />
+                <p class="flex-1 text-sm text-body">{{ __('Set up a transaction PIN to fund or withdraw, and to keep your account locked to you alone. Never share it with anyone, not even our own support staff.') }}</p>
+                <a href="{{ route('security.index') }}" class="btn btn-primary">{{ __('Set up PIN') }}</a>
             </div>
         @endif
 
@@ -97,13 +104,13 @@
             ])->filter()->values();
         @endphp
         @if ($attentionCards->isNotEmpty())
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div class="grid gap-3 sm:mt-6 sm:grid-cols-2">
                 @foreach ($attentionCards as $card)
                     @php $colorClasses = $attentionColor($card['color']); @endphp
-                    <div class="card-solid flex items-center gap-3 rounded-2xl border border-app border-l-4 p-4 shadow-sm {{ $colorClasses['border'] }}">
-                        <x-icon :name="$card['icon']" class="h-5 w-5 shrink-0 {{ $colorClasses['icon'] }}" />
-                        <p class="min-w-0 flex-1 truncate text-sm text-body">{{ $card['text'] }}</p>
-                        <a href="{{ $card['url'] }}" class="shrink-0 text-sm font-semibold text-brand-500 hover:text-brand-400">{{ $card['action'] }}</a>
+                    <div class="card-solid flex items-center gap-2 rounded-xl border border-app border-l-4 px-3 py-1.5 shadow-sm {{ $colorClasses['border'] }}">
+                        <x-icon :name="$card['icon']" class="h-3.5 w-3.5 shrink-0 {{ $colorClasses['icon'] }}" />
+                        <p class="min-w-0 flex-1 truncate text-xs text-body">{{ $card['text'] }}</p>
+                        <a href="{{ $card['url'] }}" class="shrink-0 text-xs font-semibold text-brand-500 hover:text-brand-400">{{ $card['action'] }}</a>
                     </div>
                 @endforeach
             </div>
@@ -114,25 +121,7 @@
              directly above the graph instead of right under the balance card. --}}
         <div class="grid gap-6 lg:grid-cols-2 lg:items-start">
             <div class="order-1 min-w-0 lg:order-1">
-                @if ($wallets->count() > 1)
-                    <div x-data="{ active: 0 }">
-                        <div class="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
-                             @scroll="active = Math.round($el.scrollLeft / $el.clientWidth)">
-                            @foreach ($wallets as $w)
-                                <div class="w-full shrink-0 snap-center">
-                                    <x-wallet-balance-card :wallet="$w" :native="! $loop->first" />
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="mt-2 flex items-center justify-center gap-1.5">
-                            @foreach ($wallets as $i => $w)
-                                <span class="h-1.5 rounded-full transition-all" :class="active === {{ $i }} ? 'w-4 bg-brand-500' : 'w-1.5 bg-slate-300'"></span>
-                            @endforeach
-                        </div>
-                    </div>
-                @else
-                    <x-wallet-balance-card :wallet="$wallet" />
-                @endif
+                <x-wallet-balance-carousel :wallet="$wallet" :wallets="$wallets" />
             </div>
 
             <div class="order-2 min-w-0 lg:order-3 lg:col-span-2">

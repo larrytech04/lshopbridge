@@ -208,6 +208,18 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
+// Idle-session lock screens (see ReauthService / EnsureSessionNotIdle) — logging out
+// is always the escape hatch, so these only need 'auth', not the active-account gate.
+Route::middleware('auth')->prefix('reauth')->name('reauth.')->group(function () {
+    Route::get('/pin', [\App\Http\Controllers\Auth\ReauthController::class, 'pin'])->name('pin');
+    Route::post('/pin', [\App\Http\Controllers\Auth\ReauthController::class, 'verifyPin']);
+    Route::post('/pin/passkey/options', [\App\Http\Controllers\Auth\ReauthController::class, 'passkeyOptions'])->name('pin.passkey.options');
+    Route::post('/pin/passkey', [\App\Http\Controllers\Auth\ReauthController::class, 'passkeyVerify'])->name('pin.passkey.verify');
+    Route::get('/email', [\App\Http\Controllers\Auth\ReauthController::class, 'email'])->name('email');
+    Route::post('/email', [\App\Http\Controllers\Auth\ReauthController::class, 'verifyCode']);
+    Route::post('/email/resend', [\App\Http\Controllers\Auth\ReauthController::class, 'resendCode'])->name('email.resend');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Email verification
@@ -402,7 +414,7 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 | Admin area
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix(config('platform.admin_path'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/widgets', [AdminDashboardController::class, 'updateWidgets'])->name('dashboard.widgets');
     Route::get('/dashboard/export', [AdminDashboardController::class, 'exportReport'])->name('dashboard.export');

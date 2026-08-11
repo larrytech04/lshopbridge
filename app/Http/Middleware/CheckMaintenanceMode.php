@@ -20,7 +20,9 @@ class CheckMaintenanceMode
             return $next($request);
         }
 
-        if ($request->is('webhooks/*', 'up', 'admin', 'admin/*', 'login', 'logout')) {
+        $adminPath = config('platform.admin_path');
+
+        if ($request->is('webhooks/*', 'up', $adminPath, "{$adminPath}/*", 'login', 'logout')) {
             return $next($request);
         }
 

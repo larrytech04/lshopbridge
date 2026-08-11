@@ -45,6 +45,18 @@ class SecurityAlertChannelsTest extends TestCase
         $this->assertContains(SmsChannel::class, $channels);
     }
 
+    public function test_a_requires_review_alert_still_emails_even_with_the_preference_off(): void
+    {
+        $user = User::factory()->create(['preferences' => ['notify_security_alerts' => false]]);
+        $notification = new SecurityAlert('New device', 'Message', requiresReview: true);
+
+        $channels = $notification->via($user);
+
+        $this->assertContains('mail', $channels);
+        // SMS stays preference-gated even for a requires-review alert.
+        $this->assertNotContains(SmsChannel::class, $channels);
+    }
+
     public function test_sms_channel_is_a_noop_when_provider_is_not_configured(): void
     {
         config(['services.sms.provider' => null]);

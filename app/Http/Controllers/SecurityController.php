@@ -17,6 +17,11 @@ class SecurityController extends Controller
         $user = $request->user();
         $currentSessionId = $request->session()->getId();
 
+        // Landing here is the acknowledgment: every "Review" link and every
+        // review-worthy SecurityAlert notification points here, so visiting
+        // is what clears the dashboard's "needs attention" banner.
+        $user->unreadNotifications()->where('type', SecurityAlert::class)->where('data->requires_review', true)->get()->each->markAsRead();
+
         $sessions = DB::table('sessions')
             ->where('user_id', $user->id)
             ->orderByDesc('last_activity')

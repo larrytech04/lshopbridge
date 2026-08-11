@@ -60,8 +60,6 @@ class SettingController extends Controller
             'require_proof_of_payment' => 'bool',
             'maintenance_mode' => 'bool',
             'refund_window_days' => 'int',
-            // Security
-            'require_admin_mfa' => 'bool',
             // Forms & bot protection
             'bot_protection_enabled' => 'bool',
             // turnstile_enabled itself is NOT here — it's owned by the Integrations

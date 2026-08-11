@@ -18,7 +18,7 @@ class ChinaWalletTypeManagementTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
     }
 
     /** A funding customer with an unlimited base KYC allowance, so only the wallet-type limit under test can trip. */

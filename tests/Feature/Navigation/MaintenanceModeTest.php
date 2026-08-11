@@ -39,7 +39,7 @@ class MaintenanceModeTest extends TestCase
     public function test_admin_bypasses_maintenance_mode(): void
     {
         $this->setMaintenanceMode(true);
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
 
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
 

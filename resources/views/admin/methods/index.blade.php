@@ -249,7 +249,7 @@ function paymentMethodsPage() {
         drawerOpen: false,
         editingId: null,
         form: { ...defaults },
-        baseUrl: '{{ url('/admin/payment-methods') }}',
+        baseUrl: '{{ route('admin.methods.index') }}',
         methods: @json($methodsJson),
         init() {
             if (window.ShortcutManager) {

@@ -139,7 +139,7 @@ function currenciesPage() {
         drawerOpen: false,
         editingId: null,
         form: { ...defaults },
-        baseUrl: '{{ url('/admin/currencies') }}',
+        baseUrl: '{{ route('admin.currencies.index') }}',
         currencies: @json($currenciesJson),
         init() {
             if (window.ShortcutManager) {

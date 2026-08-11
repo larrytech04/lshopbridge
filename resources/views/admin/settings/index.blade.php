@@ -153,10 +153,10 @@
         <x-glass-card>
             <h3 class="font-semibold text-strong">Security & administration</h3>
             <div class="mt-4 space-y-3">
-                <label class="flex items-center justify-between rounded-xl border border-app surface p-4" data-settings-label="Require two-factor authentication for admins" x-show="fieldVisible('Require two-factor authentication for admins')">
-                    <span><span class="font-medium text-strong">Require two-factor authentication for admins</span><br><span class="text-xs text-muted">Blocks admin/staff sign-in until they enroll an authenticator app. Enable this only after at least one admin has 2FA set up, or you may lock every admin out.</span></span>
-                    <input type="checkbox" name="require_admin_mfa" value="1" @checked(setting('require_admin_mfa', false)) class="h-5 w-9 rounded-full surface-2 text-brand-500">
-                </label>
+                <div class="flex items-center justify-between rounded-xl border border-app surface p-4" data-settings-label="Two-factor authentication for admins" x-show="fieldVisible('Two-factor authentication for admins')">
+                    <span><span class="font-medium text-strong">Two-factor authentication for admins</span><br><span class="text-xs text-muted">Every admin/staff account must enroll an authenticator app or passkey before reaching the admin panel. This is mandatory and cannot be turned off.</span></span>
+                    <span class="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">Always on</span>
+                </div>
             </div>
         </x-glass-card>
         </div>

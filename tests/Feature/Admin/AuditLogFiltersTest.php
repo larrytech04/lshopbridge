@@ -13,7 +13,7 @@ class AuditLogFiltersTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'super_admin', 'status' => 'active']);
+        return User::factory()->create(['role' => 'super_admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
     }
 
     public function test_module_filter_only_matches_that_module_prefix(): void

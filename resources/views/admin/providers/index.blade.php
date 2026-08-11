@@ -159,7 +159,7 @@ function providersPage() {
         drawerOpen: false,
         editingId: null,
         form: { name: '', description: '', mode: 'sandbox', priority: 0, is_active: true, countries: [], currencies: [], credentialFields: [] },
-        baseUrl: '{{ url('/admin/providers') }}',
+        baseUrl: '{{ route('admin.providers.index') }}',
         providers: @json($providersJson),
         fieldLabels: {
             base_url: 'Base URL', subscription_key: 'Subscription key', api_user: 'API user', api_key: 'API key',

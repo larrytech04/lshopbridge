@@ -164,7 +164,7 @@ function chinaWalletTypesPage() {
         drawerOpen: false,
         editingId: null,
         form: { ...defaults },
-        baseUrl: '{{ url('/admin/china-wallet-types') }}',
+        baseUrl: '{{ route('admin.china-wallet-types.index') }}',
         wallets: @json($walletsJson),
         init() {
             if (window.ShortcutManager) {

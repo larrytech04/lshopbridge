@@ -15,7 +15,7 @@ class ContentBlockManagementTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
     }
 
     public function test_non_admin_cannot_view_content_page(): void

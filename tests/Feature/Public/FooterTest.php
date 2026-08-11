@@ -183,7 +183,7 @@ class FooterTest extends TestCase
     public function test_footer_shows_a_maintenance_warning_when_maintenance_mode_is_on(): void
     {
         app(SettingsService::class)->set('maintenance_mode', '1', 'bool');
-        $admin = \App\Models\User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = \App\Models\User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
 
         // Maintenance mode 503s the public site for guests, so the footer
         // itself is only reachable (and worth checking) as the admin who

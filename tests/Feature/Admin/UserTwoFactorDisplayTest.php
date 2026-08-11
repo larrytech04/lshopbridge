@@ -14,7 +14,7 @@ class UserTwoFactorDisplayTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'super_admin', 'status' => 'active']);
+        return User::factory()->create(['role' => 'super_admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
     }
 
     public function test_admin_cannot_directly_enable_2fa_through_the_edit_form(): void

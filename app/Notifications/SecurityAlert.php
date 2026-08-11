@@ -27,14 +27,31 @@ class SecurityAlert extends Notification
         public string $message,
         public ?string $actionLabel = null,
         public ?string $actionUrl = null,
+        // Only true for events the account owner may not have caused themselves
+        // (an unrecognised device/country logging in) — this is what drives the
+        // dashboard's "needs attention" banner. A confirmation of something the
+        // user just did in an authenticated session (changed their own password,
+        // toggled 2FA, added a passkey) still lands in the notification bell,
+        // but shouldn't keep re-lighting that banner every time they touch their
+        // own security settings.
+        public bool $requiresReview = false,
     ) {}
 
     public function via(object $notifiable): array
     {
         $channels = ['database'];
+        $prefersMail = $this->wantsMail($notifiable, 'notify_security_alerts');
 
-        if ($this->wantsMail($notifiable, 'notify_security_alerts')) {
+        // Unusual-activity alerts (unrecognised device/country) always email
+        // the account owner, even if they've turned off the general
+        // security-alert mail preference — this is the one class of notice
+        // too important to let a settings toggle silence entirely. SMS stays
+        // preference-gated either way.
+        if ($prefersMail || $this->requiresReview) {
             $channels[] = 'mail';
+        }
+
+        if ($prefersMail) {
             $channels[] = SmsChannel::class;
         }
 
@@ -72,6 +89,7 @@ class SecurityAlert extends Notification
             'message' => $this->message,
             'url' => $this->actionUrl ?? route('security.index'),
             'icon' => 'shield',
+            'requires_review' => $this->requiresReview,
         ];
     }
 }

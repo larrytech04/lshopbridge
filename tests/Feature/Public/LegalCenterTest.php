@@ -160,7 +160,7 @@ class LegalCenterTest extends TestCase
 
     public function test_admin_can_update_a_legal_page_category_and_service_scoping(): void
     {
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $page = Page::factory()->create(['slug' => 'sample-policy', 'type' => 'legal', 'category' => 'general']);
 
         $this->actingAs($admin)->put(route('admin.pages.update', $page), [

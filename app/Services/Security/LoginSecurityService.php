@@ -64,6 +64,7 @@ class LoginSecurityService
                 message: "We noticed a login from a device we haven't seen before.\nDevice: ".$this->describeDevice($attempt->user_agent)."\nIP: {$attempt->ip}\nTime: {$attempt->created_at->format('M j, Y g:i A')}\n\nIf this wasn't you, secure your account immediately.",
                 actionLabel: 'Review account security',
                 actionUrl: route('security.index'),
+                requiresReview: true,
             ));
 
             if ($user->isAdmin()) {
@@ -78,6 +79,7 @@ class LoginSecurityService
                 message: "We noticed a login from {$country}, a country we haven't seen on your account before.\nIP: {$attempt->ip}\nTime: {$attempt->created_at->format('M j, Y g:i A')}\n\nIf this wasn't you, secure your account immediately.",
                 actionLabel: 'Review account security',
                 actionUrl: route('security.index'),
+                requiresReview: true,
             ));
         }
 

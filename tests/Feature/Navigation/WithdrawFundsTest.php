@@ -123,7 +123,7 @@ class WithdrawFundsTest extends TestCase
     public function test_admin_approve_then_mark_paid_debits_the_wallet(): void
     {
         $user = $this->customer(['transaction_pin' => '1234']);
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $dest = $this->destination($user);
         $this->actingAs($user)->post(route('withdrawals.store'), ['amount' => 10000, 'saved_payment_method_id' => $dest->id, 'pin' => '1234']);
         $withdrawal = WithdrawalRequest::first();
@@ -145,7 +145,7 @@ class WithdrawFundsTest extends TestCase
     public function test_admin_reject_releases_the_hold_without_debiting(): void
     {
         $user = $this->customer(['transaction_pin' => '1234']);
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
         $dest = $this->destination($user);
         $this->actingAs($user)->post(route('withdrawals.store'), ['amount' => 10000, 'saved_payment_method_id' => $dest->id, 'pin' => '1234']);
         $withdrawal = WithdrawalRequest::first();

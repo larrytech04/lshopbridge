@@ -7,11 +7,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Only active when an admin has turned on the "require admin MFA" toggle in
- * Settings (default off, to avoid locking out every admin the moment this
- * feature ships). While on, any admin/staff account without a confirmed
- * authenticator app is redirected to enroll before reaching any /admin page.
- * The enrollment page itself lives outside the /admin prefix, so it is never
+ * Mandatory, not a toggle: every admin/staff account must have a confirmed
+ * authenticator app or passkey before reaching any admin page. Anyone not
+ * yet enrolled is redirected to set it up rather than blocked outright — the
+ * enrollment page itself lives outside the admin URL prefix, so it is never
  * blocked by this same check.
  */
 class EnsureAdminMfa
@@ -20,9 +19,9 @@ class EnsureAdminMfa
     {
         $user = $request->user();
 
-        if ($user && $user->isAdmin() && setting('require_admin_mfa', false) && ! $user->hasMfaEnabled()) {
+        if ($user && $user->isAdmin() && ! $user->requiresMfaChallenge()) {
             return redirect()->route('security.two-factor.show')
-                ->with('error', 'Your role requires two-factor authentication. Set it up to continue.');
+                ->with('error', 'Admin accounts require two-factor authentication. Set it up to continue.');
         }
 
         return $next($request);

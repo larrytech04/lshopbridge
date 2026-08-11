@@ -15,7 +15,7 @@ class AuditLogIntegrityTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'super_admin', 'status' => 'active']);
+        return User::factory()->create(['role' => 'super_admin', 'status' => 'active', 'two_factor_enabled' => true, 'two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()]);
     }
 
     public function test_verify_reports_a_valid_chain_when_nothing_was_tampered_with(): void

@@ -26,7 +26,7 @@ class DashboardAttentionCardsTest extends TestCase
     public function test_dashboard_shows_a_security_alert_card_when_one_exists(): void
     {
         $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
-        $user->notify(new SecurityAlert('New device sign-in', 'A new device just signed in.'));
+        $user->notify(new SecurityAlert('New device sign-in', 'A new device just signed in.', requiresReview: true));
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 

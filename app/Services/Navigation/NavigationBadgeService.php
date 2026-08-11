@@ -22,7 +22,11 @@ class NavigationBadgeService
             'notifications' => $user->unreadNotifications()->count(),
             'verification_action_required' => $user->kyc_status !== KycStatus::Approved,
             'support_awaiting_you' => $this->supportAwaitingCustomer($user),
-            'security_alert' => $user->unreadNotifications()->where('type', SecurityAlert::class)->exists(),
+            // Only alerts flagged as possibly-not-you (new device/country login) —
+            // not every unread security notification, otherwise the routine
+            // confirmation from changing your own password never stops re-lighting
+            // this banner every time you touch your own account settings.
+            'security_alert' => $user->unreadNotifications()->where('type', SecurityAlert::class)->where('data->requires_review', true)->exists(),
             'referral_reward_available' => (int) $user->points > 0,
             'shipping_requests_new_update' => $this->shippingRequestsNeedingAttention($user),
         ];
