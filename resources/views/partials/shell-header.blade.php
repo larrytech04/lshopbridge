@@ -21,9 +21,13 @@
     ];
 @endphp
 
-<header class="sticky top-[env(safe-area-inset-top)] z-40">
-    {{-- Utility strip, always visible (the whole header sticks; only the mid row collapses) --}}
-    <div class="relative z-50 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(12px);">
+<header class="sticky top-0 z-40">
+    {{-- Utility strip, always visible (the whole header sticks; only the mid row collapses).
+         padding-top extends this glass background up under the iOS status bar instead of
+         leaving that strip transparent (showing whatever's behind it bleed through) — the
+         header sticks at the true top:0, its own background just reaches further than its
+         visible content does. --}}
+    <div class="relative z-50 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(12px); padding-top: env(safe-area-inset-top);">
         <div class="mx-auto flex max-w-none items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6">
             {{-- Flipping social-proof badge: Google ⇄ Trustpilot, every 3.5s --}}
             <div class="review-flip text-muted" x-data="reviewFlip()" :class="{ 'is-flipped': flipped }" aria-label="{{ __('Customer reviews') }}">
