@@ -97,7 +97,7 @@ img {
     -premailer-width: 100%;
     background-color: #f4f4f5;
     margin: 0;
-    padding: 24px 0;
+    padding: 40px 0;
     width: 100%;
 }
 
@@ -112,11 +112,23 @@ img {
 
 /* Header */
 
-.header {
-    background-color: #fbf0f2;
-    border-bottom: 3px solid #bf1f39;
+/* Thin solid color strip above the header band — renders regardless of
+   whether the logo image itself loads, so the top of the email always
+   reads as deliberately branded even in clients that block images by
+   default until the recipient approves them. */
+.header-accent {
+    background-color: #9c0f26;
     border-radius: 12px 12px 0 0;
-    padding: 28px 0 22px;
+    font-size: 0;
+    height: 5px;
+    line-height: 5px;
+    mso-line-height-rule: exactly;
+}
+
+.header {
+    background-color: #fdf4f5;
+    border-bottom: 1px solid #f1d9dc;
+    padding: 32px 0 26px;
     text-align: center;
 }
 
@@ -132,7 +144,7 @@ img {
 .logo {
     height: auto;
     margin: 0;
-    max-height: 40px;
+    max-height: 38px;
     width: auto;
 }
 
@@ -186,8 +198,9 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 570px;
-    margin: 0 auto;
-    padding: 20px 0 0;
+    border-top: 1px solid #e4e4e7;
+    margin: 28px auto 0;
+    padding: 0;
     text-align: center;
     width: 570px;
 }
@@ -230,7 +243,7 @@ img {
 
 .content-cell {
     max-width: 100vw;
-    padding: 36px 32px;
+    padding: 40px 36px;
 }
 
 /* Buttons, pill-shaped, matches the app's own .btn-primary */
