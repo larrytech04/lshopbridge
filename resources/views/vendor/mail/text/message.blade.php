@@ -21,9 +21,12 @@
     {{-- Footer --}}
     <x-slot:footer>
         <x-mail::footer>
-            @if (setting('support_email'))
-                @lang('Questions? Contact us at :email', ['email' => setting('support_email')])
+            {{ config('platform.tagline') }}
+
+            @if (\Illuminate\Support\Facades\Route::has('contact'))
+                @lang('Need a hand? Contact support:') {{ route('contact') }}
             @endif
+
             © {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
         </x-mail::footer>
     </x-slot:footer>

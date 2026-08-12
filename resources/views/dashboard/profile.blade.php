@@ -186,6 +186,24 @@
                 </div>
             @endforeach
         </form>
+        @if (config('webpush.vapid.public_key'))
+            <div x-data="{ sending: false }" class="mt-2">
+                <button type="button" :disabled="sending" @click="
+                    sending = true;
+                    fetch('{{ route('push.test') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', Accept: 'application/json' } })
+                        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                        .then(({ ok, data }) => {
+                            $store.toast.push(ok ? 'Test notification sent, check this device.' : (data.status === 'no-subscription' ? 'Turn on Web Push above first.' : 'Could not send a test notification.'));
+                        })
+                        .catch(() => $store.toast.push('Could not reach the server.'))
+                        .finally(() => sending = false);
+                " class="text-xs font-semibold text-brand-500 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-60">
+                    <span x-show="!sending">{{ __('Send a test notification') }}</span>
+                    <span x-show="sending" x-cloak>{{ __('Sending…') }}</span>
+                </button>
+                <p class="mt-1 text-xs text-faint">{{ __("Confirms push actually reaches this device right now, rather than waiting for a real event.") }}</p>
+            </div>
+        @endif
         <p class="mt-2 text-xs text-faint">{{ __('Changes save automatically.') }}</p>
     </div>
 

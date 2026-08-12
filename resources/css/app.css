@@ -1026,7 +1026,7 @@ html.dark .footer-shell, html.night .footer-shell {
    how Safari's own native pull-to-refresh spinner behaves. */
 #pull-refresh {
     position: fixed;
-    top: calc(4rem + env(safe-area-inset-top) + .5rem);
+    top: calc(4rem + env(safe-area-inset-top) + .2rem);
     left: 0; right: 0; z-index: 35;
     display: flex; justify-content: center;
     pointer-events: none;
@@ -1038,7 +1038,7 @@ html.dark .footer-shell, html.night .footer-shell {
    Safari's own built-in spinner rather than another branded element. */
 .pull-refresh__spinner {
     position: relative;
-    width: 1.75rem; height: 1.75rem;
+    width: 2.5rem; height: 2.5rem;
 }
 .pull-refresh__spinner div {
     position: absolute;

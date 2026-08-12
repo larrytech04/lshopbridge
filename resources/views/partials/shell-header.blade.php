@@ -21,7 +21,7 @@
     ];
 @endphp
 
-<header class="sticky top-0 z-40">
+<header class="sticky top-[env(safe-area-inset-top)] z-40">
     {{-- Utility strip, always visible (the whole header sticks; only the mid row collapses) --}}
     <div class="relative z-50 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(12px);">
         <div class="mx-auto flex max-w-none items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6">

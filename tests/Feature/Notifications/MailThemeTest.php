@@ -44,4 +44,23 @@ class MailThemeTest extends TestCase
         // The code renders as the highlighted h2 display, not a plain line.
         $this->assertStringContainsString('>HXKYMS</h2>', $html);
     }
+
+    public function test_footer_never_shows_unconfigured_social_links_as_dead_hash_anchors(): void
+    {
+        $user = User::factory()->make(['name' => 'Super Admin', 'email' => 'admin@example.com']);
+        $html = $this->render((new ReauthCodeMail('HXKYMS', 10))->toMail($user));
+
+        $this->assertStringNotContainsString('href="#"', $html);
+        $this->assertStringContainsString(htmlspecialchars(config('platform.tagline')), $html);
+    }
+
+    public function test_footer_shows_real_social_links_once_configured(): void
+    {
+        \App\Models\Setting::create(['key' => 'social_x', 'value' => 'https://x.com/lshopbridge', 'type' => 'string', 'group' => 'general']);
+
+        $user = User::factory()->make(['name' => 'Super Admin', 'email' => 'admin@example.com']);
+        $html = $this->render((new ReauthCodeMail('HXKYMS', 10))->toMail($user));
+
+        $this->assertStringContainsString('https://x.com/lshopbridge', $html);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\TestPush;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -38,5 +39,18 @@ class PushSubscriptionController extends Controller
         $request->user()->deletePushSubscription($data['endpoint']);
 
         return response()->json(['status' => 'unsubscribed']);
+    }
+
+    public function test(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->pushSubscriptions()->doesntExist()) {
+            return response()->json(['status' => 'no-subscription'], 422);
+        }
+
+        $user->notify(new TestPush);
+
+        return response()->json(['status' => 'sent']);
     }
 }

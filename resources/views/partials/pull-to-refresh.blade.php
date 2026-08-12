@@ -15,14 +15,14 @@
         var el = document.getElementById('pull-refresh');
         if (!el) return;
 
-        // Deliberately hard to trigger by accident: RESISTANCE means the
-        // finger has to travel far more than the indicator actually grows,
-        // on top of a high visual THRESHOLD — roughly 275px of real,
-        // sustained finger movement before it arms, not a light
-        // scroll-stutter at the top of the page.
-        var THRESHOLD = 110;
+        // Deliberate but not extreme: RESISTANCE means the finger has to
+        // travel further than the indicator actually grows, on top of a
+        // moderate visual THRESHOLD — roughly 145px of real finger movement
+        // before it arms, enough that a light scroll-stutter at the top of
+        // the page never triggers it, without requiring a strained pull.
+        var THRESHOLD = 90;
         var MAX_PULL = 100;
-        var RESISTANCE = 2.5;
+        var RESISTANCE = 1.6;
         var startY = null;
         var pulling = false;
         var armed = false;

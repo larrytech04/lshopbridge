@@ -21,8 +21,25 @@
 {{-- Footer --}}
 <x-slot:footer>
 <x-mail::footer>
-@if (setting('support_email'))
-{{ __('Questions? Contact us at :email', ['email' => setting('support_email')]) }}
+@php
+    // Real, configured links only — a footer full of "#" placeholder social
+    // icons would look broken/dishonest the moment someone actually taps one.
+    $socialLinks = collect([
+        'Facebook' => setting('social_facebook'),
+        'X' => setting('social_x'),
+        'Instagram' => setting('social_instagram'),
+        'TikTok' => setting('social_tiktok'),
+        'WhatsApp' => setting('social_whatsapp'),
+    ])->filter(fn ($url) => $url && $url !== '#');
+@endphp
+@if ($socialLinks->isNotEmpty())
+{{ $socialLinks->map(fn ($url, $label) => "[{$label}]({$url})")->implode('&nbsp;&nbsp;&nbsp;&nbsp;') }}
+<br><br>
+@endif
+{{ config('platform.tagline') }}
+<br>
+@if (\Illuminate\Support\Facades\Route::has('contact'))
+{{ __('Need a hand?') }} [{{ __('Contact support') }}]({{ route('contact') }})
 <br>
 @endif
 © {{ date('Y') }} {{ config('app.name') }}. {{ __('All rights reserved.') }}
