@@ -217,6 +217,128 @@ function initPageSkeleton() {
 }
 document.addEventListener('DOMContentLoaded', initPageSkeleton);
 
+/* ----------------------------------------------------- Pull-to-refresh */
+// Dragging down hard from the very top of the page grows a plain
+// native-style activity spinner into place in a fixed slot just below the
+// header (not sliding down from off-screen above it, no logo, deliberately
+// the same look as Safari's own), and releasing past the threshold shows
+// the matching page skeleton (see initPageSkeleton above) and reloads,
+// instead of a jarring blank-white location.reload().
+//
+// This lives in the bundled JS (not an inline <script> in the blade
+// partial) deliberately: PHP's strip_tags() has no concept of JavaScript
+// syntax, so a literal `<=`/`>=` comparison sitting in raw HTML text can
+// desync its tag/quote state machine and silently swallow everything that
+// follows it on the page for the rest of the document — which is exactly
+// what broke assertSeeText()-based tests (and would just as easily break
+// any other naive tag-stripping consumer of this page, e.g. link previews
+// or accessibility tooling). A bundled <script src="..."> tag has no
+// literal JS characters in the HTML text stream, so the whole class of bug
+// is structurally impossible here.
+function initPullToRefresh() {
+    const el = document.getElementById('pull-refresh');
+    if (!el) return;
+
+    // Deliberate but not extreme: RESISTANCE means the finger has to
+    // travel further than the indicator actually grows, on top of a
+    // moderate visual THRESHOLD — roughly 145px of real finger movement
+    // before it arms, enough that a light scroll-stutter at the top of
+    // the page never triggers it, without requiring a strained pull.
+    const THRESHOLD = 90;
+    const MAX_PULL = 100;
+    const RESISTANCE = 1.6;
+    // Each spinner bar's own animation is 1s (see .pull-refresh__spinner
+    // div in app.css) — hold the actual reload for two full cycles so it
+    // never gets cut off after barely starting, on a fast connection or
+    // an already-cached page.
+    const MIN_SPIN_MS = 2000;
+    let startY = null;
+    let pulling = false;
+    let armed = false;
+
+    // Measured fresh on every pull (not a fixed CSS value) because the
+    // header's real height differs by layout — the dashboard has one
+    // slim bar, the public site stacks the announce banner on top of its
+    // own utility bar, sometimes neither, sometimes both. Reading the
+    // actual <header> element's rendered bottom edge keeps the spinner
+    // directly under it either way, instead of assuming one fixed height.
+    function positionBelowHeader() {
+        const header = document.querySelector('header');
+        const bottom = header ? header.getBoundingClientRect().bottom : 0;
+        el.style.top = Math.max(bottom, 0) + 8 + 'px';
+    }
+
+    // Any touch that starts inside a scrollable overlay (the mobile menu
+    // sheet, the marketplace drawer, a modal's own scroll area, ...) must
+    // never be hijacked into a page-refresh gesture — that's what was
+    // blocking scrolling inside those sheets entirely.
+    function insideScrollable(node) {
+        while (node && node !== document.body && node !== document.documentElement) {
+            const style = window.getComputedStyle(node);
+            if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+                return true;
+            }
+            node = node.parentElement;
+        }
+        return false;
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (window.scrollY <= 0 && !insideScrollable(e.target)) {
+            positionBelowHeader();
+            startY = e.touches[0].clientY;
+            pulling = true;
+            armed = false;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!pulling || startY === null) return;
+        const raw = e.touches[0].clientY - startY;
+        if (raw <= 0) { pulling = false; return; }
+
+        e.preventDefault();
+        const dist = Math.min(raw / RESISTANCE, MAX_PULL);
+        const progress = dist / MAX_PULL;
+        el.style.opacity = progress;
+        el.style.transform = 'scale(' + (0.6 + progress * 0.4) + ')';
+        armed = dist >= THRESHOLD;
+        el.classList.toggle('pull-refresh--armed', armed);
+    }, { passive: false });
+
+    function reset() {
+        pulling = false;
+        el.style.opacity = '';
+        el.style.transform = '';
+        el.classList.remove('pull-refresh--armed');
+    }
+
+    document.addEventListener('touchend', () => {
+        if (!pulling) return;
+        if (armed) {
+            el.classList.add('pull-refresh--spinning');
+            el.style.opacity = '1';
+            el.style.transform = 'scale(1)';
+
+            const reload = () => location.reload();
+            // Same "show the matching skeleton" beat as a normal internal
+            // link click, so refreshing feels like the rest of the app —
+            // but the actual navigation waits for MIN_SPIN_MS regardless
+            // of the skeleton's own (shorter) internal hold, so the spin
+            // always gets to complete its two cycles first.
+            if (window.PBSkeleton) {
+                window.PBSkeleton.showThenGo(window.location.href, () => {});
+            }
+            setTimeout(reload, MIN_SPIN_MS);
+        } else {
+            reset();
+        }
+    });
+    document.addEventListener('touchcancel', reset);
+    window.addEventListener('resize', positionBelowHeader);
+}
+document.addEventListener('DOMContentLoaded', initPullToRefresh);
+
 /* --------------------------------------------------- Searchable selects */
 // Modern, type-to-filter country/language dropdowns (Tom Select), with flags.
 function flagHtml(iso) {

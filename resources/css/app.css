@@ -1020,13 +1020,15 @@ html.dark .footer-shell, html.night .footer-shell {
 @keyframes boot-loader-spin-reverse { to { transform: rotate(-360deg); } }
 
 /* Pull-to-refresh — same spinner language as the boot loader, dragged down
-   manually via JS rather than shown automatically. Sits in a fixed slot
-   right below the sticky header (never over it, never sliding down from
-   off-screen above) and grows/fades into place as the user pulls, matching
-   how Safari's own native pull-to-refresh spinner behaves. */
+   manually via JS rather than shown automatically. `top` is set dynamically
+   in JS (measured off the real <header> on each pull — its height differs
+   between the dashboard and the public site's stacked bars), this is just a
+   sane fallback for the brief moment before that first measurement runs.
+   Grows/fades into place as the user pulls, matching how Safari's own
+   native pull-to-refresh spinner behaves. */
 #pull-refresh {
     position: fixed;
-    top: calc(4rem + env(safe-area-inset-top) + .2rem);
+    top: calc(4rem + env(safe-area-inset-top));
     left: 0; right: 0; z-index: 35;
     display: flex; justify-content: center;
     pointer-events: none;

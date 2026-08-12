@@ -236,7 +236,12 @@
                 const t = Math.min(1, (now - start) / dur);
                 const eased = 1 - Math.pow(1 - t, 3);
                 el.textContent = Math.round(eased * target).toLocaleString() + suffix;
-                if (t < 1) requestAnimationFrame(tick);
+                // Operand deliberately flipped to avoid a "less-than" glyph:
+                // that character inside an inline script block's text can
+                // desync PHP's strip_tags() and silently swallow the rest of
+                // the page for any tag-stripping consumer (e.g. assertSeeText()
+                // in tests).
+                if (1 > t) requestAnimationFrame(tick);
             };
             requestAnimationFrame(tick);
         };

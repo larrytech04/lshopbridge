@@ -44,7 +44,12 @@
             if (!bg || !bg.dataset.logo) return;
             const COUNT = 1;
             const items = [];
-            for (let i = 0; i < COUNT; i++) {
+            // Operands deliberately flipped throughout this block to avoid a
+            // "less-than" glyph: that character inside an inline script block's
+            // text can desync PHP's strip_tags() and silently swallow the rest
+            // of the page for any tag-stripping consumer (e.g. assertSeeText()
+            // in tests).
+            for (let i = 0; COUNT > i; i++) {
                 const img = document.createElement('img');
                 img.src = bg.dataset.logo;
                 img.alt = '';
@@ -71,9 +76,9 @@
                 for (const it of items) {
                     if (!it.ready) seed(it);
                     it.x += it.vx * dt; it.y += it.vy * dt;
-                    if (it.x <= 0) { it.x = 0; it.vx = Math.abs(it.vx); }
+                    if (0 >= it.x) { it.x = 0; it.vx = Math.abs(it.vx); }
                     else if (it.x >= W - it.size) { it.x = W - it.size; it.vx = -Math.abs(it.vx); }
-                    if (it.y <= 0) { it.y = 0; it.vy = Math.abs(it.vy); }
+                    if (0 >= it.y) { it.y = 0; it.vy = Math.abs(it.vy); }
                     else if (it.y >= H - it.size) { it.y = H - it.size; it.vy = -Math.abs(it.vy); }
                     it.el.style.transform = 'translate(' + it.x + 'px,' + it.y + 'px)';
                 }

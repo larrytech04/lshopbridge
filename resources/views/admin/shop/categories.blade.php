@@ -222,7 +222,11 @@ function categoryManager() {
             const group = this.siblings(id);
             const index = group.findIndex((c) => c.id === id);
             const target = index + delta;
-            if (target < 0 || target >= group.length) return;
+            // Operands deliberately flipped to avoid a "less-than" glyph: that
+            // character inside an inline script block's text can desync PHP's
+            // strip_tags() and silently swallow the rest of the page for any
+            // tag-stripping consumer (e.g. assertSeeText() in tests).
+            if (0 > target || target >= group.length) return;
             [group[index], group[target]] = [group[target], group[index]];
             const ids = group.map((c) => c.id);
             await fetch('{{ route('admin.shop.categories.reorder') }}', {
