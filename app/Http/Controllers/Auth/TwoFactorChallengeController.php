@@ -142,6 +142,14 @@ class TwoFactorChallengeController extends Controller
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
+        // This is where an admin's login actually completes in practice —
+        // MFA is mandatory for every admin account, so the no-MFA branch in
+        // AdminSessionController::store() is only ever hit before someone's
+        // finished enrolling. See AdminSessionController::markDevice().
+        if ($user->isAdmin()) {
+            \App\Http\Controllers\Auth\AdminSessionController::markDevice();
+        }
+
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         $loginSecurity->recordSuccess($user, $request);
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Security\LoginSecurityService;
 use App\Services\Security\ReauthService;
 use App\Services\Security\TurnstileVerificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,8 +16,16 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
+        // A device known to belong to an admin (bookmarked/typed the public
+        // /login URL directly rather than being redirected here) still lands
+        // on the admin login instead — same "which form to default to" hint
+        // as the guest-redirect logic in bootstrap/app.php.
+        if ($request->cookie(AdminSessionController::DEVICE_COOKIE)) {
+            return redirect()->route('admin.login');
+        }
+
         return view('auth.login', [
             'requireTurnstile' => $this->requireTurnstileFor($request),
         ]);

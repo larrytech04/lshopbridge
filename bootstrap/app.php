@@ -65,10 +65,22 @@ return Application::configure(basePath: dirname(__DIR__))
         // An unauthenticated visit to an admin-prefixed page must bounce to
         // the admin login, not the public one — the public form rejects
         // admin credentials outright (see AuthenticatedSessionController).
+        // A device that has logged in as an admin before (see
+        // AdminSessionController::markDevice()) gets the same treatment
+        // everywhere else too — e.g. opening the installed customer app on
+        // that phone lands on the admin login, not the customer one. This
+        // is purely a "which form do I default to" hint: it grants nothing
+        // by itself, the real password/Turnstile/MFA are all still required.
         $middleware->redirectGuestsTo(function ($request) {
             $adminPath = config('platform.admin_path');
 
-            return $request->is($adminPath, "{$adminPath}/*") ? route('admin.login') : route('login');
+            if ($request->is($adminPath, "{$adminPath}/*")) {
+                return route('admin.login');
+            }
+
+            return $request->cookie(\App\Http\Controllers\Auth\AdminSessionController::DEVICE_COOKIE)
+                ? route('admin.login')
+                : route('login');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

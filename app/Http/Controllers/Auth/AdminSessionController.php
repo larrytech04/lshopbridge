@@ -9,6 +9,7 @@ use App\Services\Security\ReauthService;
 use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +24,22 @@ use Illuminate\View\View;
  */
 class AdminSessionController extends Controller
 {
+    /**
+     * Marks this browser/device as "has logged in as an admin before" — a
+     * plain boolean, never anything that could authenticate on its own (it's
+     * also encrypted at rest by Laravel's cookie middleware like every other
+     * cookie this app sets). It only changes which login FORM a guest lands
+     * on by default (see bootstrap/app.php's redirectGuestsTo and
+     * AuthenticatedSessionController::create()) — actually getting in still
+     * requires the real password, Turnstile, and MFA, exactly as before.
+     */
+    public const DEVICE_COOKIE = 'pb_admin_device';
+
+    public static function markDevice(): void
+    {
+        Cookie::queue(Cookie::forever(self::DEVICE_COOKIE, '1'));
+    }
+
     public function create(): View
     {
         return view('auth.admin-login', [
@@ -78,6 +95,7 @@ class AdminSessionController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+        self::markDevice();
 
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         $loginSecurity->recordSuccess($user, $request);

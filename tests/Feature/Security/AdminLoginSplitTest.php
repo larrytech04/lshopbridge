@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Http\Controllers\Auth\AdminSessionController;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -171,5 +172,33 @@ class AdminLoginSplitTest extends TestCase
 
         $response->assertSessionHasErrors('email');
         $this->assertGuest();
+    }
+
+    public function test_a_successful_admin_login_marks_this_device(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'password' => Hash::make('password')]);
+
+        $response = $this->post($this->adminPath('/login'), ['email' => $admin->email, 'password' => 'password']);
+
+        $response->assertCookie(AdminSessionController::DEVICE_COOKIE);
+    }
+
+    public function test_a_marked_device_gets_the_admin_login_on_a_regular_guest_gated_page(): void
+    {
+        $this->withCookie(AdminSessionController::DEVICE_COOKIE, '1')
+            ->get(route('dashboard'))
+            ->assertRedirect(route('admin.login'));
+    }
+
+    public function test_a_marked_device_gets_the_admin_login_when_visiting_the_public_login_page_directly(): void
+    {
+        $this->withCookie(AdminSessionController::DEVICE_COOKIE, '1')
+            ->get('/login')
+            ->assertRedirect(route('admin.login'));
+    }
+
+    public function test_an_unmarked_device_still_gets_the_normal_public_login_page(): void
+    {
+        $this->get('/login')->assertOk()->assertViewIs('auth.login');
     }
 }
