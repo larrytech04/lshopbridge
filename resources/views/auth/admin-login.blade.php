@@ -24,6 +24,9 @@
         <input type="checkbox" name="remember" class="rounded border-app surface text-brand-500 focus:ring-brand-400/40">
         {{ __('Remember me') }}
     </label>
+    @if ($requireTurnstile ?? true)
+        <x-turnstile action="admin-login" />
+    @endif
     <button type="submit" class="btn w-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
         {{ __('Sign in to admin') }} <x-icon name="arrow-right" class="h-4 w-4" />
     </button>

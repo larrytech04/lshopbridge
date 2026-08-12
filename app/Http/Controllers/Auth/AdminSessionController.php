@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Security\LoginSecurityService;
 use App\Services\Security\ReauthService;
+use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,11 +25,21 @@ class AdminSessionController extends Controller
 {
     public function create(): View
     {
-        return view('auth.admin-login');
+        return view('auth.admin-login', [
+            'requireTurnstile' => $this->requireTurnstileFor(),
+        ]);
     }
 
-    public function store(Request $request, LoginSecurityService $loginSecurity, ReauthService $reauth)
+    public function store(Request $request, LoginSecurityService $loginSecurity, ReauthService $reauth, TurnstileVerificationService $turnstile)
     {
+        // Unlike the public login, this always runs when Turnstile is
+        // enabled — no "conditional" appearance mode. A secret, low-traffic,
+        // high-value entry point is exactly where the extra friction is
+        // worth it on every attempt, not just after a failed one.
+        if ($this->requireTurnstileFor() && ! $turnstile->verify($request, 'admin-login')->success) {
+            throw ValidationException::withMessages(['email' => __('Please complete the bot-protection challenge.')]);
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -76,5 +87,10 @@ class AdminSessionController extends Controller
         }
 
         return redirect()->intended(route('admin.dashboard'));
+    }
+
+    private function requireTurnstileFor(): bool
+    {
+        return (bool) setting('login_protection', true);
     }
 }

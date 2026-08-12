@@ -5,6 +5,7 @@ namespace Tests\Feature\Security;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AdminLoginSplitTest extends TestCase
@@ -14,6 +15,15 @@ class AdminLoginSplitTest extends TestCase
     private function adminPath(string $path = ''): string
     {
         return '/'.config('platform.admin_path').$path;
+    }
+
+    private function enableTurnstile(): void
+    {
+        config([
+            'services.turnstile.site_key' => '1x00000000000000000000AA',
+            'services.turnstile.secret_key' => '1x0000000000000000000000000000AA',
+        ]);
+        \App\Models\Setting::create(['key' => 'turnstile_enabled', 'value' => '1', 'type' => 'bool', 'group' => 'general']);
     }
 
     public function test_a_correct_admin_password_is_rejected_on_the_public_login_form(): void
@@ -118,6 +128,48 @@ class AdminLoginSplitTest extends TestCase
         $this->post(route('reauth.identify'), ['email' => $admin->email])
             ->assertRedirect(route('admin.login'));
 
+        $this->assertGuest();
+    }
+
+    public function test_admin_login_is_blocked_without_a_turnstile_token_when_enabled(): void
+    {
+        $this->enableTurnstile();
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'password' => Hash::make('password')]);
+
+        $response = $this->post($this->adminPath('/login'), ['email' => $admin->email, 'password' => 'password']);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_admin_login_succeeds_with_a_valid_turnstile_token(): void
+    {
+        $this->enableTurnstile();
+        Http::fake(['challenges.cloudflare.com/*' => Http::response(['success' => true])]);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'password' => Hash::make('password')]);
+
+        $response = $this->post($this->adminPath('/login'), [
+            'email' => $admin->email,
+            'password' => 'password',
+            'cf-turnstile-response' => 'valid-token',
+        ]);
+
+        $response->assertRedirect(route('admin.dashboard'));
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_admin_login_turnstile_check_runs_even_on_the_public_login_style_conditional_setting(): void
+    {
+        // The admin login always requires the widget when Turnstile is
+        // enabled, unlike the public form's "conditional" appearance mode
+        // which only shows it after a failed attempt.
+        $this->enableTurnstile();
+        \App\Models\Setting::create(['key' => 'turnstile_appearance_mode', 'value' => 'conditional', 'type' => 'string', 'group' => 'general']);
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active', 'password' => Hash::make('password')]);
+
+        $response = $this->post($this->adminPath('/login'), ['email' => $admin->email, 'password' => 'password']);
+
+        $response->assertSessionHasErrors('email');
         $this->assertGuest();
     }
 }
