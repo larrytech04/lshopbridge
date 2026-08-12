@@ -351,6 +351,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'removePhoto'])->name('profile.photo.remove');
     Route::put('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences');
     Route::delete('/profile', [ProfileController::class, 'deleteAccount'])->name('profile.delete');
+    Route::post('/push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::delete('/push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
     // Security Center
     Route::get('/security', [SecurityController::class, 'index'])->name('security.index');

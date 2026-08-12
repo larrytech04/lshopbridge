@@ -32,4 +32,15 @@ trait ChecksNotificationPreferences
 
         return $category === null || ($prefs[$category] ?? true);
     }
+
+    /** Real OS-level push/banner notifications (see WebPushChannel) — same
+     *  "Web Push" preference as the live in-tab broadcast, since from the
+     *  user's side both are just "push me updates", only the delivery
+     *  mechanism differs. Safe to gate every notification on this: the
+     *  channel itself is a no-op for anyone with zero active subscriptions
+     *  (never subscribed, or VAPID isn't configured on this environment). */
+    protected function wantsPush(object $notifiable, ?string $category = null): bool
+    {
+        return $this->wantsBroadcast($notifiable, $category);
+    }
 }

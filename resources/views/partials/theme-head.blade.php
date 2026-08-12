@@ -25,6 +25,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="{{ config('platform.name') }}">
+{{-- Real OS-level push notifications (see resources/js/app.js's initWebPush
+     and public/sw.js). Blank/absent = not configured on this environment,
+     matching the app's honesty rule: the "Web Push" toggle in Settings
+     simply won't try to subscribe rather than pretending to work. --}}
+@if ($vapidKey = config('webpush.vapid.public_key'))
+    <meta name="vapid-public-key" content="{{ $vapidKey }}">
+@endif
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => navigator.serviceWorker.register('{{ asset('sw.js') }}').catch(() => {}));

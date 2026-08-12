@@ -5,12 +5,14 @@ namespace App\Notifications;
 use App\Enums\KycDecisionType;
 use App\Models\KycVerification;
 use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 class KycReviewed extends Notification
 {
-    use ChecksNotificationPreferences;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail;
 
     public function __construct(
         public KycVerification $kyc,
@@ -25,6 +27,10 @@ class KycReviewed extends Notification
 
         if ($this->wantsMail($notifiable)) {
             $channels[] = 'mail';
+        }
+
+        if ($this->wantsPush($notifiable)) {
+            $channels[] = WebPushChannel::class;
         }
 
         if ($this->wantsBroadcast($notifiable)) {

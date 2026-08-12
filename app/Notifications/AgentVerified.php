@@ -4,12 +4,14 @@ namespace App\Notifications;
 
 use App\Models\Agent;
 use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 class AgentVerified extends Notification
 {
-    use ChecksNotificationPreferences;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail;
 
     public function __construct(public Agent $agent, public bool $approved, public ?string $reason = null) {}
 
@@ -19,6 +21,10 @@ class AgentVerified extends Notification
 
         if ($this->wantsMail($notifiable)) {
             $channels[] = 'mail';
+        }
+
+        if ($this->wantsPush($notifiable)) {
+            $channels[] = WebPushChannel::class;
         }
 
         if ($this->wantsBroadcast($notifiable)) {

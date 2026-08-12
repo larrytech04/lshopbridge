@@ -32,3 +32,46 @@ self.addEventListener('fetch', (event) => {
         caches.match(event.request).then((cached) => cached || fetch(event.request))
     );
 });
+
+// Real OS-level push notifications (see App\Notifications\Concerns\Derives
+// WebPushFromMail on the backend, which builds this exact payload shape).
+// Every field maps straight onto the Notification API's own options object.
+self.addEventListener('push', (event) => {
+    if (!event.data) return;
+
+    let payload;
+    try {
+        payload = event.data.json();
+    } catch (e) {
+        return;
+    }
+
+    const title = payload.title || 'LshopBridge';
+    const options = {
+        body: payload.body || '',
+        icon: payload.icon || '/icons/icon-192.png',
+        badge: payload.badge || '/icons/icon-192.png',
+        data: payload.data || {},
+        tag: payload.tag || undefined,
+        requireInteraction: !!payload.requireInteraction,
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Tapping the notification focuses an already-open tab on that URL if one
+// exists, otherwise opens a fresh one — never just closes silently.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || '/dashboard';
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientsList) => {
+            for (const client of clientsList) {
+                if (client.url === url && 'focus' in client) return client.focus();
+            }
+
+            return self.clients.openWindow ? self.clients.openWindow(url) : null;
+        })
+    );
+});

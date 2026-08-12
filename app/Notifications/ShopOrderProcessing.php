@@ -4,8 +4,10 @@ namespace App\Notifications;
 
 use App\Models\ShopOrder;
 use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 /**
  * Sent instead of ShopOrderDelivered when payment succeeded but at least one
@@ -14,7 +16,7 @@ use Illuminate\Notifications\Notification;
  */
 class ShopOrderProcessing extends Notification
 {
-    use ChecksNotificationPreferences;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail;
 
     public function __construct(public ShopOrder $order) {}
 
@@ -24,6 +26,10 @@ class ShopOrderProcessing extends Notification
 
         if ($this->wantsMail($notifiable, 'notify_order_updates')) {
             $channels[] = 'mail';
+        }
+
+        if ($this->wantsPush($notifiable, 'notify_order_updates')) {
+            $channels[] = WebPushChannel::class;
         }
 
         if ($this->wantsBroadcast($notifiable, 'notify_order_updates')) {

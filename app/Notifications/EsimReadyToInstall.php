@@ -4,8 +4,10 @@ namespace App\Notifications;
 
 use App\Models\EsimProvisioning;
 use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 /**
  * The eSIM is genuinely ready. Deliberately never embeds the QR image,
@@ -16,7 +18,7 @@ use Illuminate\Notifications\Notification;
  */
 class EsimReadyToInstall extends Notification
 {
-    use ChecksNotificationPreferences;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail;
 
     public function __construct(public EsimProvisioning $provisioning) {}
 
@@ -26,6 +28,10 @@ class EsimReadyToInstall extends Notification
 
         if ($this->wantsMail($notifiable, 'notify_order_updates')) {
             $channels[] = 'mail';
+        }
+
+        if ($this->wantsPush($notifiable, 'notify_order_updates')) {
+            $channels[] = WebPushChannel::class;
         }
 
         if ($this->wantsBroadcast($notifiable, 'notify_order_updates')) {

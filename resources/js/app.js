@@ -1062,6 +1062,87 @@ function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 }
 
+// ── Real OS-level push notifications ─────────────────────────────────
+// The "Web Push" toggle in Settings > Notifications used to just flip a
+// database preference with nothing behind it. This is the actual plumbing:
+// request permission, subscribe via the Push API, hand the subscription to
+// the server (see PushSubscriptionController) — see public/sw.js for the
+// service worker side that turns a received push into a real banner.
+function initWebPush() {
+    const toggle = document.querySelector('[data-webpush-toggle]');
+    if (!toggle) return;
+
+    const vapidKey = document.querySelector('meta[name="vapid-public-key"]')?.content;
+    const supported = !!vapidKey && 'serviceWorker' in navigator && 'PushManager' in window;
+
+    toggle.addEventListener('change', async () => {
+        const form = toggle.form;
+
+        // Not configured on this environment, or this browser can't do push
+        // at all — the preference still exists (it also gates the live
+        // in-tab broadcast channel), just nothing to subscribe here.
+        if (!supported) {
+            form.requestSubmit();
+            return;
+        }
+
+        const wantsOn = toggle.checked;
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+
+            if (wantsOn) {
+                if (Notification.permission === 'denied') {
+                    toggle.checked = false;
+                    Alpine.store('toast')?.push('Notifications are blocked for this site in your browser settings.');
+                    return;
+                }
+
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    toggle.checked = false;
+                    return;
+                }
+
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: base64urlToBuffer(vapidKey),
+                });
+
+                await fetch('/push/subscribe', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        endpoint: subscription.endpoint,
+                        keys: {
+                            p256dh: bufferToBase64url(subscription.getKey('p256dh')),
+                            auth: bufferToBase64url(subscription.getKey('auth')),
+                        },
+                    }),
+                });
+            } else {
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                    await fetch('/push/subscribe', {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': csrfToken(), Accept: 'application/json', 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ endpoint: subscription.endpoint }),
+                    });
+                    await subscription.unsubscribe();
+                }
+            }
+        } catch (err) {
+            // Permission dismissed, subscribe() rejected, network hiccup —
+            // revert the toggle rather than saving a preference that isn't
+            // backed by a real subscription.
+            toggle.checked = !wantsOn;
+        } finally {
+            form.requestSubmit();
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', initWebPush);
+
 Alpine.data('passkeyManager', (routes) => ({
     name: '',
     busy: false,

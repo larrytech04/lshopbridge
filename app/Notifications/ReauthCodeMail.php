@@ -2,25 +2,36 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 /**
- * The idle-session re-authentication code (see ReauthService). Mail only —
- * this is a live, time-boxed credential the user needs in the next few
- * minutes, not something to browse later in the notification bell.
+ * The idle-session re-authentication code (see ReauthService). Always
+ * mailed (no preference gate — it's a live, time-boxed credential the user
+ * needs in the next few minutes, not something to browse later in the
+ * notification bell) and, for anyone with push enabled, also pushed as a
+ * banner notification so it doesn't just sit silently in the inbox.
  */
 class ReauthCodeMail extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail, Queueable;
 
     public function __construct(public string $code, public int $ttlMinutes) {}
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        $channels = ['mail'];
+
+        if ($this->wantsPush($notifiable)) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        return $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

@@ -162,7 +162,7 @@
         <form method="POST" action="{{ route('profile.preferences') }}" class="card-solid divide-y divide-app rounded-3xl border border-app shadow-sm" x-data>
             @csrf @method('PUT')
             @foreach ([
-                ['key' => 'notify_web_push', 'icon' => 'bell', 'title' => __('Web Push'), 'desc' => __('Real-time push notifications')],
+                ['key' => 'notify_web_push', 'icon' => 'bell', 'title' => __('Web Push'), 'desc' => __('Push/banner notifications on this device')],
                 ['key' => 'notify_order_updates', 'icon' => 'bag', 'title' => __('Order updates'), 'desc' => __('Delivery, fulfillment and refunds')],
                 ['key' => 'notify_wallet_activity', 'icon' => 'card', 'title' => __('Wallet activity'), 'desc' => __('Funding, credits and debits')],
                 ['key' => 'notify_security_alerts', 'icon' => 'check-circle', 'title' => __('Security alerts'), 'desc' => __('Login attempts and account changes')],
@@ -176,7 +176,11 @@
                         <span class="block text-xs text-muted">{{ $row['desc'] }}</span>
                     </span>
                     <label class="relative inline-flex shrink-0 cursor-pointer items-center">
-                        <input type="checkbox" name="{{ $row['key'] }}" value="1" class="peer sr-only" @checked($pref($row['key'])) onchange="this.form.requestSubmit()">
+                        {{-- The web-push row is owned by initWebPush() in app.js instead of the
+                             generic onchange, since turning it on has to request browser
+                             permission and subscribe (async) BEFORE this form submits, not after. --}}
+                        <input type="checkbox" name="{{ $row['key'] }}" value="1" class="peer sr-only" @checked($pref($row['key']))
+                            @if ($row['key'] === 'notify_web_push') data-webpush-toggle @else onchange="this.form.requestSubmit()" @endif>
                         <span class="peer h-6 w-11 rounded-full surface-2 transition after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5"></span>
                     </label>
                 </div>

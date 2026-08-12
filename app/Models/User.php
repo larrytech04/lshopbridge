@@ -13,10 +13,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, HasPushSubscriptions, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'phone_country', 'phone_verified_at',

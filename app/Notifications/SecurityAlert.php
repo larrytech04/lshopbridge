@@ -4,8 +4,10 @@ namespace App\Notifications;
 
 use App\Notifications\Channels\SmsChannel;
 use App\Notifications\Concerns\ChecksNotificationPreferences;
+use App\Notifications\Concerns\DerivesWebPushFromMail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 
 /**
  * Generic customer-facing security notification (new device login, password
@@ -20,7 +22,7 @@ use Illuminate\Notifications\Notification;
  */
 class SecurityAlert extends Notification
 {
-    use ChecksNotificationPreferences;
+    use ChecksNotificationPreferences, DerivesWebPushFromMail;
 
     public function __construct(
         public string $title,
@@ -53,6 +55,13 @@ class SecurityAlert extends Notification
 
         if ($prefersMail) {
             $channels[] = SmsChannel::class;
+        }
+
+        // Same override as mail — an unrecognised device/country is exactly
+        // the kind of thing worth a banner notification even if push is
+        // otherwise turned down.
+        if ($this->wantsPush($notifiable, 'notify_security_alerts') || $this->requiresReview) {
+            $channels[] = WebPushChannel::class;
         }
 
         if ($this->wantsBroadcast($notifiable, 'notify_security_alerts')) {
