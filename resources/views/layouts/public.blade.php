@@ -24,7 +24,7 @@
     {{-- Plus Jakarta Sans is self-hosted (bundled via app.css); no external font host. --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="aurora min-h-screen overflow-x-hidden">
+<body class="aurora public-shell min-h-screen overflow-x-hidden">
 
     {{-- Home page gets the fuller 1.8s brand moment; every other public page
          (plain page-to-page navigation) gets a snappier 1.2s. --}}

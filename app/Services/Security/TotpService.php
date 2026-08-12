@@ -2,6 +2,9 @@
 
 namespace App\Services\Security;
 
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Writer\PngWriter;
+
 /**
  * RFC 6238 TOTP (Time-Based One-Time Password), implemented directly against
  * PHP's built-in hash_hmac() rather than adding a dependency. This is not
@@ -36,6 +39,23 @@ class TotpService
         ]);
 
         return "otpauth://totp/{$label}?{$params}";
+    }
+
+    /** A ready-to-embed `data:image/png;base64,...` QR code of the
+     *  provisioning URI. Scanning is far less error-prone than manually
+     *  retyping a 32-character secret — a single mistyped character there
+     *  produces an authenticator entry that will never generate a matching
+     *  code, with no indication anything's wrong until the user tries it. */
+    public function qrCodeDataUri(string $provisioningUri): string
+    {
+        $result = (new Builder(
+            writer: new PngWriter(),
+            data: $provisioningUri,
+            size: 240,
+            margin: 12,
+        ))->build();
+
+        return $result->getDataUri();
     }
 
     /** Verifies a 6-digit code, allowing 1 time-step of clock drift either side. */

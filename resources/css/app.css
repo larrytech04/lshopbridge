@@ -165,6 +165,14 @@ html.night {
         position: relative;
         background: var(--bg);
     }
+    /* Public site only (not admin/app, which already handle this on their
+       own sticky header — doubling up there would push content down twice).
+       Without this, the announce bar (or whatever's topmost once it's
+       dismissed) renders partly under the iOS status bar instead of below
+       it, now that viewport-fit=cover lets the page reach that far. */
+    .public-shell {
+        padding-top: env(safe-area-inset-top);
+    }
     .dotgrid {
         background-image: radial-gradient(var(--dot) 1.4px, transparent 1.4px);
         background-size: 22px 22px;
@@ -1012,27 +1020,44 @@ html.dark .footer-shell, html.night .footer-shell {
 @keyframes boot-loader-spin-reverse { to { transform: rotate(-360deg); } }
 
 /* Pull-to-refresh — same spinner language as the boot loader, dragged down
-   manually via JS rather than shown automatically. */
+   manually via JS rather than shown automatically. Sits in a fixed slot
+   right below the sticky header (never over it, never sliding down from
+   off-screen above) and grows/fades into place as the user pulls, matching
+   how Safari's own native pull-to-refresh spinner behaves. */
 #pull-refresh {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
-    height: 5rem;
-    display: flex; align-items: flex-end; justify-content: center;
-    padding-bottom: .75rem;
-    transform: translateY(-100%);
+    position: fixed;
+    top: calc(4rem + env(safe-area-inset-top) + .5rem);
+    left: 0; right: 0; z-index: 35;
+    display: flex; justify-content: center;
     pointer-events: none;
+    opacity: 0;
+    transform: scale(.6);
 }
-.pull-refresh__ring {
-    display: grid; place-items: center;
-    width: 2.75rem; height: 2.75rem;
-    border-radius: 9999px;
-    background: var(--bg);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
-    border: 3px solid color-mix(in srgb, var(--color-brand-600) 20%, transparent);
+/* Plain native-style activity indicator (8 fading bars swept round in a
+   circle) — no logo, no brand color, deliberately identical in spirit to
+   Safari's own built-in spinner rather than another branded element. */
+.pull-refresh__spinner {
+    position: relative;
+    width: 1.75rem; height: 1.75rem;
 }
-#pull-refresh.pull-refresh--armed .pull-refresh__ring,
-#pull-refresh.pull-refresh--spinning .pull-refresh__ring {
-    border-top-color: var(--color-brand-600);
+.pull-refresh__spinner div {
+    position: absolute;
+    left: 46%; top: 8%;
+    width: 8%; height: 24%;
+    border-radius: 999px;
+    background: var(--text-muted);
+    opacity: .25;
+    transform-origin: 50% 142%;
+    animation: pr-spin-fade 1s linear infinite;
+    animation-play-state: paused;
 }
-#pull-refresh.pull-refresh--spinning .pull-refresh__ring { animation: boot-loader-spin .7s linear infinite; }
-#pull-refresh.pull-refresh--spinning .pull-refresh__logo { animation: boot-loader-spin-reverse .7s linear infinite; }
-.pull-refresh__logo { width: 1.35rem; height: 1.35rem; object-fit: contain; }
+#pull-refresh.pull-refresh--spinning .pull-refresh__spinner div { animation-play-state: running; }
+.pull-refresh__spinner div:nth-child(1) { transform: rotate(0deg);   animation-delay: -.875s; }
+.pull-refresh__spinner div:nth-child(2) { transform: rotate(45deg);  animation-delay: -.75s; }
+.pull-refresh__spinner div:nth-child(3) { transform: rotate(90deg);  animation-delay: -.625s; }
+.pull-refresh__spinner div:nth-child(4) { transform: rotate(135deg); animation-delay: -.5s; }
+.pull-refresh__spinner div:nth-child(5) { transform: rotate(180deg); animation-delay: -.375s; }
+.pull-refresh__spinner div:nth-child(6) { transform: rotate(225deg); animation-delay: -.25s; }
+.pull-refresh__spinner div:nth-child(7) { transform: rotate(270deg); animation-delay: -.125s; }
+.pull-refresh__spinner div:nth-child(8) { transform: rotate(315deg); animation-delay: 0s; }
+@keyframes pr-spin-fade { 0% { opacity: 1; } 100% { opacity: .25; } }

@@ -42,6 +42,17 @@ class TwoFactorManagementTest extends TestCase
         $this->assertNotEmpty(session('pending_2fa_secret'));
     }
 
+    public function test_enrollment_page_includes_a_scannable_qr_code(): void
+    {
+        $response = $this->actingAs($this->user())->get(route('security.two-factor.show'));
+
+        // Manually retyping a 32-character secret is exactly the kind of
+        // thing that silently fails one wrong character in and looks like
+        // a bug in the app rather than a typo — the QR code is the reliable
+        // path, manual entry is the fallback.
+        $response->assertViewHas('qrCode', fn ($qrCode) => str_starts_with($qrCode, 'data:image/png;base64,'));
+    }
+
     public function test_confirming_with_the_correct_code_enables_mfa_and_flashes_recovery_codes(): void
     {
         $user = $this->user();

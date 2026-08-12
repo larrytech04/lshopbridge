@@ -23,9 +23,12 @@ class TwoFactorController extends Controller
         $secret = $request->session()->get('pending_2fa_secret') ?: $totp->generateSecret();
         $request->session()->put('pending_2fa_secret', $secret);
 
+        $uri = $totp->provisioningUri($user->email, $secret, config('platform.name'));
+
         return view('security.two-factor.enroll', [
             'secret' => $secret,
-            'uri' => $totp->provisioningUri($user->email, $secret, config('platform.name')),
+            'uri' => $uri,
+            'qrCode' => $totp->qrCodeDataUri($uri),
         ]);
     }
 

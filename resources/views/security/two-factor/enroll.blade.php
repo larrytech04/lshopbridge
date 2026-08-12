@@ -7,19 +7,27 @@
 <a href="{{ route('security.index') }}" class="text-sm text-brand-500 hover:text-brand-600">← {{ __('Back to Security Center') }}</a>
 
     <div class="mt-4 rounded-3xl border border-app p-6">
-        <h3 class="font-semibold text-strong">{{ __('Step 1: scan or enter this key') }}</h3>
-        <p class="mt-1 text-sm text-muted">{{ __('In your authenticator app (Google Authenticator, Authy, 1Password, etc.), add a new account and enter this key manually, or paste the setup link if your app supports it.') }}</p>
+        <h3 class="font-semibold text-strong">{{ __('Step 1: scan this code') }}</h3>
+        <p class="mt-1 text-sm text-muted">{{ __('Open your authenticator app (Google Authenticator, Authy, 1Password, etc.), add a new account, and scan this. Scanning is safer than typing the key by hand, one mistyped character and the codes will never match.') }}</p>
 
-        <div class="mt-4">
-            <label class="label text-xs">{{ __('Manual entry key') }}</label>
-            <div class="flex items-center gap-2">
-                <code class="field select-all font-mono text-sm tracking-wider">{{ implode(' ', str_split($secret, 4)) }}</code>
+        <div class="mt-4 flex justify-center">
+            <img src="{{ $qrCode }}" alt="{{ __('Two-factor authentication QR code') }}" width="240" height="240" class="rounded-2xl border border-app p-3">
+        </div>
+
+        <details class="mt-5">
+            <summary class="cursor-pointer text-sm font-semibold text-brand-500 hover:text-brand-600">{{ __("Can't scan it? Enter the key manually") }}</summary>
+            <div class="mt-3">
+                <label class="label text-xs">{{ __('Manual entry key') }}</label>
+                <div class="flex items-center gap-2">
+                    <code class="field select-all font-mono text-sm tracking-wider">{{ implode(' ', str_split($secret, 4)) }}</code>
+                </div>
+                <p class="mt-1 text-xs text-faint">{{ __('Type this exactly, without the spaces — most apps strip them automatically, but not all do.') }}</p>
             </div>
-        </div>
-        <div class="mt-4">
-            <label class="label text-xs">{{ __('Setup link (paste into apps that support it)') }}</label>
-            <input class="field font-mono text-xs" value="{{ $uri }}" readonly onclick="this.select()">
-        </div>
+            <div class="mt-4">
+                <label class="label text-xs">{{ __('Setup link (paste into apps that support it)') }}</label>
+                <input class="field font-mono text-xs" value="{{ $uri }}" readonly onclick="this.select()">
+            </div>
+        </details>
 
         <div class="mt-6 border-t border-app pt-5">
             <h3 class="font-semibold text-strong">{{ __('Step 2: confirm the code from your app') }}</h3>
