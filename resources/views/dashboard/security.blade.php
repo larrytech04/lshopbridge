@@ -64,23 +64,23 @@
     {{-- Transaction PIN --}}
     <div x-show="tab === 'pin'" x-cloak class="mt-4 rounded-3xl border border-app p-6">
         <h3 class="font-semibold text-strong">{{ $user->hasTransactionPin() ? __('Change transaction PIN') : __('Set a transaction PIN') }}</h3>
-        <p class="mt-1 text-sm text-muted">{{ __('A 4-6 digit code you\'ll enter to authorize transfers and withdrawals, separate from your login password.') }}</p>
+        <p class="mt-1 text-sm text-muted">{{ __('A 4-digit code you\'ll enter to authorize transfers and withdrawals, separate from your login password.') }}</p>
         <form method="POST" action="{{ route('security.pin') }}" class="mt-5 space-y-4">
             @csrf @method('PUT')
             @if ($user->hasTransactionPin())
                 <div>
                     <label class="label">{{ __('Current PIN') }}</label>
-                    <input type="password" inputmode="numeric" name="current_pin" maxlength="6" required class="field max-w-[200px]" placeholder="••••">
+                    <input type="password" inputmode="numeric" name="current_pin" maxlength="4" required class="field max-w-[200px]" placeholder="••••">
                 </div>
             @endif
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <label class="label">{{ __('New PIN') }}</label>
-                    <input type="password" inputmode="numeric" name="pin" maxlength="6" required class="field" placeholder="{{ __('4-6 digits') }}">
+                    <input type="password" inputmode="numeric" name="pin" maxlength="4" required class="field" placeholder="{{ __('4 digits') }}">
                 </div>
                 <div>
                     <label class="label">{{ __('Confirm PIN') }}</label>
-                    <input type="password" inputmode="numeric" name="pin_confirmation" maxlength="6" required class="field" placeholder="{{ __('Re-enter PIN') }}">
+                    <input type="password" inputmode="numeric" name="pin_confirmation" maxlength="4" required class="field" placeholder="{{ __('Re-enter PIN') }}">
                 </div>
             </div>
             <button class="btn btn-primary">{{ __('Save PIN') }}</button>

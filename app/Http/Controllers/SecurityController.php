@@ -56,17 +56,21 @@ class SecurityController extends Controller
         return redirect()->route('password.request');
     }
 
-    /** Set or change the transaction PIN, a 4-6 digit code required before authorizing
+    /** Set or change the transaction PIN, a 4-digit code required before authorizing
      *  transfers/withdrawals, separate from the login password. */
     public function updatePin(Request $request)
     {
         $user = $request->user();
 
+        // Exactly 4, matching the reauth PIN dialer everywhere else in the
+        // app (see resources/views/auth/reauth-pin.blade.php) — it only ever
+        // collects 4 digits, so a longer PIN set here could never actually
+        // be entered there.
         $rules = [
-            'pin' => ['required', 'digits_between:4,6', 'confirmed'],
+            'pin' => ['required', 'digits:4', 'confirmed'],
         ];
         if ($user->hasTransactionPin()) {
-            $rules['current_pin'] = ['required', 'digits_between:4,6'];
+            $rules['current_pin'] = ['required', 'digits:4'];
         }
 
         $data = $request->validate($rules);
