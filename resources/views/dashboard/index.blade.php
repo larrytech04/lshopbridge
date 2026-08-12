@@ -69,6 +69,22 @@
                              sticky just below the header while scrolling. --}}
                         <div class="sticky top-16 z-20 mt-1.5 flex flex-wrap items-center justify-start gap-1 py-1">
                             <a href="{{ route('home') }}" target="_blank" rel="noopener" class="glass inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong"><x-img-icon name="Ui-Webpage-Bullets--Streamline-Ultimate.png" class="h-2.5 w-2.5" /> {{ __('Visit website') }}</a>
+                            @if ($user->isSuperAdmin())
+                                {{-- Quick switcher between the three areas a super admin can reach —
+                                     mobile only, desktop already has all three reachable from the
+                                     regular nav without needing a shortcut. --}}
+                                <div x-data="{ open: false }" @keydown.escape.window="open = false" @click.outside="open = false" class="relative lg:hidden">
+                                    <button type="button" @click="open = !open" :aria-expanded="open" class="glass inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong">
+                                        <x-icon name="refresh" class="h-2.5 w-2.5" /> {{ __('Switch dashboard') }}
+                                    </button>
+                                    <div x-show="open" x-cloak x-transition @click="open = false"
+                                         class="absolute left-0 top-6 z-30 w-40 overflow-hidden rounded-2xl border border-app card-solid shadow-lg">
+                                        <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-semibold {{ request()->routeIs('dashboard') ? 'text-brand-600' : 'text-body hover:surface-2' }}"><x-icon name="user" class="h-3.5 w-3.5" /> {{ __('User') }}</a>
+                                        <a href="{{ route('agent.dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-body hover:surface-2"><x-icon name="truck" class="h-3.5 w-3.5" /> {{ __('Agent') }}</a>
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-body hover:surface-2"><x-icon name="shield" class="h-3.5 w-3.5" /> {{ __('Admin') }}</a>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
