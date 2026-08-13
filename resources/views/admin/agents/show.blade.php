@@ -82,5 +82,7 @@
             <button class="btn btn-ghost mt-2 text-sm">Save notes</button>
         </form>
     </x-glass-card>
+
+    @include('admin.partials.seo-fields', ['model' => $agent, 'type' => 'agent'])
 </div>
 @endsection

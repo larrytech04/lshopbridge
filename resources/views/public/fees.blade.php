@@ -1,5 +1,13 @@
 @extends('layouts.public')
 @section('title', 'Fees & rates · '.config('platform.name'))
+@section('meta_description', __('See how :name\'s fees and exchange rates work for wallet funding, deposits and marketplace purchases before you confirm a transaction.', ['name' => config('platform.name')]))
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('Fees & rates'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('public.fees'))],
+    ])) !!}
+@endpush
 
 @section('content')
 <section class="mx-auto max-w-4xl px-4 pt-20 text-center sm:px-6">

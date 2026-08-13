@@ -2,6 +2,13 @@
 @section('title', __('China Wallet Funding').' · '.config('platform.name'))
 @section('meta_description', __('Send funds to an approved China wallet using your LshopBridge balance or an available payment method. Review the recipient, exchange rate, fees and delivered amount before confirming.'))
 
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('China Wallet Funding'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('public.fund'))],
+    ])) !!}
+@endpush
+
 @php
     $user = auth()->user();
 
@@ -196,7 +203,7 @@
         </div>
 
         <div class="mx-auto text-center">
-            <img src="{{ asset('assets/'.rawurlencode('how it works aboutpg.png')) }}" alt="" class="img-float mx-auto h-36 w-auto sm:h-44" loading="lazy">
+            <img src="{{ asset('assets/'.rawurlencode('how it works aboutpg.png')) }}" alt="" width="1536" height="1024" class="img-float mx-auto h-36 w-auto sm:h-44" loading="lazy">
             <div class="float-shadow mx-auto mt-4"></div>
         </div>
 

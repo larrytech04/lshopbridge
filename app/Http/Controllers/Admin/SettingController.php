@@ -54,6 +54,11 @@ class SettingController extends Controller
             'google_site_verification' => 'string',
             'bing_site_verification' => 'string',
             'livechat_embed' => 'string',
+            // SEO
+            'seo_indexing_enabled' => 'bool',
+            'seo_canonical_domain' => 'string',
+            'seo_twitter_handle' => 'string',
+            'google_tag_manager_id' => 'string',
             // Automation & controls
             'payments_automation_enabled' => 'bool',
             'funding_automation_enabled' => 'bool',
@@ -130,8 +135,8 @@ class SettingController extends Controller
             $settings->set('mail_password', Crypt::encryptString($request->input('mail_password')), 'string', 'general');
         }
 
-        // Logo / favicon uploads → public/branding.
-        foreach (['site_logo' => 'site_logo_path', 'site_favicon' => 'site_favicon_path'] as $field => $key) {
+        // Logo / favicon / default share image uploads → public/branding.
+        foreach (['site_logo' => 'site_logo_path', 'site_favicon' => 'site_favicon_path', 'seo_default_og_image' => 'seo_default_og_image'] as $field => $key) {
             if ($request->hasFile($field)) {
                 $file = $request->file($field);
                 $request->validate([$field => 'image|max:2048']);

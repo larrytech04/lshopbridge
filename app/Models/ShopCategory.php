@@ -10,6 +10,9 @@ use Illuminate\Support\Str;
 
 class ShopCategory extends Model
 {
+    // Deliberately NOT HasSeoMetadata — already has native seo_title/
+    // meta_description/canonical_url columns with a real admin form (see
+    // Page.php's docblock for the same reasoning).
     use HasFactory;
 
     protected $guarded = [];

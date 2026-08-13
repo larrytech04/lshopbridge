@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AgentStatus;
 use App\Enums\AgentType;
+use App\Models\Concerns\HasSeoMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
 
 class Agent extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasSeoMetadata, SoftDeletes;
 
     protected $guarded = [];
 

@@ -14,6 +14,7 @@ use App\Models\ProcessStep;
 use App\Services\Content\LegalContentRenderer;
 use App\Services\Funding\FundingService;
 use App\Services\Funding\RateService;
+use App\Services\Seo\StructuredDataBuilder;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -85,7 +86,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function faqs(): View
+    public function faqs(StructuredDataBuilder $schema): View
     {
         $faqs = Faq::published()->get();
 
@@ -110,6 +111,15 @@ class PageController extends Controller
             'faqs' => $faqs,
             'categories' => $categories,
             'faqsByCategory' => $faqs->groupBy('category'),
+            // Straight from the real, published Faq rows this page actually
+            // renders — never a separately curated/fabricated list, so the
+            // schema can never drift from what's visible.
+            'faqSchema' => $faqs->isNotEmpty()
+                ? $schema->faqPage($faqs->map(fn (Faq $faq) => [
+                    'question' => $faq->question,
+                    'answer' => $faq->answer,
+                ])->all())
+                : null,
         ]);
     }
 
@@ -159,6 +169,13 @@ class PageController extends Controller
             ->filter(fn (Page $p) => $p->isApplicableToServices($active))
             ->take(5);
 
+        $canonical = app(\App\Services\Seo\CanonicalUrlService::class);
+        $breadcrumbs = [
+            ['name' => __('Home'), 'url' => $canonical->normalize(route('home'))],
+            ['name' => __('Legal Center'), 'url' => $canonical->normalize(route('legal.index'))],
+            ['name' => $page->title, 'url' => $canonical->normalize(route('legal.show', $page))],
+        ];
+
         return view('public.legal-page', [
             'page' => $page,
             'excerptText' => $renderer->substitute($page->excerpt),
@@ -167,6 +184,8 @@ class PageController extends Controller
             'headings' => $renderer->extractHeadings($page->body),
             'related' => $related,
             'categoryLabel' => Page::CATEGORIES[$page->category] ?? 'General',
+            'breadcrumbs' => $breadcrumbs,
+            'breadcrumbSchema' => app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList($breadcrumbs),
         ]);
     }
 

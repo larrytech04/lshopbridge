@@ -1,5 +1,6 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.public')
 @section('title', 'Travel eSIMs · '.config('platform.name'))
+@section('meta_description', __('Browse travel eSIM data plans on :name and get connected in destinations worldwide, install a digital SIM instantly, no physical SIM card needed.', ['name' => config('platform.name')]))
 @section('page-title', __('Travel eSIMs'))
 
 @php

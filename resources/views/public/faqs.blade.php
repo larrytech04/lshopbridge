@@ -2,6 +2,12 @@
 @section('title', __('Help Center').' · '.config('platform.name'))
 @section('meta_description', __('Search answers about your account, wallet, deposits, China wallet funding, marketplace purchases, shipping, security and every other LshopBridge service.'))
 
+@if ($faqSchema)
+    @push('structured-data')
+        {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($faqSchema) !!}
+    @endpush
+@endif
+
 @php
     $allFaqs = $faqs->map(fn ($f) => [
         'id' => $f->id,

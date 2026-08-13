@@ -1,5 +1,22 @@
 @extends(auth()->check() ? 'layouts.app' : 'layouts.public')
-@section('title', ($activeTop ? __($activeTop->name).', ' : '').__('Digital Shop').' · '.config('platform.name'))
+@php
+    // The active-most category (subcategory when browsing one, else the
+    // top-level category) owns its own admin-entered seo_title/
+    // meta_description/canonical_url (see admin/shop/categories.blade.php)
+    // — reading those directly instead of only ever falling back to the
+    // generated default keeps every subcategory from sharing its parent's
+    // exact title/description (a real duplicate-title gap this closes).
+    $activeSeoCategory = $activeSub ?: $activeTop;
+@endphp
+@section('title', $activeSeoCategory
+    ? ($activeSeoCategory->seo_title ?: __($activeSeoCategory->name).', '.__('Digital Shop')).' · '.config('platform.name')
+    : __('Digital Shop').' · '.config('platform.name'))
+@section('meta_description', $activeSeoCategory
+    ? ($activeSeoCategory->meta_description ?: __(':category on :name, browse and buy instantly.', ['category' => __($activeSeoCategory->name), 'name' => config('platform.name')]))
+    : __('Shop gift cards, eSIMs, top-ups and other digital products on :name, delivered to your account.', ['name' => config('platform.name')]))
+@if ($activeSeoCategory && $activeSeoCategory->canonical_url)
+    @section('canonical', app(\App\Services\Seo\CanonicalUrlService::class)->fromOverride($activeSeoCategory->canonical_url))
+@endif
 @section('page-title', __('Shop'))
 
 @section('content')
@@ -79,6 +96,8 @@
 
         {{-- Main content --}}
         <div>
+            <h1 class="mb-4 text-2xl font-extrabold text-strong">{{ $activeSub ? __($activeSub->name) : ($activeTop ? __($activeTop->name) : __('Digital Shop')) }}</h1>
+
             {{-- Search + sort --}}
             <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <form method="GET" action="{{ url()->current() }}" class="relative flex-1">

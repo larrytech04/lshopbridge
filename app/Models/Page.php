@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Page extends Model
 {
+    // Deliberately NOT HasSeoMetadata — this table already has its own
+    // native meta_title/meta_description columns (see the 2026-07-25
+    // "management fields" migration) with a real admin form already wired
+    // to them. A second, parallel SEO-storage mechanism here would just be
+    // confusing about which one wins.
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];

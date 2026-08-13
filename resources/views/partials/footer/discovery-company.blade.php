@@ -7,6 +7,7 @@
 
     $discover = array_filter([
         ['label' => __('How It Works'), 'href' => route('how-it-works')],
+        Route::has('countries.index') ? ['label' => __('Supported Countries'), 'href' => route('countries.index')] : null,
         Route::has('pages.show') ? ['label' => __('About LshopBridge'), 'href' => route('pages.show', 'about')] : null,
         Route::has('learning.index') ? ['label' => __('Learning Center'), 'href' => route('learning.index')] : null,
         Route::has('public.faqs') ? ['label' => __('FAQs'), 'href' => route('public.faqs')] : null,

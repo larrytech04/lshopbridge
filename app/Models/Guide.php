@@ -12,6 +12,9 @@ use Illuminate\Support\Str;
 
 class Guide extends Model
 {
+    // Deliberately NOT HasSeoMetadata — already has native meta_title/
+    // meta_description columns with a real admin form (see Page.php's
+    // docblock for the same reasoning).
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];

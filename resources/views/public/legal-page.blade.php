@@ -2,14 +2,14 @@
 @section('title', ($page->meta_title ?: $page->title).' · '.config('platform.name'))
 @section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($excerptText), 160))
 
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($breadcrumbSchema) !!}
+@endpush
+
 @section('content')
 <div class="mx-auto max-w-[1200px] px-4 pt-8 pb-16 sm:px-6" x-data="{ mobileToc: false }">
 
-    <nav class="legal-print-hide mb-5 flex flex-wrap items-center gap-1.5 text-xs text-faint">
-        <a href="{{ route('legal.index') }}" class="hover:text-body">{{ __('Legal Center') }}</a>
-        <x-icon name="chevron-right" class="h-3 w-3 shrink-0" />
-        <span class="text-body">{{ $page->title }}</span>
-    </nav>
+    <div class="legal-print-hide mb-5 text-xs"><x-breadcrumbs :items="$breadcrumbs" /></div>
 
     <div class="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
         {{-- Desktop table of contents --}}

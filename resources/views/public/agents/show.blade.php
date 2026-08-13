@@ -1,5 +1,23 @@
 @extends('layouts.public')
-@section('title', $agent->business_name.' · Shipping agent')
+@php
+    // Admin-entered overrides from the seo_metadata table (see
+    // admin/partials/seo-fields.blade.php + SeoMetadataController) win when
+    // set; otherwise fall back to the sensible computed default below —
+    // same precedence as every other model-backed page in this app.
+    $agentSeo = $agent->seoMetadata;
+@endphp
+@section('title', $agentSeo?->meta_title ?: $agent->business_name.' · Shipping agent')
+@section('meta_description', $agentSeo?->meta_description ?: __(':name is a verified shipping agent on :platform, helping you import and ship goods from China.', ['name' => $agent->business_name, 'platform' => config('platform.name')]))
+@if ($agentSeo?->robots)
+    @section('robots', $agentSeo->robots)
+@endif
+@if ($agentSeo?->canonical_override)
+    @section('canonical', app(\App\Services\Seo\CanonicalUrlService::class)->fromOverride($agentSeo->canonical_override))
+@endif
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($breadcrumbSchema) !!}
+@endpush
 
 @php
     $contactUrl = route('marketplace.show', $agent);
@@ -13,6 +31,7 @@
 @section('content')
 <section class="mx-auto max-w-none px-4 pt-16 sm:px-6" x-data="{ tab: 'info' }">
     <a href="{{ route('agents.index') }}" class="text-sm text-brand-500 hover:text-brand-600">← {{ __('All agents') }}</a>
+    <div class="mt-3"><x-breadcrumbs :items="$breadcrumbs" /></div>
 
     {{-- Header --}}
     <div class="mt-4 flex items-start gap-4">

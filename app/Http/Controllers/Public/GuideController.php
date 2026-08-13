@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Guide;
 use App\Services\Admin\GuideAdminService;
 use App\Services\Security\FormProtectionService;
+use App\Services\Seo\CanonicalUrlService;
+use App\Services\Seo\StructuredDataBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class GuideController extends Controller
@@ -37,7 +40,7 @@ class GuideController extends Controller
         ]);
     }
 
-    public function show(Guide $guide): View
+    public function show(Guide $guide, StructuredDataBuilder $schema, CanonicalUrlService $canonical): View
     {
         abort_unless($guide->is_published, 404);
         $guide->increment('views');
@@ -50,6 +53,13 @@ class GuideController extends Controller
             : collect();
         $pos = $siblings->search(fn ($g) => $g->id === $guide->id);
 
+        $guideUrl = $canonical->normalize(route('guides.show', $guide));
+        $breadcrumbs = [
+            ['name' => __('Home'), 'url' => $canonical->normalize(route('home'))],
+            ['name' => __('China buying academy'), 'url' => $canonical->normalize(route('guides.index'))],
+            ['name' => $guide->title, 'url' => $guideUrl],
+        ];
+
         return view('public.guides.show', [
             'guide' => $guide,
             'prev' => $pos !== false && $pos > 0 ? $siblings[$pos - 1] : null,
@@ -57,6 +67,25 @@ class GuideController extends Controller
             'related' => Guide::published()->where('id', '!=', $guide->id)
                 ->where('category', $guide->category)->take(3)->get(),
             'alreadyVoted' => (bool) session("guide_feedback_{$guide->id}"),
+            'breadcrumbs' => $breadcrumbs,
+            'breadcrumbSchema' => $schema->breadcrumbList($breadcrumbs),
+            // Author/publisher both the real organization identity, never a
+            // fabricated named person — see brief section 10/12's caution
+            // against invented author bios. dateModified is the guide's own
+            // updated_at, only ever changed when the record itself is
+            // actually edited, never on every deploy/request.
+            'articleSchema' => $schema->article([
+                'headline' => $guide->title,
+                'description' => $guide->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($guide->excerpt ?: $guide->body ?: ''), 160),
+                'url' => $guideUrl,
+                'image' => $guide->cover_image_path ? $canonical->normalize(Storage::url($guide->cover_image_path)) : null,
+                'datePublished' => $guide->created_at?->toAtomString(),
+                'dateModified' => $guide->updated_at?->toAtomString(),
+                'authorName' => setting('company_trading_name') ?: setting('site_name', config('platform.name')),
+                'authorType' => 'Organization',
+                'publisherName' => setting('company_trading_name') ?: setting('site_name', config('platform.name')),
+                'publisherLogo' => $canonical->normalize(site_logo()),
+            ]),
         ]);
     }
 

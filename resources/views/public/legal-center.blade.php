@@ -2,6 +2,13 @@
 @section('title', __('Legal & Policy Center').' · '.config('platform.name'))
 @section('meta_description', __('Terms, privacy, refund and other policies governing your use of :name.', ['name' => setting('site_name', config('platform.name'))]))
 
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('Legal Center'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('legal.index'))],
+    ])) !!}
+@endpush
+
 @section('content')
 <div class="mx-auto max-w-5xl px-4 pt-10 pb-16 sm:px-6">
     <div class="text-center">

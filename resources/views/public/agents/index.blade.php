@@ -1,5 +1,13 @@
 @extends('layouts.public')
 @section('title', 'Shipping agents · '.config('platform.name'))
+@section('meta_description', __('Browse verified shipping and delivery agents on :name to help you import and ship goods from China.', ['name' => config('platform.name')]))
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('Shipping agents'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('agents.index'))],
+    ])) !!}
+@endpush
 
 @section('content')
 <section class="mx-auto max-w-none px-4 pt-8 sm:px-6">
@@ -8,6 +16,8 @@
         <x-img-icon name="Arrow-Button-Right-3--Streamline-Ultimate.png" class="h-3 w-3 text-faint" />
         <span class="font-semibold text-strong">{{ __('Shipping agents') }}</span>
     </nav>
+
+    <h1 class="mt-4 text-2xl font-extrabold text-strong">{{ __('Shipping agents') }}</h1>
 
     <form method="GET" class="glass mt-6 grid gap-3 rounded-2xl p-4 sm:grid-cols-4">
         <input name="q" value="{{ $filters['q'] ?? '' }}" class="field sm:col-span-2" placeholder="{{ __('Search agents…') }}">

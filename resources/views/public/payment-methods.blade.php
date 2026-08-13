@@ -1,5 +1,13 @@
 @extends('layouts.public')
 @section('title', 'Payment methods · '.config('platform.name'))
+@section('meta_description', __('Browse the payment methods available on :name for depositing and funding your wallet, including Mobile Money and other options enabled for your country.', ['name' => config('platform.name')]))
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('Payment methods'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('public.payment-methods'))],
+    ])) !!}
+@endpush
 
 @section('content')
 <section class="mx-auto max-w-none px-4 pt-20 text-center sm:px-6">
@@ -8,7 +16,7 @@
     <div class="mt-7 flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-body">
         <span class="pill surface border border-app px-3.5 py-1.5"><x-icon name="check-circle" class="h-4 w-4 text-emerald-500" /> {{ __('Instant Delivery') }}</span>
         <span class="pill surface border border-app px-3.5 py-1.5"><x-icon name="shield" class="h-4 w-4 text-brand-500" /> {{ __('Secure & encrypted') }}</span>
-        <span class="pill surface border border-app px-3.5 py-1.5"><x-icon name="globe" class="h-4 w-4 text-brand-500" /> {{ __('40+ African countries') }}</span>
+        <a href="{{ route('countries.index') }}" class="pill surface border border-app px-3.5 py-1.5 transition hover:-translate-y-0.5"><x-icon name="globe" class="h-4 w-4 text-brand-500" /> {{ __('40+ African countries') }}</a>
     </div>
 </section>
 

@@ -119,6 +119,43 @@
         </x-glass-card>
         </div>
 
+        {{-- SEO --}}
+        <div data-settings-tab="seo" x-show="sectionVisible('seo')" x-cloak>
+        <x-glass-card>
+            <h3 class="font-semibold text-strong">SEO</h3>
+            <p class="mt-1 text-xs text-muted">Search-engine verification codes and Google Analytics live under Integrations & Analytics above — these are the rest of the site-wide SEO defaults (see also each page's own per-record SEO fields where available).</p>
+            <div class="mt-4 space-y-3">
+                <label class="flex items-center justify-between rounded-xl border border-app surface p-4" data-settings-label="Allow search engines to index this site" x-show="fieldVisible('Allow search engines to index this site')">
+                    <span><span class="font-medium text-strong">Allow search engines to index this site</span><br><span class="text-xs text-muted">Only takes effect in production — staging/preview environments are always noindex regardless of this setting.</span></span>
+                    <input type="checkbox" name="seo_indexing_enabled" value="1" @checked(setting('seo_indexing_enabled', true)) class="h-5 w-9 rounded-full surface-2 text-brand-500">
+                </label>
+            </div>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div data-settings-label="Canonical domain" x-show="fieldVisible('Canonical domain')">
+                    <label class="label">Canonical domain</label>
+                    <input name="seo_canonical_domain" value="{{ setting('seo_canonical_domain') }}" placeholder="{{ str_replace(['https://', 'http://'], '', config('app.url')) }}" class="field">
+                    <p class="mt-1 text-[11px] text-faint">Every canonical URL, sitemap entry and structured-data URL uses this host. Leave blank to use APP_URL.</p>
+                </div>
+                <div data-settings-label="Twitter/X handle" x-show="fieldVisible('Twitter/X handle')">
+                    <label class="label">Twitter / X handle</label>
+                    <input name="seo_twitter_handle" value="{{ setting('seo_twitter_handle') }}" placeholder="@lshopbridge" class="field">
+                </div>
+                <div data-settings-label="Google Tag Manager ID" x-show="fieldVisible('Google Tag Manager ID')">
+                    <label class="label">Google Tag Manager ID</label>
+                    <input name="google_tag_manager_id" value="{{ setting('google_tag_manager_id') }}" placeholder="GTM-XXXXXXX" class="field">
+                </div>
+                <div data-settings-label="Default share image" x-show="fieldVisible('Default share image')">
+                    <label class="label">Default share image</label>
+                    <div class="flex items-center gap-3">
+                        <img src="{{ setting('seo_default_og_image') ? asset(setting('seo_default_og_image')) : site_logo() }}" alt="" class="h-10 w-auto rounded-lg bg-white p-1 ring-1 ring-app">
+                        <input type="file" name="seo_default_og_image" accept="image/*" class="field !py-2 text-sm">
+                    </div>
+                    <p class="mt-1 text-[11px] text-faint">Used when a page has no image of its own. 1200×630 recommended. Falls back to the logo.</p>
+                </div>
+            </div>
+        </x-glass-card>
+        </div>
+
         {{-- Automation & Behaviour --}}
         <div data-settings-tab="automation" x-show="sectionVisible('automation')" x-cloak>
         <x-glass-card>
@@ -308,6 +345,7 @@ function settingsPage() {
             { key: 'social', label: 'Contact & Social' },
             { key: 'email', label: 'Email Configuration' },
             { key: 'integrations', label: 'Integrations & Analytics' },
+            { key: 'seo', label: 'SEO' },
             { key: 'automation', label: 'Automation & Behaviour' },
             { key: 'security', label: 'Security & Administration' },
             { key: 'forms_bot_protection', label: 'Forms & Bot Protection' },

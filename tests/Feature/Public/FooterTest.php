@@ -246,6 +246,18 @@ class FooterTest extends TestCase
         $response->assertDontSee('How To Pick A Reliable Agent');
     }
 
+    public function test_footer_discover_column_links_to_the_supported_countries_page(): void
+    {
+        // Site-wide crawl path to the country landing pages built this
+        // phase — every public page footer now links there, not just the
+        // one contextual link on payment-methods.blade.php.
+        $response = $this->get(route('home'));
+
+        $response->assertOk();
+        $response->assertSee('Supported Countries');
+        $response->assertSee(route('countries.index'), false);
+    }
+
     public function test_newsletter_subscription_stores_selected_interests(): void
     {
         $response = $this->post(route('newsletter.subscribe'), [

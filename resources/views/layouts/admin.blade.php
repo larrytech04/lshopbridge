@@ -10,6 +10,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="aurora pb-ash-theme min-h-screen" x-data="{ sidebar: false }">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg">{{ __('Skip to content') }}</a>
     @include('partials.page-skeleton')
 
     @php
@@ -18,7 +19,6 @@
             'agents' => \App\Models\Agent::where('status', 'pending')->count(),
             'beneficiaries' => \App\Models\BeneficiaryAccount::where('status', 'pending')->count(),
             'deposits' => \App\Models\Deposit::whereIn('status', ['pending', 'under_review'])->count(),
-            'withdrawals' => \App\Models\WithdrawalRequest::whereIn('status', ['pending', 'approved'])->count(),
             'funding' => \App\Models\FundingRequest::whereIn('status', ['manual_review', 'funding_processing'])->count(),
             'reviews' => \App\Models\Review::where('status', 'pending')->count(),
             'disputes' => \App\Models\Dispute::whereIn('status', ['open', 'in_progress'])->count(),
@@ -52,7 +52,6 @@
 
             <p class="px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-faint">Money</p>
             <x-admin-nav route="admin.deposits.*" :href="route('admin.deposits.index')" img="Credit-Card-Receive--Streamline-Sharp-Streamline-Material.png" raw :badge="$q['deposits']">Deposits</x-admin-nav>
-            <x-admin-nav route="admin.withdrawals.*" :href="route('admin.withdrawals.index')" img="Money-Bags--Streamline-Ultimate.png" raw class="nav-item-ash" :badge="$q['withdrawals']">Withdrawals</x-admin-nav>
             <x-admin-nav route="admin.funding.*" :href="route('admin.funding.index')" img="Real-Estate-Insurance-Dollar-Hand-House--Streamline-Freehand.png" raw :badge="$q['funding']">Funding</x-admin-nav>
             <x-admin-nav route="admin.rates.*" :href="route('admin.rates.index')" img="Cash-Exchange-Rate--Streamline-Flex.png" raw>Exchange rates</x-admin-nav>
             <x-admin-nav route="admin.fees.*" :href="route('admin.fees.index')" img="Incognito-Mode--Streamline-Core-Remix.png" raw>Fees</x-admin-nav>
@@ -104,6 +103,7 @@
 
             <p class="px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-faint">System &amp; Operations &middot; Administration</p>
             <x-admin-nav route="admin.settings.*" :href="route('admin.settings.index')" img="Settings-User--Streamline-Ultimate.png" raw>Platform settings</x-admin-nav>
+            <x-admin-nav route="admin.seo.content-quality" :href="route('admin.seo.content-quality')" icon="search">SEO content quality</x-admin-nav>
             <x-admin-nav route="admin.audit.*" :href="route('admin.audit.index')" img="Analyze-Data-4--Streamline-Brooklyn.png" raw>Audit logs</x-admin-nav>
             <x-admin-nav route="admin.system-info.*" :href="route('admin.system-info.index')" icon="info">System information</x-admin-nav>
         </nav>
@@ -144,7 +144,7 @@
             </div>
         </header>
 
-        <main class="mx-auto max-w-none px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
+        <main id="main-content" tabindex="-1" class="mx-auto max-w-none px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
             <x-flash />
             @yield('content')
         </main>

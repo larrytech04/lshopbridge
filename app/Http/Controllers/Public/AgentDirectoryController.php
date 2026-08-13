@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\Country;
 use App\Services\Security\FormProtectionService;
+use App\Services\Seo\CanonicalUrlService;
+use App\Services\Seo\StructuredDataBuilder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -34,13 +36,21 @@ class AgentDirectoryController extends Controller
         ]);
     }
 
-    public function show(Agent $agent): View
+    public function show(Agent $agent, CanonicalUrlService $canonical, StructuredDataBuilder $schema): View
     {
         abort_unless($agent->status->value === 'approved', 404);
+
+        $breadcrumbs = [
+            ['name' => __('Home'), 'url' => $canonical->normalize(route('home'))],
+            ['name' => __('Shipping agents'), 'url' => $canonical->normalize(route('agents.index'))],
+            ['name' => $agent->business_name, 'url' => $canonical->normalize(route('agents.show', $agent))],
+        ];
 
         return view('public.agents.show', [
             'agent' => $agent->load(['warehouseCountry', 'countries', 'shippingRates.destinationCountry', 'user']),
             'reviews' => $agent->reviews()->where('status', 'approved')->with('user')->latest()->take(10)->get(),
+            'breadcrumbs' => $breadcrumbs,
+            'breadcrumbSchema' => $schema->breadcrumbList($breadcrumbs),
         ]);
     }
 

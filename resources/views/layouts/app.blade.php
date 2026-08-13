@@ -18,6 +18,7 @@
         closeCtx() { this.ctx = null; },
       }"
       @keydown.escape.window="closeCtx()">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg">{{ __('Skip to content') }}</a>
     @include('partials.pull-to-refresh')
     @include('partials.page-skeleton')
 
@@ -229,7 +230,7 @@
              genuine "sticky footer": pinned to the bottom of the viewport on
              short pages, pushed below the fold normally on long ones — never
              a position:sticky/fixed overlay sitting on top of content. --}}
-        <main class="mx-auto flex w-full max-w-none flex-1 flex-col px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
+        <main id="main-content" tabindex="-1" class="mx-auto flex w-full max-w-none flex-1 flex-col px-4 py-6 pb-28 sm:px-6 lg:py-8 lg:pb-10">
             <x-flash />
             <div class="flex-1">
                 @yield('content')

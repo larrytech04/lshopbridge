@@ -3,11 +3,17 @@
 @section('meta_description', $guide->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($guide->excerpt ?: $guide->body ?: ''), 160))
 @section('og_image', $guide->cover_image_path ? Storage::url($guide->cover_image_path) : null)
 
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($breadcrumbSchema) !!}
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($articleSchema) !!}
+@endpush
+
 @php $meta = guide_category_meta($guide->category); @endphp
 
 @section('content')
 <div class="mx-auto max-w-[1200px] px-4 pt-10 pb-16 sm:px-6">
     <a href="{{ route('guides.index') }}" class="text-sm text-brand-500 hover:text-brand-600">← {{ __('Back to academy') }}</a>
+    <div class="mt-3"><x-breadcrumbs :items="$breadcrumbs" /></div>
 
     <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_18rem]">
         {{-- Reading column --}}
@@ -29,7 +35,7 @@
                 </div>
             </div>
 
-            @if ($guide->cover_image_path)<img src="{{ Storage::url($guide->cover_image_path) }}" class="w-full rounded-3xl" alt="">@endif
+            @if ($guide->cover_image_path)<img src="{{ Storage::url($guide->cover_image_path) }}" class="w-full rounded-3xl" alt="{{ $guide->title }}" loading="lazy">@endif
 
             @if ($guide->video_url)
                 <div class="aspect-video overflow-hidden rounded-3xl">

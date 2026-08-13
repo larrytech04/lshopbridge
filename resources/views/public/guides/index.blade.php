@@ -1,5 +1,13 @@
 @extends('layouts.public')
 @section('title', 'China buying academy · '.config('platform.name'))
+@section('meta_description', __('Learn how to buy from China with step-by-step guides covering platforms, payments, shipping and avoiding common mistakes, from :name.', ['name' => config('platform.name')]))
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('China buying academy'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('guides.index'))],
+    ])) !!}
+@endpush
 
 @section('content')
 <section class="mx-auto max-w-none space-y-8 px-4 pb-16 pt-10 sm:px-6">

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ShopProductStatus;
 use App\Enums\ShopProductType;
+use App\Models\Concerns\HasSeoMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 
 class ShopProduct extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasSeoMetadata, SoftDeletes;
 
     protected $guarded = [];
 

@@ -1,5 +1,6 @@
 @extends('layouts.public')
 @section('title', 'Get support · '.config('platform.name'))
+@section('meta_description', __('Get help from the :name team without needing an account, describe your issue and we\'ll get back to you.', ['name' => config('platform.name')]))
 
 @section('content')
 <section class="mx-auto max-w-3xl px-4 pt-20 sm:px-6">
@@ -15,25 +16,25 @@
             <x-honeypot />
             <x-form-timing form-type="guest_support" />
             <div class="grid gap-4 sm:grid-cols-2">
-                <div><label class="label">{{ __('Name') }}</label><input name="name" value="{{ old('name') }}" required class="field"></div>
-                <div><label class="label">{{ __('Email') }}</label><input name="email" type="email" value="{{ old('email') }}" required class="field"></div>
+                <div><label for="support-name" class="label">{{ __('Name') }}</label><input id="support-name" name="name" value="{{ old('name') }}" required class="field"></div>
+                <div><label for="support-email" class="label">{{ __('Email') }}</label><input id="support-email" name="email" type="email" value="{{ old('email') }}" required class="field"></div>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
-                <div><label class="label">{{ __('Phone (optional)') }}</label><input name="phone" value="{{ old('phone') }}" class="field"></div>
+                <div><label for="support-phone" class="label">{{ __('Phone (optional)') }}</label><input id="support-phone" name="phone" value="{{ old('phone') }}" class="field"></div>
                 <div>
-                    <label class="label">{{ __('Category') }}</label>
-                    <select name="category" class="field">
+                    <label for="support-category" class="label">{{ __('Category') }}</label>
+                    <select id="support-category" name="category" class="field">
                         @foreach (['general' => 'General', 'deposit' => 'Deposit', 'funding' => 'Funding', 'agent' => 'Agent / shipping'] as $v => $lbl)
                             <option value="{{ $v }}" @selected(old('category') === $v)>{{ __($lbl) }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            <div><label class="label">{{ __('Subject') }}</label><input name="subject" value="{{ old('subject', request('subject')) }}" required class="field"></div>
-            <div><label class="label">{{ __('Describe your issue') }}</label><textarea name="description" rows="6" required class="field">{{ old('description') }}</textarea></div>
+            <div><label for="support-subject" class="label">{{ __('Subject') }}</label><input id="support-subject" name="subject" value="{{ old('subject', request('subject')) }}" required class="field"></div>
+            <div><label for="support-description" class="label">{{ __('Describe your issue') }}</label><textarea id="support-description" name="description" rows="6" required class="field">{{ old('description') }}</textarea></div>
             <div>
-                <label class="label">{{ __('Attachment (optional)') }}</label>
-                <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.pdf" class="field !py-2 text-sm">
+                <label for="support-attachment" class="label">{{ __('Attachment (optional)') }}</label>
+                <input id="support-attachment" type="file" name="attachment" accept=".jpg,.jpeg,.png,.pdf" class="field !py-2 text-sm">
                 <p class="mt-1 text-[11px] text-faint">{{ __('JPG, PNG, or PDF, up to 5MB.') }}</p>
             </div>
             <x-turnstile action="guest_support" />

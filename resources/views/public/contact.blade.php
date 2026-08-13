@@ -1,5 +1,6 @@
 @extends('layouts.public')
 @section('title', 'Contact us · '.config('platform.name'))
+@section('meta_description', __('Get in touch with the :name team for help with your wallet, China wallet funding, orders or account.', ['name' => config('platform.name')]))
 
 @section('content')
 <section class="mx-auto max-w-5xl px-4 pt-20 sm:px-6">
@@ -16,11 +17,11 @@
                 <x-honeypot />
                 <x-form-timing form-type="contact" />
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <div><label class="label">{{ __('Name') }}</label><input name="name" value="{{ old('name', auth()->user()->name ?? '') }}" required class="field"></div>
-                    <div><label class="label">{{ __('Email') }}</label><input name="email" type="email" value="{{ old('email', auth()->user()->email ?? '') }}" required class="field"></div>
+                    <div><label for="contact-name" class="label">{{ __('Name') }}</label><input id="contact-name" name="name" value="{{ old('name', auth()->user()->name ?? '') }}" required class="field"></div>
+                    <div><label for="contact-email" class="label">{{ __('Email') }}</label><input id="contact-email" name="email" type="email" value="{{ old('email', auth()->user()->email ?? '') }}" required class="field"></div>
                 </div>
-                <div><label class="label">{{ __('Subject') }}</label><input name="subject" value="{{ old('subject') }}" required class="field"></div>
-                <div><label class="label">{{ __('Message') }}</label><textarea name="message" rows="6" required class="field">{{ old('message') }}</textarea></div>
+                <div><label for="contact-subject" class="label">{{ __('Subject') }}</label><input id="contact-subject" name="subject" value="{{ old('subject') }}" required class="field"></div>
+                <div><label for="contact-message" class="label">{{ __('Message') }}</label><textarea id="contact-message" name="message" rows="6" required class="field">{{ old('message') }}</textarea></div>
                 <x-turnstile action="contact" />
                 <button class="btn btn-primary w-full">{{ __('Send message') }} <x-icon name="arrow-right" class="h-4 w-4" /></button>
             </form>

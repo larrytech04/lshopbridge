@@ -1,5 +1,13 @@
 @extends('layouts.public')
 @section('title', 'How it works · '.config('platform.name'))
+@section('meta_description', __('See how :name works, from funding your wallet and sending money to Alipay or other China wallets, to shopping digital products and getting support.', ['name' => config('platform.name')]))
+
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('How it works'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('how-it-works'))],
+    ])) !!}
+@endpush
 
 @php
     // $fundSteps, $shopSteps, $promises now come from PageController::howItWorks()

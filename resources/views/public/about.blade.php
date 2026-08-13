@@ -2,6 +2,13 @@
 @section('title', ($page->meta_title ?: $page->title ?: __('About us')).' · '.config('platform.name'))
 @section('meta_description', $page->meta_description ?: \Illuminate\Support\Str::limit(strip_tags($page->excerpt ?: ''), 160))
 
+@push('structured-data')
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag(app(\App\Services\Seo\StructuredDataBuilder::class)->breadcrumbList([
+        ['name' => __('Home'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('home'))],
+        ['name' => __('About us'), 'url' => app(\App\Services\Seo\CanonicalUrlService::class)->normalize(route('pages.show', $page))],
+    ])) !!}
+@endpush
+
 @php
     $brand = setting('site_name', config('platform.name'));
     $aboutHeading = __('Bridging Africa & China, one payment at a time.');
@@ -51,7 +58,7 @@
             </div>
         </div>
         <div class="flex justify-center">
-            <img src="{{ asset('assets/'.rawurlencode('about us.png')) }}" alt="{{ $brand }}" class="mx-auto max-h-64 w-auto" loading="lazy">
+            <img src="{{ asset('assets/'.rawurlencode('about us.png')) }}" alt="{{ $brand }}" width="360" height="360" class="mx-auto max-h-64 w-auto" loading="lazy">
         </div>
     </div>
 </section>
@@ -78,7 +85,7 @@
 <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
     <div class="grid items-center gap-10 lg:grid-cols-2">
         <div class="order-2 flex justify-center lg:order-1">
-            <img src="{{ asset('assets/'.rawurlencode('about.png')) }}" alt="{{ __('Our mission') }}" class="w-full max-w-lg" loading="lazy">
+            <img src="{{ asset('assets/'.rawurlencode('about.png')) }}" alt="{{ __('Our mission') }}" width="794" height="490" class="w-full max-w-lg" loading="lazy">
         </div>
         <div class="order-1 lg:order-2">
             <h2 class="text-3xl font-bold text-strong sm:text-4xl">{{ __('Our mission') }}</h2>
@@ -108,7 +115,7 @@
             <a href="{{ route('shop.index') }}" class="btn btn-primary mt-6 px-6 py-3">{{ __('Explore the shop') }} <x-icon name="arrow-right" class="h-4 w-4" /></a>
         </div>
         <div class="text-center">
-            <img src="{{ asset('assets/'.rawurlencode('shop cart.png')) }}" alt="{{ __('Digital shop') }}" class="img-float mx-auto max-h-72 w-auto" loading="lazy">
+            <img src="{{ asset('assets/'.rawurlencode('shop cart.png')) }}" alt="{{ __('Digital shop') }}" width="1536" height="1024" class="img-float mx-auto max-h-72 w-auto" loading="lazy">
             <div class="float-shadow mx-auto mt-4"></div>
         </div>
     </div>
@@ -188,7 +195,7 @@
                     <div class="relative mx-auto mt-6 xl:h-[28rem]">
                         {{-- Floating loop with hanging shadow (dead-centre on desktop) --}}
                         <div class="mx-auto text-center xl:absolute xl:inset-x-0 xl:top-1/2 xl:-translate-y-1/2">
-                            <img src="{{ asset('assets/'.rawurlencode('how it works aboutpg.png')) }}" alt="{{ $jTitle }}"
+                            <img src="{{ asset('assets/'.rawurlencode('how it works aboutpg.png')) }}" alt="{{ $jTitle }}" width="1536" height="1024"
                                  class="img-float mx-auto h-44 w-auto sm:h-52 lg:h-48" loading="lazy">
                             <div class="float-shadow mx-auto mt-4"></div>
                         </div>

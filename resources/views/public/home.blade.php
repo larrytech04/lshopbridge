@@ -1,5 +1,16 @@
 @extends('layouts.public')
-@section('title', setting('site_name', config('platform.name')).', Fund Alipay & China wallets from Africa')
+@section('title', 'Africa-China Payments, eSIMs and Digital Services | '.setting('site_name', config('platform.name')))
+@section('meta_description', 'Explore China wallet funding options, eSIM plans, digital services, importation guides and verified delivery agents through '.setting('site_name', config('platform.name')).'.')
+
+@php
+    $__seoService = app(\App\Services\Seo\SeoService::class);
+@endphp
+@push('structured-data')
+    {{-- Organization + WebSite here specifically, not site-wide — see
+         SeoService's own docblock on why these aren't added to every page. --}}
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($__seoService->organizationBlock()) !!}
+    {!! \App\Services\Seo\StructuredDataBuilder::scriptTag($__seoService->websiteBlock()) !!}
+@endpush
 
 @section('content')
 @php
@@ -59,7 +70,7 @@
         <div class="relative z-0 mx-auto mt-8 w-56 cursor-pointer sm:mt-10 sm:w-64 lg:hidden"
              x-data="{ open: false }" @click="open = !open">
             <div class="relative transition-transform duration-500 ease-out" :class="open ? '-translate-y-1 scale-105' : ''">
-                <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt=""
+                <img src="{{ asset('assets/'.rawurlencode('hero pinpoint.jpeg')) }}" alt="" width="1536" height="1024"
                      class="h-auto w-full select-none" draggable="false" @contextmenu.prevent
                      style="-webkit-touch-callout: none;" loading="lazy">
                 <span class="absolute -translate-y-1/2 scale-75 px-1 text-center text-[5px] font-bold leading-none text-orange-600 transition-all duration-300" :class="open ? 'scale-100 opacity-100' : 'opacity-0'" style="top: 56.5%; left: 68%; right: 11%;">{{ __('Instant funding') }}</span>
@@ -542,7 +553,12 @@
             <span class="pointer-events-none absolute right-5 top-3 select-none text-6xl font-black leading-none text-brand-500/10 sm:text-7xl">01</span>
             <span class="grid h-12 w-12 place-items-center text-strong sm:h-14 sm:w-14"><x-img-icon name="Cashless-Payment-Cad-Top-Up-Wallet-Add--Streamline-Ultimate.png" class="h-9 w-9 sm:h-10 sm:w-10" /></span>
             <p class="mt-4 text-[11px] font-bold uppercase tracking-wider text-brand-500">{{ __('Fund') }}</p>
-            <h3 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Fund China wallets') }}</h3>
+            {{-- h2, not h3: this and "Shop digital goods" below are peer
+                 top-level sections (same level as Payment methods, Gift
+                 cards, Features, etc. further down the page), not a
+                 sub-heading of anything — h3 here skipped a level after
+                 the H1. --}}
+            <h2 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Fund China wallets') }}</h2>
             <p class="mt-2 text-sm text-muted">{{ __('Move money into any China wallet in minutes, pay locally, we deliver in CNY.') }}</p>
             <ul class="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 text-sm text-body sm:grid-cols-2">
                 @foreach (['Live exchange rates', 'Instant auto-funding', 'Alipay, WeChat Pay and more', 'Transparent fees', 'Funds delivered in minutes', 'Track every order live'] as $f)
@@ -557,7 +573,7 @@
             <span class="pointer-events-none absolute right-5 top-3 select-none text-6xl font-black leading-none text-brand-500/10 sm:text-7xl">02</span>
             <span class="grid h-12 w-12 place-items-center text-strong sm:h-14 sm:w-14"><x-img-icon name="Products-Shopping-Bags--Streamline-Ultimate.png" class="h-9 w-9 sm:h-10 sm:w-10" /></span>
             <p class="mt-4 text-[11px] font-bold uppercase tracking-wider text-brand-500">{{ __('Shop') }}</p>
-            <h3 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Shop digital goods') }}</h3>
+            <h2 class="mt-1 text-xl font-extrabold text-strong sm:text-2xl">{{ __('Shop digital goods') }}</h2>
             <p class="mt-2 text-sm text-muted">{{ __('Gift cards, eSIMs, top-ups, apps & games, delivered to your account instantly.') }}</p>
             <div class="mt-4 grid grid-cols-2 gap-2">
                 @foreach ([['Gift Cards','Gift-Rectangle-With-Bow--Streamline-Ultimate.png','gift-cards'],['eSIMs','Sim-Card-2--Streamline-Ultimate.png','esims'],['Digital Apps','Vpn-Shield--Streamline-Ultimate.png','gc-digital-apps'],['Games','Vr-360-Remote-Controller--Streamline-Ultimate.png','gc-games']] as [$lbl, $ic, $cat])
