@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Security\LoginSecurityService;
-use App\Services\Security\ReauthService;
 use App\Services\Security\TurnstileVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +46,7 @@ class AdminSessionController extends Controller
         ]);
     }
 
-    public function store(Request $request, LoginSecurityService $loginSecurity, ReauthService $reauth, TurnstileVerificationService $turnstile)
+    public function store(Request $request, LoginSecurityService $loginSecurity, TurnstileVerificationService $turnstile)
     {
         // Unlike the public login, this always runs when Turnstile is
         // enabled — no "conditional" appearance mode. A secret, low-traffic,
@@ -99,10 +98,6 @@ class AdminSessionController extends Controller
 
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         $loginSecurity->recordSuccess($user, $request);
-
-        if ($reauth->applyPendingCodeRequirement($request, $user)) {
-            return redirect()->route('reauth.email');
-        }
 
         return redirect()->intended(route('admin.dashboard'));
     }

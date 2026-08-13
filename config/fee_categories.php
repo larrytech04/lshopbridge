@@ -23,7 +23,6 @@
 return [
     'deposit' => 'Deposit',
     'funding' => 'China Wallet Funding',
-    'withdrawal' => 'Withdrawal',
     'internal_transfer' => 'Internal Transfer',
     'currency_conversion' => 'Currency Conversion',
     'marketplace_order' => 'Marketplace Order',

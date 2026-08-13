@@ -320,16 +320,20 @@ function initPullToRefresh() {
             el.style.opacity = '1';
             el.style.transform = 'scale(1)';
 
-            const reload = () => location.reload();
-            // Same "show the matching skeleton" beat as a normal internal
-            // link click, so refreshing feels like the rest of the app —
-            // but the actual navigation waits for MIN_SPIN_MS regardless
-            // of the skeleton's own (shorter) internal hold, so the spin
-            // always gets to complete its two cycles first.
-            if (window.PBSkeleton) {
-                window.PBSkeleton.showThenGo(window.location.href, () => {});
-            }
-            setTimeout(reload, MIN_SPIN_MS);
+            // Deliberately sequenced, not parallel: the full-page skeleton
+            // (and the actual reload) only starts AFTER the spinner has had
+            // its full MIN_SPIN_MS uninterrupted on screen — two complete
+            // 1s laps (see .pull-refresh__spinner div in app.css). Starting
+            // it earlier used to make the skeleton's own placeholder content
+            // pop in right on top of the still-spinning indicator, cutting
+            // the spin short visually well before it actually finished.
+            setTimeout(() => {
+                if (window.PBSkeleton) {
+                    window.PBSkeleton.showThenGo(window.location.href, () => location.reload());
+                } else {
+                    location.reload();
+                }
+            }, MIN_SPIN_MS);
         } else {
             reset();
         }

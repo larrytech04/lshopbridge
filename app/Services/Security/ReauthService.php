@@ -6,35 +6,45 @@ use App\Models\User;
 use App\Notifications\ReauthCodeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 /**
- * Idle-session step-up re-authentication, two tiers:
+ * Idle-session step-up re-authentication, one tier: idle on an authenticated
+ * session locks it in place — right where it is, session and login intact —
+ * until an emailed code is entered. No password, no transaction PIN, nothing
+ * destroyed; the account was already recognized as logged in on this
+ * device, this only re-confirms the inbox is still reachable before handing
+ * back anything sensitive.
  *
- *  - 5-15 minutes idle: session stays alive, locked in place until the user
- *    clears a PIN check (if they've set one) and an emailed code.
- *  - 15+ minutes idle: the session is destroyed outright (a real logout) —
- *    signing back in only needs the account's email plus a fresh emailed
- *    code (no password) if it's the same browser that was just idle-timed
- *    out (see ReauthController::identify()); a password-based login is
- *    still gated on the emailed code too (not the PIN, since a password was
- *    just re-proven) before it's usable.
+ * The threshold is role-dependent: 24 hours for a customer or agent device
+ * that's expected to stay signed in for long stretches, but only 30 minutes
+ * for an admin/super_admin account — an unattended open admin panel is a
+ * much bigger blast radius than an unattended customer dashboard.
  *
- * Session-scoped throughout for the soft lock — each device/tab locks
- * independently, exactly like the PIN itself is per-account rather than
- * per-session. The hard-logout follow-up flag is per-account (cache), since
- * by definition there's no session left to scope it to.
+ * The transaction PIN is deliberately NOT part of this at all, for any
+ * role — its only job in this app is authorizing an actual
+ * transfer/withdrawal at the point of the transaction (see
+ * FundingController, WithdrawalService), never as a login/reauth gate.
+ *
+ * A real, deliberate logout always goes through the normal password (+
+ * Turnstile/MFA as configured) login on the next visit — there is no
+ * passwordless shortcut for that case, only for staying-signed-in-but-idle.
+ *
+ * Session-scoped: each device/tab locks independently.
  */
 class ReauthService
 {
-    public const IDLE_MINUTES = 5;
+    // A stayed-logged-in device only ever needs to re-prove it still
+    // controls the inbox once a full day of inactivity has passed, not on
+    // every short break.
+    public const IDLE_MINUTES = 60 * 24;
 
-    public const HARD_LOGOUT_MINUTES = 15;
-
-    private const PENDING_CODE_TTL_HOURS = 2;
+    // Admins get a much tighter leash — 30 minutes, not 24 hours — since an
+    // unattended, still-open admin panel is a far bigger risk than an
+    // unattended customer dashboard.
+    public const ADMIN_IDLE_MINUTES = 30;
 
     private const CODE_LENGTH = 6;
 
@@ -58,62 +68,12 @@ class ReauthService
         }
 
         $last = $request->session()->get('reauth.last_activity');
+        $threshold = $user->isAdmin() ? self::ADMIN_IDLE_MINUTES : self::IDLE_MINUTES;
 
-        if ($last && abs(now()->diffInMinutes(Carbon::createFromTimestamp($last))) >= self::IDLE_MINUTES) {
+        if ($last && abs(now()->diffInMinutes(Carbon::createFromTimestamp($last))) >= $threshold) {
             $request->session()->put('reauth.locked', true);
-            $request->session()->put('reauth.stage', $user->hasTransactionPin() ? 'pin' : 'email');
             $request->session()->put('reauth.intended', $request->fullUrl());
         }
-    }
-
-    /** Checked by the middleware BEFORE armIfIdle — a full logout, not a soft lock. */
-    public function shouldHardLogout(Request $request): bool
-    {
-        $last = $request->session()->get('reauth.last_activity');
-
-        return $last && abs(now()->diffInMinutes(Carbon::createFromTimestamp($last))) >= self::HARD_LOGOUT_MINUTES;
-    }
-
-    /** Flags the account (not the session — there won't be one) so the next
-     *  successful login is gated on the emailed code before it's usable. */
-    public function markPendingCodeRequirement(User $user): void
-    {
-        Cache::put($this->pendingCodeKey($user), true, now()->addHours(self::PENDING_CODE_TTL_HOURS));
-    }
-
-    /** Called right after a fresh login establishes a new session. If this
-     *  account was hard-idle-logged-out, arms the same in-place lock at the
-     *  email stage (skipping the PIN — a password was just re-proven) so the
-     *  very next request lands on that screen instead of the dashboard.
-     *
-     *  Deliberately a peek (Cache::has), not a pull: the flag is only
-     *  cleared once the code is actually verified (see verifyCode()). If it
-     *  were cleared just for showing this screen, logging out before typing
-     *  the code and logging back in would skip the check entirely — a
-     *  password alone would then be enough, defeating the whole point of
-     *  this tier. */
-    public function applyPendingCodeRequirement(Request $request, User $user): bool
-    {
-        if (! Cache::has($this->pendingCodeKey($user))) {
-            return false;
-        }
-
-        $request->session()->put('reauth.locked', true);
-        $request->session()->put('reauth.stage', 'email');
-        $request->session()->put('reauth.intended', route('dashboard'));
-
-        // Don't spam a fresh code on every retried login while one already
-        // outstanding is still valid.
-        if (! $user->reauth_code_expires_at || $user->reauth_code_expires_at->isPast()) {
-            $this->sendCode($user);
-        }
-
-        return true;
-    }
-
-    private function pendingCodeKey(User $user): string
-    {
-        return "reauth-pending-code:{$user->id}";
     }
 
     public function isLocked(Request $request): bool
@@ -121,34 +81,9 @@ class ReauthService
         return (bool) $request->session()->get('reauth.locked');
     }
 
-    public function stage(Request $request): ?string
-    {
-        return $request->session()->get('reauth.stage');
-    }
-
     public function intendedUrl(Request $request): string
     {
         return $request->session()->get('reauth.intended') ?: route('dashboard');
-    }
-
-    public function verifyPin(Request $request, User $user, string $pin): bool
-    {
-        $key = "reauth-pin:{$user->id}";
-
-        if (RateLimiter::tooManyAttempts($key, 5)) {
-            return false;
-        }
-
-        if (! $user->hasTransactionPin() || ! Hash::check($pin, $user->transaction_pin)) {
-            RateLimiter::hit($key, 600);
-
-            return false;
-        }
-
-        RateLimiter::clear($key);
-        $request->session()->put('reauth.stage', 'email');
-
-        return true;
     }
 
     /** Generates and emails a fresh code, replacing any still-outstanding one. */
@@ -199,18 +134,13 @@ class ReauthService
         }
 
         RateLimiter::clear($key);
-        RateLimiter::clear("reauth-pin:{$user->id}");
 
         $user->forceFill(['reauth_code' => null, 'reauth_code_expires_at' => null])->save();
-
-        // Only NOW is the post-hard-logout requirement actually satisfied —
-        // a no-op if this verification wasn't for that (nothing to clear).
-        Cache::forget($this->pendingCodeKey($user));
 
         // 'reauth.intended' is deliberately left for the controller to read via
         // intendedUrl() right after this returns — it's harmless to leave stale,
         // the next real lock overwrites it before it's ever read again.
-        $request->session()->forget(['reauth.locked', 'reauth.stage']);
+        $request->session()->forget('reauth.locked');
         $this->touch($request);
 
         return true;

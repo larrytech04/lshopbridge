@@ -4,7 +4,7 @@
 @section('content')
 <x-page-header :title="__('Security Center')" :subtitle="__('Manage your passwords, PINs, and connected devices.')" />
 
-<div x-data="{ tab: 'password' }">
+<div x-data="{ tab: '{{ request('tab', session('pin_reset_verified') ? 'pin' : 'password') }}' }">
 
     {{-- Tabs --}}
     <div class="flex items-center gap-1 rounded-2xl border border-app p-1.5">
@@ -64,13 +64,21 @@
     {{-- Transaction PIN --}}
     <div x-show="tab === 'pin'" x-cloak class="mt-4 rounded-3xl border border-app p-6">
         <h3 class="font-semibold text-strong">{{ $user->hasTransactionPin() ? __('Change transaction PIN') : __('Set a transaction PIN') }}</h3>
-        <p class="mt-1 text-sm text-muted">{{ __('A 4-digit code you\'ll enter to authorize transfers and withdrawals, separate from your login password.') }}</p>
+        <p class="mt-1 text-sm text-muted">{{ __('A 4-digit code you\'ll enter to authorize transfers and withdrawals, separate from your login password. Keep it safe, never share it with anyone.') }}</p>
+
+        @if ($pinResetVerified)
+            <p class="mt-3 flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 ring-1 ring-emerald-400/30 dark:text-emerald-400">
+                <x-icon name="check-circle" class="h-4 w-4 shrink-0" /> {{ __('Identity verified. Set your new PIN below, no need for the old one.') }}
+            </p>
+        @endif
+
         <form method="POST" action="{{ route('security.pin') }}" class="mt-5 space-y-4">
             @csrf @method('PUT')
-            @if ($user->hasTransactionPin())
+            @if ($user->hasTransactionPin() && ! $pinResetVerified)
                 <div>
                     <label class="label">{{ __('Current PIN') }}</label>
                     <input type="password" inputmode="numeric" name="current_pin" maxlength="4" required class="field max-w-[200px]" placeholder="••••">
+                    <a href="{{ route('security.pin.forgot') }}" class="mt-1.5 inline-block text-xs font-semibold text-brand-500 hover:text-brand-600">{{ __("Forgot your PIN?") }}</a>
                 </div>
             @endif
             <div class="grid gap-4 sm:grid-cols-2">

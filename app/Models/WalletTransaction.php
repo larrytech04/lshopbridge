@@ -50,7 +50,10 @@ class WalletTransaction extends Model
             \App\Models\ShopOrder::class => route('shop.orders.show', $this->source),
             \App\Models\FundingRequest::class => route('funding.show', $this->source),
             \App\Models\Deposit::class => route('deposit.show', $this->source),
-            \App\Models\WithdrawalRequest::class => route('withdrawals.index'),
+            // The withdrawal feature itself was removed (2026-08-12) — no page
+            // left to send an existing withdrawal-sourced transaction to, so
+            // it falls through to the default (no link), same as any other
+            // source type without its own page.
             \App\Models\ShippingRequest::class => route('shipping-requests.show', $this->source),
             default => null,
         };

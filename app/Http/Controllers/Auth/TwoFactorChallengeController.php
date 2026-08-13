@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Security\LoginSecurityService;
-use App\Services\Security\ReauthService;
 use App\Services\Security\TotpService;
 use App\Services\Security\WebauthnService;
 use Illuminate\Http\RedirectResponse;
@@ -26,8 +25,6 @@ use Webauthn\Exception\AuthenticatorResponseVerificationException;
  */
 class TwoFactorChallengeController extends Controller
 {
-    public function __construct(private ReauthService $reauth) {}
-
     public function show(Request $request): View|RedirectResponse
     {
         if (! $request->session()->has('mfa_user_id')) {
@@ -152,10 +149,6 @@ class TwoFactorChallengeController extends Controller
 
         $user->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         $loginSecurity->recordSuccess($user, $request);
-
-        if ($this->reauth->applyPendingCodeRequirement($request, $user)) {
-            return redirect()->route('reauth.email');
-        }
 
         return redirect()->intended($this->home($user));
     }

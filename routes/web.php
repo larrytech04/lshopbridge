@@ -52,11 +52,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\SavedPaymentMethodController;
 use App\Http\Controllers\RefundController;
-use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\ShippingRequestController;
 use App\Http\Controllers\TrackShipmentController;
 use App\Http\Controllers\SecureFileController;
 use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\ForgotPinController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\PasskeyController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
@@ -77,7 +77,6 @@ use App\Http\Controllers\Admin\KycController as AdminKycController;
 use App\Http\Controllers\Admin\KycDecisionTemplateController;
 use App\Http\Controllers\Admin\AgentController as AdminAgentController;
 use App\Http\Controllers\Admin\DepositController as AdminDepositController;
-use App\Http\Controllers\Admin\WithdrawalController as AdminWithdrawalController;
 use App\Http\Controllers\Admin\FundingController as AdminFundingController;
 use App\Http\Controllers\Admin\ExchangeRateController as AdminRateController;
 use App\Http\Controllers\Admin\FeeController as AdminFeeController;
@@ -117,7 +116,17 @@ use App\Http\Controllers\Admin\SecurityEventController as AdminSecurityEventCont
 |--------------------------------------------------------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// SEO infrastructure — see app/Services/Seo. Deliberately outside any
+// locale/auth middleware: crawlers never carry a session or a language
+// preference, and both files need to render identically regardless.
+Route::get('/robots.txt', [\App\Http\Controllers\Public\RobotsController::class, 'show'])->name('robots');
+Route::get('/sitemap.xml', [\App\Http\Controllers\Public\SitemapController::class, 'index'])->name('sitemap.index');
+Route::get('/sitemap-{group}.xml', [\App\Http\Controllers\Public\SitemapController::class, 'group'])->name('sitemap.group');
+
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
+Route::get('/countries', [\App\Http\Controllers\Public\CountryController::class, 'index'])->name('countries.index');
+Route::get('/countries/{country:slug}', [\App\Http\Controllers\Public\CountryController::class, 'show'])->name('countries.show');
 Route::get('/fund-alipay', [PageController::class, 'fundAlipay'])->name('public.fund');
 Route::get('/payment-methods', [PageController::class, 'paymentMethods'])->name('public.payment-methods');
 Route::get('/fees', [PageController::class, 'fees'])->name('public.fees');
@@ -204,26 +213,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
-
-    // Passwordless "welcome back" re-entry after a 30+ minute idle hard
-    // logout (see EnsureSessionNotIdle) — email + emailed code, no password,
-    // reached only via that specific redirect.
-    Route::get('/reauth/welcome-back', [\App\Http\Controllers\Auth\ReauthController::class, 'identify'])->name('reauth.identify');
-    Route::post('/reauth/welcome-back', [\App\Http\Controllers\Auth\ReauthController::class, 'identifySubmit']);
-    Route::get('/reauth/welcome-back/code', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyCode'])->name('reauth.identify.code');
-    Route::post('/reauth/welcome-back/code', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyVerify']);
-    Route::post('/reauth/welcome-back/code/resend', [\App\Http\Controllers\Auth\ReauthController::class, 'identifyResend'])->name('reauth.identify.resend');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
-// Idle-session lock screens (see ReauthService / EnsureSessionNotIdle) — logging out
-// is always the escape hatch, so these only need 'auth', not the active-account gate.
+// Idle-session lock screen (see ReauthService / EnsureSessionNotIdle) — logging out
+// is always the escape hatch, so this only needs 'auth', not the active-account gate.
+// Email code only — no PIN, no separate "welcome back" path; a real logout
+// always goes through the normal login instead of anything here.
 Route::middleware('auth')->prefix('reauth')->name('reauth.')->group(function () {
-    Route::get('/pin', [\App\Http\Controllers\Auth\ReauthController::class, 'pin'])->name('pin');
-    Route::post('/pin', [\App\Http\Controllers\Auth\ReauthController::class, 'verifyPin']);
-    Route::post('/pin/passkey/options', [\App\Http\Controllers\Auth\ReauthController::class, 'passkeyOptions'])->name('pin.passkey.options');
-    Route::post('/pin/passkey', [\App\Http\Controllers\Auth\ReauthController::class, 'passkeyVerify'])->name('pin.passkey.verify');
     Route::get('/email', [\App\Http\Controllers\Auth\ReauthController::class, 'email'])->name('email');
     Route::post('/email', [\App\Http\Controllers\Auth\ReauthController::class, 'verifyCode']);
     Route::post('/email/resend', [\App\Http\Controllers\Auth\ReauthController::class, 'resendCode'])->name('email.resend');
@@ -266,12 +264,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/deposit', [DepositController::class, 'store'])->name('deposit.store');
     Route::get('/deposit/{deposit}', [DepositController::class, 'show'])->name('deposit.show');
     Route::post('/deposit/{deposit}/proof', [DepositController::class, 'uploadProof'])->name('deposit.proof');
-
-    // Withdraw funds (payout workflow: hold on request, admin approves + pays out)
-    Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
-    Route::post('/withdrawals/quote', [WithdrawalController::class, 'quote'])->name('withdrawals.quote');
-    Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
-    Route::post('/withdrawals/{withdrawal}/cancel', [WithdrawalController::class, 'cancel'])->name('withdrawals.cancel');
 
     // Saved payment methods (customer's own deposit-source shortcuts). URI is
     // distinct from the public "/payment-methods" marketing page (same path
@@ -359,6 +351,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/security', [SecurityController::class, 'index'])->name('security.index');
     Route::put('/security/pin', [SecurityController::class, 'updatePin'])->name('security.pin');
     Route::post('/security/forgot-password', [SecurityController::class, 'forgotPassword'])->name('security.forgot-password');
+
+    // Forgot transaction PIN: password + emailed code, no server access needed.
+    Route::get('/security/pin/forgot', [ForgotPinController::class, 'confirm'])->name('security.pin.forgot');
+    Route::post('/security/pin/forgot', [ForgotPinController::class, 'sendCode']);
+    Route::get('/security/pin/forgot/code', [ForgotPinController::class, 'code'])->name('security.pin.forgot.code');
+    Route::post('/security/pin/forgot/code', [ForgotPinController::class, 'verifyCode']);
+    Route::post('/security/pin/forgot/code/resend', [ForgotPinController::class, 'resend'])->name('security.pin.forgot.resend');
     Route::delete('/security/sessions/revoke-others', [SecurityController::class, 'revokeOtherSessions'])->name('security.sessions.revoke-others');
     Route::delete('/security/sessions/{session}', [SecurityController::class, 'revokeSession'])->name('security.sessions.revoke');
 
@@ -539,12 +538,6 @@ Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix(confi
     Route::post('/deposits/{deposit}/requery', [AdminDepositController::class, 'requery'])->name('deposits.requery');
     Route::post('/deposits/{deposit}/reconcile', [AdminDepositController::class, 'reconcile'])->name('deposits.reconcile');
 
-    // Withdrawals
-    Route::get('/withdrawals', [AdminWithdrawalController::class, 'index'])->name('withdrawals.index');
-    Route::post('/withdrawals/{withdrawal}/approve', [AdminWithdrawalController::class, 'approve'])->name('withdrawals.approve');
-    Route::post('/withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])->name('withdrawals.reject');
-    Route::post('/withdrawals/{withdrawal}/mark-paid', [AdminWithdrawalController::class, 'markPaid'])->name('withdrawals.mark-paid');
-
     // Funding requests
     Route::get('/funding', [AdminFundingController::class, 'index'])->name('funding.index');
     Route::get('/funding/export', [AdminFundingController::class, 'exportCsv'])->name('funding.export');
@@ -687,6 +680,11 @@ Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix(confi
     Route::post('shop/products/{product}/toggle-active', [AdminShopProductController::class, 'toggleActive'])->name('shop.products.toggle-active');
     Route::post('shop/products/{product}/schedule', [AdminShopProductController::class, 'schedule'])->name('shop.products.schedule');
     Route::post('shop/products/{product}/duplicate', [AdminShopProductController::class, 'duplicate'])->name('shop.products.duplicate');
+
+    // Generic per-record SEO fields for any model using the reusable
+    // seo_metadata table (currently Agent — see SeoMetadataController).
+    Route::put('seo/{type}/{id}', [\App\Http\Controllers\Admin\SeoMetadataController::class, 'update'])->name('seo-metadata.update');
+    Route::get('seo/content-quality', [\App\Http\Controllers\Admin\SeoContentQualityController::class, 'index'])->name('seo.content-quality');
 
     Route::get('shop/orders', [AdminShopOrderController::class, 'index'])->name('shop.orders.index');
     Route::get('shop/orders/export', [AdminShopOrderController::class, 'exportCsv'])->name('shop.orders.export');

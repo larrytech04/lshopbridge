@@ -6,7 +6,7 @@
     // no localStorage, no per-section memory, nothing to get out of sync.
     // Every full page navigation recomputes this fresh from the URL.
     $sectionRoutePatterns = [
-        'money' => ['wallet.*', 'deposit.*', 'funding.create', 'transactions.*', 'withdrawals.*', 'payment-methods.*'],
+        'money' => ['wallet.*', 'deposit.*', 'funding.create', 'transactions.*', 'payment-methods.*'],
         'shop' => ['shop.*', 'cart.*', 'wishlist.*', 'esim.mine.*'],
         'china' => ['beneficiaries.*', 'funding.index', 'funding.show', 'marketplace.*', 'shipping-requests.*', 'shipments.track'],
         'account' => ['profile.edit', 'verification.*', 'security.*', 'notifications.*', 'referrals.*'],

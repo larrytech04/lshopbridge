@@ -28,9 +28,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'preferences', 'google_id', 'avatar_url', 'shortcuts_enabled', 'shortcut_overrides',
         'transaction_pin', 'transaction_pin_set_at', 'last_seen_at',
         'reauth_code', 'reauth_code_expires_at', 'reauth_code_sent_at',
+        'pin_reset_code', 'pin_reset_code_expires_at', 'pin_reset_code_sent_at',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'transaction_pin', 'reauth_code'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'transaction_pin', 'reauth_code', 'pin_reset_code'];
 
     protected function casts(): array
     {
@@ -42,11 +43,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'transaction_pin_set_at' => 'datetime',
             'reauth_code_expires_at' => 'datetime',
             'reauth_code_sent_at' => 'datetime',
+            'pin_reset_code_expires_at' => 'datetime',
+            'pin_reset_code_sent_at' => 'datetime',
             'date_of_birth' => 'date',
             'password' => 'hashed',
             'password_changed_at' => 'datetime',
             'transaction_pin' => 'hashed',
             'reauth_code' => 'hashed',
+            'pin_reset_code' => 'hashed',
             'role' => UserRole::class,
             'kyc_status' => KycStatus::class,
             'kyc_level' => 'integer',

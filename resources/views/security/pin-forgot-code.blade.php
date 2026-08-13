@@ -1,11 +1,13 @@
-@extends('layouts.auth')
-@section('title', 'Enter your code · '.config('platform.name'))
-@section('heading', __('Check your email'))
-@section('sub', __('We sent a 6-character code to :email.', ['email' => $maskedEmail]))
+@extends('layouts.app')
+@section('page-title', 'Forgot transaction PIN')
 
 @section('content')
-<div x-data="reauthEmail({{ (int) $resendWait }})">
-    <form action="{{ route('reauth.identify.code') }}" method="POST" x-ref="form" @submit="submitting = true">
+<x-page-header :title="__('Check your email')" :subtitle="__('We sent a 6-character code to :email.', ['email' => $maskedEmail])" />
+
+<a href="{{ route('security.index', ['tab' => 'pin']) }}" class="text-sm text-brand-500 hover:text-brand-600">← {{ __('Back to Security Center') }}</a>
+
+<div class="mt-4 max-w-lg rounded-3xl border border-app p-6" x-data="pinForgotCode({{ (int) $resendWait }})">
+    <form action="{{ route('security.pin.forgot.code') }}" method="POST" x-ref="form" @submit="submitting = true">
         @csrf
         <input type="hidden" name="code" :value="chars.join('')">
 
@@ -35,22 +37,22 @@
         </button>
     </form>
 
-    <form method="POST" action="{{ route('reauth.identify.resend') }}" class="mt-4 text-center">
+    <form method="POST" action="{{ route('security.pin.forgot.resend') }}" class="mt-4 text-center">
         @csrf
         <button type="submit" class="text-sm font-semibold text-brand-500 hover:text-brand-600 disabled:cursor-not-allowed disabled:text-faint disabled:hover:text-faint"
                 :disabled="wait > 0" x-text="wait > 0 ? '{{ __('Resend code in') }} ' + wait + 's' : '{{ __('Resend code') }}'">
         </button>
     </form>
 
-    <p class="mt-6 text-center text-xs text-faint">
-        {{ __('Wrong email?') }}
-        <a href="{{ route('reauth.identify') }}" class="font-semibold text-brand-500 hover:text-brand-600">{{ __('Start over') }}</a>
+    <p class="mt-6 flex items-start gap-2 text-xs text-faint">
+        <x-icon name="alert" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        {{ __('Never share this code with anyone, we will never ask you for it, including by phone or email.') }}
     </p>
 </div>
 
 @push('scripts')
 <script>
-    function reauthEmail(initialWait) {
+    function pinForgotCode(initialWait) {
         return {
             raw: '',
             chars: [],

@@ -8,9 +8,13 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
- * The transaction PIN must be exactly 4 digits everywhere — the reauth PIN
- * dialer (resources/views/auth/reauth-pin.blade.php) only ever collects 4,
- * so a longer PIN set here could never actually be entered there.
+ * The transaction PIN must be exactly 4 digits everywhere — its only job in
+ * this app is authorizing an actual transfer (see
+ * resources/views/dashboard/funding/create.blade.php), which only ever
+ * collects 4, so a longer PIN set here could never actually be entered
+ * there. It is never part of login or idle-session reauth (see
+ * ReauthService). (The withdrawal flow that used to have its own such input
+ * was removed 2026-08-12.)
  */
 class TransactionPinTest extends TestCase
 {

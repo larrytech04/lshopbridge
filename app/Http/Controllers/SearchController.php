@@ -71,7 +71,6 @@ class SearchController extends Controller
             ['icon' => 'deposit', 'title' => __('Deposits'), 'description' => __('Add money to your wallet'), 'route' => 'deposit.index'],
             ['icon' => 'fund', 'title' => __('Fund China Wallet'), 'description' => __('Alipay, WeChat Pay & more'), 'route' => 'funding.create'],
             ['icon' => 'card', 'title' => __('Saved Payment Methods'), 'description' => __('Your saved deposit sources'), 'route' => 'payment-methods.index'],
-            ['icon' => 'arrow-up', 'title' => __('Withdraw Funds'), 'description' => __('Cash out to your saved payment method'), 'route' => 'withdrawals.index'],
             ['icon' => 'chart', 'title' => __('Transactions'), 'description' => __('Activity history'), 'route' => 'transactions.index'],
             ['icon' => 'cart', 'title' => __('My Orders'), 'description' => __('Recent purchases'), 'route' => 'shop.orders.index'],
             ['icon' => 'bag', 'title' => __('Marketplace'), 'description' => __('Gift cards, eSIMs, VPN & more'), 'route' => 'shop.index'],

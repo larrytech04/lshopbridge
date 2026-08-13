@@ -103,35 +103,6 @@ class AdminLoginSplitTest extends TestCase
         $this->get(route('dashboard'))->assertRedirect(route('login'));
     }
 
-    public function test_admin_hard_idle_logout_redirects_to_the_admin_login_not_the_passwordless_screen(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
-
-        $this->actingAs($admin)
-            ->withSession(['reauth' => ['last_activity' => now()->subMinutes(16)->timestamp]])
-            ->get(route('admin.dashboard'))
-            ->assertRedirect(route('admin.login'));
-
-        $this->assertGuest();
-    }
-
-    public function test_an_admin_email_on_the_passwordless_welcome_back_screen_is_sent_to_the_admin_login(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin', 'status' => 'active']);
-        $regular = User::factory()->create(['role' => 'user', 'status' => 'active']);
-
-        // Trip the regular hard-logout flow for a non-admin so the "welcome
-        // back" screen is reachable at all.
-        $this->actingAs($regular)
-            ->withSession(['reauth' => ['last_activity' => now()->subMinutes(16)->timestamp]])
-            ->get(route('wallet.index'));
-
-        $this->post(route('reauth.identify'), ['email' => $admin->email])
-            ->assertRedirect(route('admin.login'));
-
-        $this->assertGuest();
-    }
-
     public function test_admin_login_is_blocked_without_a_turnstile_token_when_enabled(): void
     {
         $this->enableTurnstile();

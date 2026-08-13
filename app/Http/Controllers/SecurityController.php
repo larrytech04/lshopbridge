@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Notifications\SecurityAlert;
 use App\Services\Security\LoginSecurityService;
+use App\Services\Security\PinResetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 
 class SecurityController extends Controller
 {
-    public function index(Request $request, LoginSecurityService $loginSecurity): View
+    public function index(Request $request, LoginSecurityService $loginSecurity, PinResetService $pinReset): View
     {
         $user = $request->user();
         $currentSessionId = $request->session()->getId();
@@ -40,6 +41,10 @@ class SecurityController extends Controller
             'user' => $user,
             'sessions' => $sessions,
             'recentLogins' => $recentLogins,
+            // Stays true for the whole reset window (not just the one
+            // redirect after verifying), so a refresh doesn't suddenly
+            // re-demand the old PIN they came here specifically to skip.
+            'pinResetVerified' => $user->hasTransactionPin() && $pinReset->isVerified($user),
         ]);
     }
 
@@ -58,24 +63,32 @@ class SecurityController extends Controller
 
     /** Set or change the transaction PIN, a 4-digit code required before authorizing
      *  transfers/withdrawals, separate from the login password. */
-    public function updatePin(Request $request)
+    public function updatePin(Request $request, PinResetService $pinReset)
     {
         $user = $request->user();
+        $hadPin = $user->hasTransactionPin();
 
-        // Exactly 4, matching the reauth PIN dialer everywhere else in the
-        // app (see resources/views/auth/reauth-pin.blade.php) — it only ever
-        // collects 4 digits, so a longer PIN set here could never actually
-        // be entered there.
+        // Cleared the forgot-PIN flow (password + emailed code, see
+        // ForgotPinController) in the last few minutes — skip the normal
+        // current_pin requirement exactly this once instead of it.
+        $viaReset = $hadPin && $pinReset->isVerified($user);
+
+        // Exactly 4, matching the PIN input at the point of an actual
+        // transaction (see resources/views/dashboard/funding/create.blade.php)
+        // — the transaction PIN's only job in this app, it is never part of
+        // login/reauth. (The withdrawal flow that used to have its own such
+        // input was removed 2026-08-12; WithdrawalService still checks the
+        // PIN the same way if that ever comes back.)
         $rules = [
             'pin' => ['required', 'digits:4', 'confirmed'],
         ];
-        if ($user->hasTransactionPin()) {
+        if ($hadPin && ! $viaReset) {
             $rules['current_pin'] = ['required', 'digits:4'];
         }
 
         $data = $request->validate($rules);
 
-        if ($user->hasTransactionPin() && ! Hash::check($data['current_pin'], $user->transaction_pin)) {
+        if ($hadPin && ! $viaReset && ! Hash::check($data['current_pin'], $user->transaction_pin)) {
             return back()->withErrors(['current_pin' => 'That current PIN is incorrect.']);
         }
 
@@ -83,6 +96,26 @@ class SecurityController extends Controller
             'transaction_pin' => $data['pin'],
             'transaction_pin_set_at' => now(),
         ]);
+
+        if ($viaReset) {
+            $pinReset->consumeVerified($user);
+        }
+
+        // Every save gets an alert, not just the reset path — the PIN
+        // authorizes real money movement, so the account owner should always
+        // hear about it changing, and be reminded to keep it to themselves.
+        // Notification content is plain English throughout this codebase
+        // (see the other 16 classes in app/Notifications) — matching that,
+        // not introducing translation in just this one.
+        $user->notify(new SecurityAlert(
+            title: match (true) {
+                $viaReset => 'Your transaction PIN was reset',
+                $hadPin => 'Your transaction PIN was changed',
+                default => 'Transaction PIN created',
+            },
+            message: 'Your transaction PIN authorizes transfers and withdrawals from your wallet. Keep it safe, never share it with anyone, including our support team, who will never ask you for it. If you did not make this change, secure your account and contact support immediately.',
+            requiresReview: $viaReset,
+        ));
 
         return back()->with('success', 'Transaction PIN saved.');
     }

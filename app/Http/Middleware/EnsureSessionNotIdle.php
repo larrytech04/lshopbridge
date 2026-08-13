@@ -5,14 +5,15 @@ namespace App\Http\Middleware;
 use App\Services\Security\ReauthService;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * 5-15 minutes idle on an authenticated session locks it in place; 15+
- * destroys it outright and sends the same browser to a passwordless
- * "welcome back" email + emailed-code screen — see ReauthService for the
- * full two-tier rule and ReauthController::identify() for that screen.
+ * Idle on an authenticated session locks it in place, right where it is,
+ * until an emailed code is entered — 24 hours for a customer/agent, only 30
+ * minutes for an admin/super_admin (see ReauthService::armIfIdle()). The
+ * session is never destroyed and nothing else is asked for. A real logout
+ * always goes through the normal login on the next visit; this middleware
+ * has no opinion on that path at all.
  */
 class EnsureSessionNotIdle
 {
@@ -34,36 +35,12 @@ class EnsureSessionNotIdle
             return $next($request);
         }
 
-        if ($this->reauth->shouldHardLogout($request)) {
-            $this->reauth->markPendingCodeRequirement($user);
-            $isAdmin = $user->isAdmin();
-
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            // Admins never get the passwordless shortcut — straight back to
-            // the dedicated admin login (password + the secret URL + MFA).
-            if ($isAdmin) {
-                return redirect()->route('admin.login')->with('success', __('You were signed out after being away a while. Sign back in to continue.'));
-            }
-
-            // Marks this specific browser as the one that was just idle-timed
-            // out, so the "welcome back" screen (email + emailed code, no
-            // password) is reachable — see ReauthController::identify().
-            $request->session()->put('reauth.identify_only', true);
-
-            return redirect()->route('reauth.identify')->with('success', __("You were signed out after being away a while. Enter your email and we'll send a code to confirm it's you."));
-        }
-
         $this->reauth->armIfIdle($request, $user);
 
         if ($this->reauth->isLocked($request)) {
-            $route = $this->reauth->stage($request) === 'email' ? 'reauth.email' : 'reauth.pin';
-
             return $request->expectsJson()
-                ? response()->json(['message' => 'Session locked, re-authentication required.', 'redirect' => route($route)], 423)
-                : redirect()->route($route);
+                ? response()->json(['message' => 'Session locked, re-authentication required.', 'redirect' => route('reauth.email')], 423)
+                : redirect()->route('reauth.email');
         }
 
         $this->reauth->touch($request);
