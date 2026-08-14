@@ -22,6 +22,31 @@ class AdminDashboardController extends Controller
         return view('admin.dashboard.index', $data + ['hiddenSections' => $hidden]);
     }
 
+    /**
+     * Real-time refresh for the KPI ring cards (see admin/dashboard/_kpis.blade.php)
+     * — same real query logic as the initial page load (DashboardReportService::kpis()),
+     * just returned as JSON on a short poll instead of a full page render. Respects
+     * whatever period the page currently has active (same query params as the page
+     * itself), so refreshing doesn't silently reset an admin's chosen date range.
+     */
+    public function kpisLive(Request $request, DashboardReportService $reports)
+    {
+        $period = $reports->resolvePeriod($request);
+        $kpis = $reports->kpis($period);
+
+        $format = fn (array $row) => [
+            'key' => $row['key'],
+            'value_display' => $row['money'] ? number_format($row['value']).' '.config('platform.base_currency', 'XAF') : number_format($row['value']),
+            'delta' => $row['delta'],
+        ];
+
+        return response()->json([
+            'financial' => array_map($format, $kpis['financial']),
+            'customer' => array_map($format, $kpis['customer']),
+            'operational' => array_map($format, $kpis['operational']),
+        ]);
+    }
+
     public function updateWidgets(Request $request)
     {
         $data = $request->validate(['hidden' => ['array']]);

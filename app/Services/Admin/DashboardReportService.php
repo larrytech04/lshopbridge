@@ -17,6 +17,7 @@ use App\Models\WebhookEvent;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * All aggregate reporting for the admin Overview / Command Center. Every
@@ -109,6 +110,11 @@ class DashboardReportService
     protected function kpi(string $label, float $current, float $previous, string $img, string $tint, ?string $href = null, bool $money = false, string $hint = ''): array
     {
         return [
+            // Stable, slug-based identity for this metric — lets the live
+            // polling refresh (AdminDashboardController::kpisLive) match a
+            // freshly-fetched row back to the right DOM card by key, instead
+            // of relying on array position staying constant.
+            'key' => Str::slug($label),
             'label' => $label, 'value' => $current, 'previous' => $previous,
             'delta' => $this->delta($current, $previous), 'img' => $img, 'tint' => $tint,
             'href' => $href, 'money' => $money, 'hint' => $hint,

@@ -438,6 +438,7 @@ Route::middleware('guest')->prefix(config('platform.admin_path'))->group(functio
 Route::middleware(['auth', 'role:admin,super_admin', 'admin.mfa'])->prefix(config('platform.admin_path'))->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/widgets', [AdminDashboardController::class, 'updateWidgets'])->name('dashboard.widgets');
+    Route::get('/dashboard/kpis', [AdminDashboardController::class, 'kpisLive'])->name('dashboard.kpis');
     Route::get('/dashboard/export', [AdminDashboardController::class, 'exportReport'])->name('dashboard.export');
     Route::get('/dashboard/transaction/{type}/{id}', [AdminDashboardController::class, 'transactionDetail'])->name('dashboard.transaction');
 
