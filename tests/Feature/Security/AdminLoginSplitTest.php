@@ -172,4 +172,27 @@ class AdminLoginSplitTest extends TestCase
     {
         $this->get('/login')->assertOk()->assertViewIs('auth.login');
     }
+
+    /**
+     * The device-recognition cookie is explicitly documented (see
+     * AdminSessionController::DEVICE_COOKIE's docblock) as routing-only —
+     * it must never let a login skip the TOTP challenge. Asserted directly
+     * here rather than just trusted from the comment.
+     */
+    public function test_a_recognized_device_still_must_pass_the_totp_challenge_to_log_in(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin', 'status' => 'active',
+            'password' => Hash::make('password'),
+            'two_factor_enabled' => true,
+            'two_factor_secret' => 'JBSWY3DPEHPK3PXP',
+            'two_factor_confirmed_at' => now(),
+        ]);
+
+        $response = $this->withCookie(AdminSessionController::DEVICE_COOKIE, '1')
+            ->post($this->adminPath('/login'), ['email' => $admin->email, 'password' => 'password']);
+
+        $response->assertRedirect(route('two-factor.challenge'));
+        $this->assertGuest();
+    }
 }

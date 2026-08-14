@@ -130,6 +130,26 @@ class ReauthTest extends TestCase
             ->assertOk();
     }
 
+    /**
+     * The "recognized device" cookie (see AdminSessionController::DEVICE_COOKIE)
+     * only ever changes which login FORM a guest lands on — it must never
+     * skip the idle-lock's emailed OTP code either. Asserted directly since
+     * this is exactly the kind of shortcut a "remember this device" cookie
+     * could easily be mistaken for elsewhere in the codebase later.
+     */
+    public function test_a_recognized_device_still_gets_locked_and_still_needs_the_emailed_code(): void
+    {
+        $admin = $this->mfaEnabledAdmin();
+
+        $this->actingAs($admin)
+            ->withCookie(\App\Http\Controllers\Auth\AdminSessionController::DEVICE_COOKIE, '1')
+            ->withSession($this->idleForMinutes(31))
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('reauth.email'));
+
+        $this->assertAuthenticatedAs($admin);
+    }
+
     public function test_the_same_idle_time_that_locks_an_admin_does_not_lock_a_regular_customer(): void
     {
         $user = User::factory()->create(['status' => 'active']);
