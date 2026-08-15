@@ -17,7 +17,15 @@
             __('Simple funding. Clear rates. Reliable support.'),
         ];
 @endphp
-<div x-data="announceBar(@js($annMsgs))" x-show="open" x-cloak x-collapse class="announce-bar relative z-50 text-white">
+{{-- When visible, this is the true topmost element on the page (sticks
+     above shell-header), so IT owns the safe-area padding that extends its
+     own background up under the iOS status bar/notch — see shell-header's
+     matching comment. That padding only applies while this bar has real
+     height; once dismissed (x-collapse takes it to display:none) it
+     contributes nothing, which is exactly why shell-header's own copy of
+     this padding is conditional on this bar being dismissed, not both
+     unconditionally stacking and leaving a gap. --}}
+<div x-data="announceBar(@js($annMsgs))" x-show="open" x-cloak x-collapse class="announce-bar relative z-50 text-white" style="padding-top: env(safe-area-inset-top);">
     <div class="mx-auto flex max-w-none items-center gap-2 px-4 py-1 sm:px-6">
         <x-icon name="star" class="hidden h-3 w-3 shrink-0 fill-current text-white/90 sm:block" />
         <div class="ann-track min-w-0 flex-1 overflow-hidden text-center">

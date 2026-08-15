@@ -24,10 +24,14 @@
 <header class="sticky top-0 z-40">
     {{-- Utility strip, always visible (the whole header sticks; only the mid row collapses).
          padding-top extends this glass background up under the iOS status bar instead of
-         leaving that strip transparent (showing whatever's behind it bleed through) — the
-         header sticks at the true top:0, its own background just reaches further than its
-         visible content does. --}}
-    <div class="relative z-50 border-b border-app" style="background: var(--header-bg); backdrop-filter: blur(12px); padding-top: env(safe-area-inset-top);">
+         leaving that strip transparent (showing whatever's behind it bleed through) — but
+         ONLY when this is genuinely the topmost element, i.e. the announce bar above it
+         (partials/announce-bar.blade.php) has already been dismissed. Applying this
+         unconditionally (the old behavior) double-counted the safe-area inset whenever the
+         announce bar was still showing — its own padding-top plus this one — leaving a
+         visible empty gap between the two bars instead of them sitting flush. --}}
+    <div x-data="{ noAnnounceBar: false }" x-init="noAnnounceBar = localStorage.getItem('pb-announce') === 'closed'"
+         class="relative z-50 border-b border-app" :style="{ background: 'var(--header-bg)', backdropFilter: 'blur(12px)', paddingTop: noAnnounceBar ? 'env(safe-area-inset-top)' : '0px' }">
         <div class="mx-auto flex max-w-none items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6">
             {{-- Flipping social-proof badge: Google ⇄ Trustpilot, every 3.5s --}}
             <div class="review-flip text-muted" x-data="reviewFlip()" :class="{ 'is-flipped': flipped }" aria-label="{{ __('Customer reviews') }}">

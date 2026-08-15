@@ -14,7 +14,11 @@
     {{-- Animated liquid background: small logos drifting & bouncing, over a subtle leopard texture --}}
     <div id="auth-bg" class="auth-bg leopard" data-logo="{{ site_logo() }}" aria-hidden="true"></div>
 
-    <div class="absolute right-4 top-4 z-10"><x-theme-toggle /></div>
+    {{-- top offset accounts for the iOS status bar/notch (env(safe-area-inset-top))
+         the same way every other layout's header does — without it this sits
+         flush at 16px from the true top and overlaps the status bar on any
+         notched phone. --}}
+    <div class="absolute right-4 z-10" style="top: calc(1rem + env(safe-area-inset-top));"><x-theme-toggle /></div>
     <div class="relative z-10 w-full max-w-md animate-fade-up">
         <div class="mb-6 flex justify-center"><x-brand /></div>
 
