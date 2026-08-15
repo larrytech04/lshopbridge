@@ -92,11 +92,16 @@
         </div>
 
         @if (! $user->isPhoneVerified())
-            <div class="card-solid flex flex-wrap items-center gap-4 rounded-2xl border border-app border-l-4 border-l-amber-400/60 p-4 shadow-sm">
-                <x-icon name="shield" class="h-6 w-6 text-amber-400" />
-                <p class="flex-1 text-sm text-body">{{ __('Verify your phone to unlock funding and higher limits.') }}</p>
-                <a href="{{ route('verification.index') }}" class="btn btn-primary">{{ __('Verify now') }}</a>
-            </div>
+            <x-dismissible id="phone-verify-nudge-{{ $user->id }}">
+                <div class="card-solid flex flex-wrap items-center gap-4 rounded-2xl border border-app border-l-4 border-l-amber-400/60 p-4 shadow-sm">
+                    <x-icon name="shield" class="h-6 w-6 text-amber-400" />
+                    <p class="min-w-0 flex-1 text-sm text-body">{{ __('Verify your phone to unlock funding and higher limits.') }}</p>
+                    <a href="{{ route('verification.index') }}" class="btn btn-primary">{{ __('Verify now') }}</a>
+                    <button type="button" @click="dismiss()" aria-label="{{ __('Dismiss') }}" class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong">
+                        <x-icon name="x" class="h-4 w-4" />
+                    </button>
+                </div>
+            </x-dismissible>
         @endif
 
         @if (! $user->hasTransactionPin())

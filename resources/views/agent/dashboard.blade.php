@@ -4,14 +4,19 @@
 @section('content')
 <div class="space-y-6">
     @if ($agent->status->value !== 'approved')
-        <div class="glass flex flex-wrap items-center gap-4 rounded-2xl border-l-4 border-amber-400/60 p-4">
-            <x-icon name="shield" class="h-6 w-6 text-amber-300" />
-            <div class="flex-1">
-                <p class="font-medium text-strong">Your agent profile is {{ $agent->status->label() }}</p>
-                <p class="text-sm text-muted">{{ __('Complete verification to get listed in the marketplace.') }}</p>
+        <x-dismissible id="agent-status-{{ $agent->id }}-{{ $agent->status->value }}">
+            <div class="glass flex flex-wrap items-center gap-4 rounded-2xl border-l-4 border-amber-400/60 p-4">
+                <x-icon name="shield" class="h-6 w-6 text-amber-300" />
+                <div class="min-w-0 flex-1">
+                    <p class="font-medium text-strong">Your agent profile is {{ $agent->status->label() }}</p>
+                    <p class="text-sm text-muted">{{ __('Complete verification to get listed in the marketplace.') }}</p>
+                </div>
+                <a href="{{ route('agent.verification') }}" class="btn btn-primary">{{ __('Complete verification') }}</a>
+                <button type="button" @click="dismiss()" aria-label="{{ __('Dismiss') }}" class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition hover:surface-2 hover:text-strong">
+                    <x-icon name="x" class="h-4 w-4" />
+                </button>
             </div>
-            <a href="{{ route('agent.verification') }}" class="btn btn-primary">{{ __('Complete verification') }}</a>
-        </div>
+        </x-dismissible>
     @endif
 
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
