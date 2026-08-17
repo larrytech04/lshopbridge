@@ -24,7 +24,14 @@
 
     @php
         $user = auth()->user();
-        $isAgentArea = $user->isAgent();
+        // isAgent() alone checks the literal role column, which misses a
+        // super admin who has a real linked Agent profile (see EnsureUserRole
+        // — super admins bypass role:agent and can reach /agent directly).
+        // Without this, they'd land on agent pages under the plain customer
+        // nav (partials.nav-user), with no way to reach Business profile /
+        // Shipping rates / Leads / Reviews at all — exactly the confusion
+        // this fixes.
+        $isAgentArea = $user->isAgent() || $user->agent !== null;
         $unread = $user->unreadNotifications()->count();
         $navBadges = app(\App\Services\Navigation\NavigationBadgeService::class)->forUser($user);
         $megaMenuCategories = $isAgentArea ? collect() : app(\App\Services\Shop\CategoryNavigationService::class)->visibleTopLevel(region()['iso'] ?? null);

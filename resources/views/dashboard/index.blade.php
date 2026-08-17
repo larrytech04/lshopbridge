@@ -74,7 +74,13 @@
                                      mobile only, desktop already has all three reachable from the
                                      regular nav without needing a shortcut. --}}
                                 <div x-data="{ open: false }" @keydown.escape.window="open = false" @click.outside="open = false" class="relative lg:hidden">
-                                    <button type="button" @click="open = !open" :aria-expanded="open" class="glass inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong">
+                                    {{-- appearance-none strips iOS Safari's native button chrome (its
+                                         own implicit padding/font-size on top of the utility classes
+                                         below) — without it this renders visibly larger than the
+                                         "Visit website" link right next to it despite sharing the
+                                         exact same classes, since that one's a plain <a>, not a
+                                         <button>, and never had native chrome to begin with. --}}
+                                    <button type="button" @click="open = !open" :aria-expanded="open" class="glass appearance-none inline-flex items-center gap-0.5 rounded-full border-0 px-1.5 py-0.5 text-[9px] font-semibold text-muted transition hover:text-strong">
                                         <x-icon name="refresh" class="h-2.5 w-2.5" /> {{ __('Switch dashboard') }}
                                     </button>
                                     <div x-show="open" x-cloak x-transition @click="open = false"
